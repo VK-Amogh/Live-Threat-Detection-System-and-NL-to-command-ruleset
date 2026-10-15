@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "safespace_api"
+version = "0.1.0"
+description = "FastAPI backend service for SafeSpace video threat detection system"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "td_contracts",
+    "fastapi>=0.111.0",
+    "uvicorn>=0.30.0",
+    "pydantic>=2.7.0",
+    "sqlalchemy>=2.0.30",
+    "asyncpg>=0.29.0",
+    "alembic>=1.13.0",
+    "pyyaml>=6.0.1",
+    "python-multipart>=0.0.9",
+]

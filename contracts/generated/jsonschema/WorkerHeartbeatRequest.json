@@ -1,0 +1,48 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "worker_id": {
+      "title": "Worker Id",
+      "type": "string"
+    },
+    "uptime_seconds": {
+      "title": "Uptime Seconds",
+      "type": "number"
+    },
+    "model_name": {
+      "title": "Model Name",
+      "type": "string"
+    },
+    "fps": {
+      "title": "Fps",
+      "type": "number"
+    },
+    "queue_depths": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Queue Depths",
+      "type": "object"
+    },
+    "last_error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Error"
+    }
+  },
+  "required": [
+    "worker_id",
+    "uptime_seconds",
+    "model_name",
+    "fps"
+  ],
+  "title": "WorkerHeartbeatRequest",
+  "type": "object"
+}

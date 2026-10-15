@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "HumanAction": {
+      "enum": [
+        "CONFIRM",
+        "MARK_FALSE_POSITIVE",
+        "REOPEN"
+      ],
+      "title": "HumanAction",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "client_action_id": {
+      "title": "Client Action Id",
+      "type": "string"
+    },
+    "action": {
+      "$ref": "#/$defs/HumanAction"
+    },
+    "note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Note"
+    },
+    "corrected_category": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Corrected Category"
+    }
+  },
+  "required": [
+    "client_action_id",
+    "action"
+  ],
+  "title": "HumanVerificationRequest",
+  "type": "object"
+}

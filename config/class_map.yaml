@@ -1,0 +1,39 @@
+# SafeSpace — Detection Class to Category Mapping
+# Maps raw detector classes to high-level incident categories
+
+mappings:
+  weapon:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: HIGH
+    trigger_incident: true
+
+  knife:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: HIGH
+    trigger_incident: true
+
+  gun:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: CRITICAL
+    trigger_incident: true
+
+  pistol:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: CRITICAL
+    trigger_incident: true
+
+  person:
+    category: null
+    min_confidence: 0.40
+    severity: null
+    trigger_incident: false # Tracking reference only unless paired with weapon/altercation
+
+  violence:
+    category: FIGHT
+    min_confidence: 0.70
+    severity: CRITICAL
+    trigger_incident: true

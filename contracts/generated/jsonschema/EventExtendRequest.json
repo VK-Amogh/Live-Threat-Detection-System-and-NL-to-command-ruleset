@@ -1,0 +1,195 @@
+{
+  "$defs": {
+    "EvidenceInfo": {
+      "properties": {
+        "hits": {
+          "title": "Hits",
+          "type": "integer"
+        },
+        "window": {
+          "title": "Window",
+          "type": "integer"
+        },
+        "sample_fps": {
+          "title": "Sample Fps",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "hits",
+        "window",
+        "sample_fps"
+      ],
+      "title": "EvidenceInfo",
+      "type": "object"
+    },
+    "MediaItemIngest": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MediaKind"
+        },
+        "role": {
+          "description": "peak, first, last, context",
+          "title": "Role",
+          "type": "string"
+        },
+        "path": {
+          "description": "Relative storage path",
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "bytes": {
+          "title": "Bytes",
+          "type": "integer"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "offset_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Offset Ms"
+        }
+      },
+      "required": [
+        "kind",
+        "role",
+        "path",
+        "sha256",
+        "bytes",
+        "width",
+        "height"
+      ],
+      "title": "MediaItemIngest",
+      "type": "object"
+    },
+    "MediaKind": {
+      "enum": [
+        "KEYFRAME",
+        "CROP",
+        "CLIP"
+      ],
+      "title": "MediaKind",
+      "type": "string"
+    },
+    "TrackRef": {
+      "properties": {
+        "track_id": {
+          "title": "Track Id",
+          "type": "integer"
+        },
+        "class": {
+          "title": "Class",
+          "type": "string"
+        },
+        "first_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "First Frame"
+        },
+        "last_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Frame"
+        }
+      },
+      "required": [
+        "track_id",
+        "class"
+      ],
+      "title": "TrackRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "last_seen_at": {
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "peak_confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Peak Confidence",
+      "type": "number"
+    },
+    "evidence": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EvidenceInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "track_refs": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/TrackRef"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Track Refs"
+    },
+    "media": {
+      "anyOf": [
+        {
+          "items": {
+            "$ref": "#/$defs/MediaItemIngest"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Media"
+    }
+  },
+  "required": [
+    "last_seen_at",
+    "peak_confidence"
+  ],
+  "title": "EventExtendRequest",
+  "type": "object"
+}

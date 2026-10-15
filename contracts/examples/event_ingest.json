@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "event_id": "0b6f7c1e-5d0a-4c3e-9d57-2d8a6c1f9a10",
+  "camera_id": "c2d1b0a4-7b1e-4f0e-8d21-5a0f4c3b9e11",
+  "video_source_id": null,
+  "detected_at": "2026-10-15T10:21:04.512Z",
+  "first_seen_at": "2026-10-15T10:21:02.912Z",
+  "last_seen_at": "2026-10-15T10:21:04.512Z",
+  "media_offset_ms": null,
+  "yolo_class_raw": "knife",
+  "category": "WEAPON_DETECTED",
+  "yolo_confidence": 0.82,
+  "peak_confidence": 0.91,
+  "severity": "HIGH",
+  "evidence": {
+    "hits": 3,
+    "window": 5,
+    "sample_fps": 5
+  },
+  "track_refs": [
+    {
+      "track_id": 12,
+      "class": "knife",
+      "first_frame": 410,
+      "last_frame": 418
+    }
+  ],
+  "media": [
+    {
+      "kind": "KEYFRAME",
+      "role": "peak",
+      "path": "media/2026/10/15/0b6f7c1e/peak.jpg",
+      "sha256": "ab1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcd",
+      "bytes": 182044,
+      "width": 1280,
+      "height": 720,
+      "offset_ms": null
+    }
+  ],
+  "model": {
+    "yolo": {
+      "name": "best.pt",
+      "sha256": "ab123456",
+      "tracker": "bytetrack"
+    }
+  },
+  "verify": true
+}

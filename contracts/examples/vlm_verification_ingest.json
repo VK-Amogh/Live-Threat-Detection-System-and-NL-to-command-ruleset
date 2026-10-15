@@ -1,0 +1,28 @@
+{
+  "schema_version": 1,
+  "verification_id": "6d2e9b7a-5d0a-4c3e-9d57-2d8a6c1f9a20",
+  "vlm": {
+    "name": "qwen2.5-vl:7b",
+    "digest": "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "status": "OK",
+  "latency_ms": 8120,
+  "frames_used": [
+    "peak.jpg",
+    "first.jpg"
+  ],
+  "result": {
+    "incident_visible": "yes",
+    "category": "WEAPON_DETECTED",
+    "confidence": 0.78,
+    "uncertainty": "medium",
+    "evidence_insufficient": false,
+    "visible_facts": [
+      "A person holds a long object in the right hand"
+    ],
+    "cannot_determine": [
+      "Whether the object is a weapon or a tool"
+    ],
+    "summary": "A person holds a long object near a doorway."
+  }
+}

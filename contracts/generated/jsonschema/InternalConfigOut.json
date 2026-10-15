@@ -1,0 +1,87 @@
+{
+  "$defs": {
+    "CameraOut": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "source_type": {
+          "$ref": "#/$defs/SourceType"
+        },
+        "connection_uri": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Connection Uri"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "is_online": {
+          "default": false,
+          "title": "Is Online",
+          "type": "boolean"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "source_type",
+        "created_at"
+      ],
+      "title": "CameraOut",
+      "type": "object"
+    },
+    "SourceType": {
+      "enum": [
+        "WEBCAM",
+        "FILE",
+        "RTSP"
+      ],
+      "title": "SourceType",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "config_version": {
+      "title": "Config Version",
+      "type": "integer"
+    },
+    "cameras": {
+      "items": {
+        "$ref": "#/$defs/CameraOut"
+      },
+      "title": "Cameras",
+      "type": "array"
+    },
+    "enabled_categories": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Enabled Categories",
+      "type": "array"
+    }
+  },
+  "required": [
+    "config_version"
+  ],
+  "title": "InternalConfigOut",
+  "type": "object"
+}

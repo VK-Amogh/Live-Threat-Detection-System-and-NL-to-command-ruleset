@@ -1,0 +1,30 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "v": {
+      "default": 1,
+      "title": "V",
+      "type": "integer"
+    },
+    "type": {
+      "description": "hello | event.created | event.updated | camera.status | system.health | ping | pong | resync_required",
+      "title": "Type",
+      "type": "string"
+    },
+    "sent_at": {
+      "title": "Sent At",
+      "type": "string"
+    },
+    "data": {
+      "additionalProperties": true,
+      "title": "Data",
+      "type": "object"
+    }
+  },
+  "required": [
+    "type",
+    "sent_at"
+  ],
+  "title": "WsEnvelope",
+  "type": "object"
+}

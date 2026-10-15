@@ -1,0 +1,11 @@
+{
+  "v": 1,
+  "type": "hello",
+  "sent_at": "2026-10-15T10:21:00.000Z",
+  "data": {
+    "device_id": "d1e2f3a4-5d0a-4c3e-9d57-2d8a6c1f9a50",
+    "head_seq": 1043,
+    "server_time": "2026-10-15T10:21:00.000Z",
+    "heartbeat_s": 20
+  }
+}

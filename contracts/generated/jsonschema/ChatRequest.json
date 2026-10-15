@@ -1,0 +1,27 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "conversation_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Conversation Id"
+    },
+    "message": {
+      "minLength": 1,
+      "title": "Message",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message"
+  ],
+  "title": "ChatRequest",
+  "type": "object"
+}

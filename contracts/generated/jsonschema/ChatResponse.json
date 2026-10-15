@@ -1,0 +1,75 @@
+{
+  "$defs": {
+    "ChatCoverage": {
+      "properties": {
+        "cameras_with_data": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cameras With Data",
+          "type": "array"
+        },
+        "cameras_without_data": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cameras Without Data",
+          "type": "array"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        }
+      },
+      "title": "ChatCoverage",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "conversation_id": {
+      "title": "Conversation Id",
+      "type": "string"
+    },
+    "answer": {
+      "title": "Answer",
+      "type": "string"
+    },
+    "event_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Event Ids",
+      "type": "array"
+    },
+    "filters_used": {
+      "additionalProperties": true,
+      "title": "Filters Used",
+      "type": "object"
+    },
+    "counts": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Counts",
+      "type": "object"
+    },
+    "coverage": {
+      "$ref": "#/$defs/ChatCoverage"
+    }
+  },
+  "required": [
+    "conversation_id",
+    "answer",
+    "coverage"
+  ],
+  "title": "ChatResponse",
+  "type": "object"
+}

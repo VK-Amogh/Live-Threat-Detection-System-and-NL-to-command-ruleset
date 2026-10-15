@@ -1,0 +1,45 @@
+# SafeSpace — Incident Categories Configuration
+# Synced into PostgreSQL categories table on API startup
+
+categories:
+  - key: WEAPON_DETECTED
+    label: "Weapon Detected"
+    description: "Visible firearm, blade, knife, or bladed implement detected in camera feed."
+    default_severity: HIGH
+    enabled: true
+
+  - key: FIGHT
+    label: "Physical Altercation / Fight"
+    description: "Physical violence, aggressive grappling, or brawling between individuals."
+    default_severity: CRITICAL
+    enabled: true
+
+  - key: ASSAULT
+    label: "Assault"
+    description: "One-sided physical assault or battery against a victim."
+    default_severity: CRITICAL
+    enabled: true
+
+  - key: ROBBERY_INDICATORS
+    label: "Robbery Indicators"
+    description: "Brandishing weapons, forced entry, or confrontational confrontation at point of interest."
+    default_severity: HIGH
+    enabled: true
+
+  - key: SUSPICIOUS_ACTIVITY
+    label: "Suspicious Activity"
+    description: "Loitering in restricted zones, mask concealment, or irregular movement patterns."
+    default_severity: MEDIUM
+    enabled: true
+
+  - key: OTHER_ANOMALY
+    label: "Other Anomaly"
+    description: "Anomalous motion or visual feature divergence outside normal baseline."
+    default_severity: LOW
+    enabled: true
+
+  - key: UNVERIFIED_DETECTION
+    label: "Unverified Detection"
+    description: "Initial candidate detection pending temporal filtering or VLM verification."
+    default_severity: LOW
+    enabled: true

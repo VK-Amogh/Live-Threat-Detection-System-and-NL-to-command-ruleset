@@ -1,0 +1,24 @@
+{
+  "conversation_id": "c1d2e3f4-5d0a-4c3e-9d57-2d8a6c1f9a60",
+  "answer": "There were 3 weapon detections today on Webcam 1 between 10:00 and 10:25 UTC.",
+  "event_ids": [
+    "0b6f7c1e-5d0a-4c3e-9d57-2d8a6c1f9a10"
+  ],
+  "filters_used": {
+    "from": "2026-10-15T00:00:00.000Z",
+    "to": "2026-10-15T23:59:59.999Z",
+    "categories": [
+      "WEAPON_DETECTED"
+    ]
+  },
+  "counts": {
+    "matched": 3
+  },
+  "coverage": {
+    "cameras_with_data": [
+      "Webcam 1"
+    ],
+    "cameras_without_data": [],
+    "note": null
+  }
+}

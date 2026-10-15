@@ -1,0 +1,77 @@
+{
+  "$defs": {
+    "ErrorBody": {
+      "properties": {
+        "code": {
+          "description": "Standardized error code enum string",
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "description": "Human-readable explanation of the error",
+          "title": "Message",
+          "type": "string"
+        },
+        "details": {
+          "description": "Detailed field or context errors",
+          "items": {
+            "$ref": "#/$defs/ErrorDetail"
+          },
+          "title": "Details",
+          "type": "array"
+        },
+        "request_id": {
+          "description": "Traceable correlation ID for the request",
+          "title": "Request Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message",
+        "request_id"
+      ],
+      "title": "ErrorBody",
+      "type": "object"
+    },
+    "ErrorDetail": {
+      "properties": {
+        "loc": {
+          "description": "Location of the validation error",
+          "items": {
+            "type": "string"
+          },
+          "title": "Loc",
+          "type": "array"
+        },
+        "msg": {
+          "description": "Error message description",
+          "title": "Msg",
+          "type": "string"
+        },
+        "type": {
+          "description": "Error type identifier",
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "msg",
+        "type"
+      ],
+      "title": "ErrorDetail",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "error": {
+      "$ref": "#/$defs/ErrorBody"
+    }
+  },
+  "required": [
+    "error"
+  ],
+  "title": "ErrorEnvelope",
+  "type": "object"
+}

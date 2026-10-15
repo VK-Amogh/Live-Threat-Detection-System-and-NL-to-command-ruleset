@@ -1,0 +1,53 @@
+{
+  "$defs": {
+    "EventStatus": {
+      "enum": [
+        "DETECTED",
+        "VERIFYING",
+        "CONFIRMED",
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW"
+      ],
+      "title": "EventStatus",
+      "type": "string"
+    },
+    "VerifiedBy": {
+      "enum": [
+        "NONE",
+        "AI",
+        "HUMAN"
+      ],
+      "title": "VerifiedBy",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "status": {
+      "$ref": "#/$defs/EventStatus"
+    },
+    "verified_by": {
+      "$ref": "#/$defs/VerifiedBy"
+    },
+    "change_seq": {
+      "title": "Change Seq",
+      "type": "integer"
+    },
+    "applied": {
+      "title": "Applied",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "event_id",
+    "status",
+    "verified_by",
+    "change_seq",
+    "applied"
+  ],
+  "title": "VlmVerificationResponse",
+  "type": "object"
+}

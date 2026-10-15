@@ -1,0 +1,263 @@
+{
+  "$defs": {
+    "EvidenceInfo": {
+      "properties": {
+        "hits": {
+          "title": "Hits",
+          "type": "integer"
+        },
+        "window": {
+          "title": "Window",
+          "type": "integer"
+        },
+        "sample_fps": {
+          "title": "Sample Fps",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "hits",
+        "window",
+        "sample_fps"
+      ],
+      "title": "EvidenceInfo",
+      "type": "object"
+    },
+    "MediaItemIngest": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/MediaKind"
+        },
+        "role": {
+          "description": "peak, first, last, context",
+          "title": "Role",
+          "type": "string"
+        },
+        "path": {
+          "description": "Relative storage path",
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        },
+        "bytes": {
+          "title": "Bytes",
+          "type": "integer"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "offset_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Offset Ms"
+        }
+      },
+      "required": [
+        "kind",
+        "role",
+        "path",
+        "sha256",
+        "bytes",
+        "width",
+        "height"
+      ],
+      "title": "MediaItemIngest",
+      "type": "object"
+    },
+    "MediaKind": {
+      "enum": [
+        "KEYFRAME",
+        "CROP",
+        "CLIP"
+      ],
+      "title": "MediaKind",
+      "type": "string"
+    },
+    "Severity": {
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "TrackRef": {
+      "properties": {
+        "track_id": {
+          "title": "Track Id",
+          "type": "integer"
+        },
+        "class": {
+          "title": "Class",
+          "type": "string"
+        },
+        "first_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "First Frame"
+        },
+        "last_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Frame"
+        }
+      },
+      "required": [
+        "track_id",
+        "class"
+      ],
+      "title": "TrackRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "camera_id": {
+      "title": "Camera Id",
+      "type": "string"
+    },
+    "video_source_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Video Source Id"
+    },
+    "detected_at": {
+      "title": "Detected At",
+      "type": "string"
+    },
+    "first_seen_at": {
+      "title": "First Seen At",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "media_offset_ms": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Media Offset Ms"
+    },
+    "yolo_class_raw": {
+      "title": "Yolo Class Raw",
+      "type": "string"
+    },
+    "category": {
+      "title": "Category",
+      "type": "string"
+    },
+    "yolo_confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Yolo Confidence",
+      "type": "number"
+    },
+    "peak_confidence": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Peak Confidence",
+      "type": "number"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity"
+    },
+    "evidence": {
+      "$ref": "#/$defs/EvidenceInfo"
+    },
+    "track_refs": {
+      "items": {
+        "$ref": "#/$defs/TrackRef"
+      },
+      "title": "Track Refs",
+      "type": "array"
+    },
+    "media": {
+      "items": {
+        "$ref": "#/$defs/MediaItemIngest"
+      },
+      "title": "Media",
+      "type": "array"
+    },
+    "model": {
+      "additionalProperties": true,
+      "title": "Model",
+      "type": "object"
+    },
+    "verify": {
+      "default": true,
+      "title": "Verify",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "event_id",
+    "camera_id",
+    "detected_at",
+    "first_seen_at",
+    "last_seen_at",
+    "yolo_class_raw",
+    "category",
+    "yolo_confidence",
+    "peak_confidence",
+    "severity",
+    "evidence",
+    "model"
+  ],
+  "title": "EventIngest",
+  "type": "object"
+}

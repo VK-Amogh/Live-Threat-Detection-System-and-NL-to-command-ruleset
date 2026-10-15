@@ -1,0 +1,40 @@
+# SafeSpace — Inference Worker Configuration
+
+runtime:
+  device: "cuda" # cuda or cpu
+  half_precision: true # FP16
+
+capture:
+  target_fps: 5
+  input_resolution: [640, 640]
+  frame_queue_max_size: 30 # drop-oldest for live streams
+
+detection:
+  model_path: "storage/models/best.pt"
+  confidence_threshold: 0.50
+  iou_threshold: 0.45
+  tracker: "bytetrack"
+
+temporal_filter:
+  k_hits: 3
+  n_window: 5
+  gap_timeout_seconds: 3.0
+  iou_match_threshold: 0.3
+
+preview:
+  enabled: true
+  fps: 2.0
+  jpeg_quality: 75
+
+vlm:
+  enabled: true
+  ollama_url: "http://127.0.0.1:11434"
+  model_tag: "qwen2.5-vl:7b"
+  timeout_seconds: 25.0
+  max_verify_queue: 10
+  concurrency: 1
+
+outbox:
+  poll_interval_seconds: 1.0
+  max_retry_backoff_seconds: 30.0
+  db_path: "storage/outbox/events.db"

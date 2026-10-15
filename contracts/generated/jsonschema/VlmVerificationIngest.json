@@ -1,0 +1,144 @@
+{
+  "$defs": {
+    "VlmModelSpec": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "digest": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Digest"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "VlmModelSpec",
+      "type": "object"
+    },
+    "VlmResultPayload": {
+      "additionalProperties": false,
+      "properties": {
+        "incident_visible": {
+          "description": "yes | no | uncertain",
+          "title": "Incident Visible",
+          "type": "string"
+        },
+        "category": {
+          "title": "Category",
+          "type": "string"
+        },
+        "confidence": {
+          "maximum": 1.0,
+          "minimum": 0.0,
+          "title": "Confidence",
+          "type": "number"
+        },
+        "uncertainty": {
+          "title": "Uncertainty",
+          "type": "string"
+        },
+        "evidence_insufficient": {
+          "default": false,
+          "title": "Evidence Insufficient",
+          "type": "boolean"
+        },
+        "visible_facts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Visible Facts",
+          "type": "array"
+        },
+        "cannot_determine": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cannot Determine",
+          "type": "array"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "incident_visible",
+        "category",
+        "confidence",
+        "uncertainty",
+        "summary"
+      ],
+      "title": "VlmResultPayload",
+      "type": "object"
+    },
+    "VlmStatus": {
+      "enum": [
+        "OK",
+        "INVALID_OUTPUT",
+        "TIMEOUT",
+        "UNAVAILABLE",
+        "SKIPPED_QUEUE_FULL"
+      ],
+      "title": "VlmStatus",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "default": 1,
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "verification_id": {
+      "title": "Verification Id",
+      "type": "string"
+    },
+    "vlm": {
+      "$ref": "#/$defs/VlmModelSpec"
+    },
+    "status": {
+      "$ref": "#/$defs/VlmStatus"
+    },
+    "latency_ms": {
+      "title": "Latency Ms",
+      "type": "integer"
+    },
+    "frames_used": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Frames Used",
+      "type": "array"
+    },
+    "result": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/VlmResultPayload"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "verification_id",
+    "vlm",
+    "status",
+    "latency_ms"
+  ],
+  "title": "VlmVerificationIngest",
+  "type": "object"
+}

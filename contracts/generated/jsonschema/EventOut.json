@@ -1,0 +1,502 @@
+{
+  "$defs": {
+    "CameraRef": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "CameraRef",
+      "type": "object"
+    },
+    "CategoryRef": {
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "label"
+      ],
+      "title": "CategoryRef",
+      "type": "object"
+    },
+    "EventStatus": {
+      "enum": [
+        "DETECTED",
+        "VERIFYING",
+        "CONFIRMED",
+        "FALSE_POSITIVE",
+        "NEEDS_REVIEW"
+      ],
+      "title": "EventStatus",
+      "type": "string"
+    },
+    "FeedbackOut": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "client_action_id": {
+          "title": "Client Action Id",
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/$defs/HumanAction"
+        },
+        "note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Note"
+        },
+        "created_at": {
+          "title": "Created At",
+          "type": "string"
+        },
+        "user_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Id"
+        }
+      },
+      "required": [
+        "id",
+        "client_action_id",
+        "action",
+        "created_at"
+      ],
+      "title": "FeedbackOut",
+      "type": "object"
+    },
+    "HumanAction": {
+      "enum": [
+        "CONFIRM",
+        "MARK_FALSE_POSITIVE",
+        "REOPEN"
+      ],
+      "title": "HumanAction",
+      "type": "string"
+    },
+    "MediaItemOut": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/MediaKind"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        },
+        "width": {
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "title": "Height",
+          "type": "integer"
+        },
+        "offset_ms": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Offset Ms"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "role",
+        "url",
+        "width",
+        "height"
+      ],
+      "title": "MediaItemOut",
+      "type": "object"
+    },
+    "MediaKind": {
+      "enum": [
+        "KEYFRAME",
+        "CROP",
+        "CLIP"
+      ],
+      "title": "MediaKind",
+      "type": "string"
+    },
+    "ModelsInfo": {
+      "properties": {
+        "yolo": {
+          "$ref": "#/$defs/YoloModelRef"
+        },
+        "vlm": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/VlmModelRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "yolo"
+      ],
+      "title": "ModelsInfo",
+      "type": "object"
+    },
+    "ReasoningOut": {
+      "properties": {
+        "confidence": {
+          "title": "Confidence",
+          "type": "number"
+        },
+        "uncertainty": {
+          "title": "Uncertainty",
+          "type": "string"
+        },
+        "evidence_insufficient": {
+          "default": false,
+          "title": "Evidence Insufficient",
+          "type": "boolean"
+        },
+        "visible_facts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Visible Facts",
+          "type": "array"
+        },
+        "cannot_determine": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cannot Determine",
+          "type": "array"
+        }
+      },
+      "required": [
+        "confidence",
+        "uncertainty"
+      ],
+      "title": "ReasoningOut",
+      "type": "object"
+    },
+    "Severity": {
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    },
+    "TrackRef": {
+      "properties": {
+        "track_id": {
+          "title": "Track Id",
+          "type": "integer"
+        },
+        "class": {
+          "title": "Class",
+          "type": "string"
+        },
+        "first_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "First Frame"
+        },
+        "last_frame": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Last Frame"
+        }
+      },
+      "required": [
+        "track_id",
+        "class"
+      ],
+      "title": "TrackRef",
+      "type": "object"
+    },
+    "VerifiedBy": {
+      "enum": [
+        "NONE",
+        "AI",
+        "HUMAN"
+      ],
+      "title": "VerifiedBy",
+      "type": "string"
+    },
+    "VlmModelRef": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "VlmModelRef",
+      "type": "object"
+    },
+    "YoloModelRef": {
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sha256": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sha256"
+        },
+        "tracker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tracker"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "YoloModelRef",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "camera": {
+      "$ref": "#/$defs/CameraRef"
+    },
+    "category": {
+      "$ref": "#/$defs/CategoryRef"
+    },
+    "status": {
+      "$ref": "#/$defs/EventStatus"
+    },
+    "status_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Status Reason"
+    },
+    "verified_by": {
+      "$ref": "#/$defs/VerifiedBy"
+    },
+    "ai_disagrees": {
+      "default": false,
+      "title": "Ai Disagrees",
+      "type": "boolean"
+    },
+    "severity": {
+      "$ref": "#/$defs/Severity"
+    },
+    "yolo_confidence": {
+      "title": "Yolo Confidence",
+      "type": "number"
+    },
+    "peak_confidence": {
+      "title": "Peak Confidence",
+      "type": "number"
+    },
+    "reasoning": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ReasoningOut"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "summary": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Summary"
+    },
+    "first_seen_at": {
+      "title": "First Seen At",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "title": "Last Seen At",
+      "type": "string"
+    },
+    "media_offset_ms": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Media Offset Ms"
+    },
+    "track_refs": {
+      "items": {
+        "$ref": "#/$defs/TrackRef"
+      },
+      "title": "Track Refs",
+      "type": "array"
+    },
+    "media": {
+      "items": {
+        "$ref": "#/$defs/MediaItemOut"
+      },
+      "title": "Media",
+      "type": "array"
+    },
+    "models": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ModelsInfo"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "feedback": {
+      "items": {
+        "$ref": "#/$defs/FeedbackOut"
+      },
+      "title": "Feedback",
+      "type": "array"
+    },
+    "change_seq": {
+      "title": "Change Seq",
+      "type": "integer"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "updated_at": {
+      "title": "Updated At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "camera",
+    "category",
+    "status",
+    "verified_by",
+    "severity",
+    "yolo_confidence",
+    "peak_confidence",
+    "first_seen_at",
+    "last_seen_at",
+    "change_seq",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "EventOut",
+  "type": "object"
+}

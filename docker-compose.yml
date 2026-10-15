@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: safespace-postgres
+    restart: unless-stopped
+    ports:
+      # Bind strictly to loopback 127.0.0.1 as required by architecture
+      - "127.0.0.1:5432:5432"
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-safespace}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-safespace_dev_pw_change_in_prod}
+      POSTGRES_DB: ${POSTGRES_DB:-safespace_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-safespace} -d ${POSTGRES_DB:-safespace_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
