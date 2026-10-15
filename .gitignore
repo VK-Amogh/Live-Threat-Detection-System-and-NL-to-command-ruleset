@@ -2,6 +2,7 @@
 .env
 .env.local
 .env.*.local
+.agents/
 
 # Virtual environments
 .venv/
@@ -24,6 +25,7 @@ build/
 storage/*
 !storage/**/.gitkeep
 !storage/models/README.md
+Model/
 
 # Large media & model weights (never commit)
 *.pt

@@ -1,31 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'app.dart';
+import 'core/api_client.dart';
+import 'core/auth_store.dart';
+import 'core/config.dart';
+import 'services/notification_service.dart';
 
-void main() {
-  runApp(const SafeSpaceApp());
-}
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
 
-class SafeSpaceApp extends StatelessWidget {
-  const SafeSpaceApp({super.key});
+  // Initialize Supabase Client
+  await Supabase.initialize(
+    url: AppConfig.supabaseUrl,
+    publishableKey: AppConfig.supabaseAnonKey,
+  );
 
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'SafeSpace Alert',
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
-        colorScheme: const ColorScheme.dark(
-          primary: Colors.white,
-          surface: Color(0xFF1A1A1A),
-        ),
-      ),
-      home: const Scaffold(
-        body: Center(
-          child: Text(
-            'SafeSpace Mobile Incident Client',
-            style: TextStyle(color: Colors.white, fontSize: 18),
-          ),
-        ),
-      ),
-    );
-  }
+  // Initialize Local Notifications
+  final notificationService = NotificationService();
+  await notificationService.initialize();
+
+  // Initialize Core Services
+  final authStore = AuthStore();
+  final apiClient = ApiClient(authStore);
+
+  runApp(
+    SafeSpaceApp(
+      authStore: authStore,
+      apiClient: apiClient,
+      notificationService: notificationService,
+    ),
+  );
 }
