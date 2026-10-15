@@ -25,7 +25,6 @@ build/
 storage/*
 !storage/**/.gitkeep
 !storage/models/README.md
-Model/
 
 # Large media & model weights (never commit)
 *.pt
@@ -43,6 +42,9 @@ Model/
 *.gif
 *.zip
 *.tar.gz
+
+# Allow files in Model/ directory
+!Model/**
 
 # Database volumes
 postgres_data/
