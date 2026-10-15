@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_store.dart';
+import '../../core/config.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_dialog.dart';
+import '../../core/widgets/press_scale.dart';
 
 class StatusScreen extends StatefulWidget {
   final AuthStore authStore;
@@ -32,6 +34,20 @@ class _StatusScreenState extends State<StatusScreen> {
       _hostUrl = url;
       _isPaired = paired;
     });
+  }
+
+  Future<void> _switchHost(String newUrl) async {
+    await widget.authStore.setApiBaseUrl(newUrl);
+    await _loadStatus();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Switched API Base to $newUrl'),
+          backgroundColor: AppColors.surface,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
   }
 
   Future<void> _unpair() async {
@@ -72,7 +88,7 @@ class _StatusScreenState extends State<StatusScreen> {
                   children: [
                     _statusRow('LAN Host API', _hostUrl),
                     const Divider(color: AppColors.divider, height: AppSpacing.lg),
-                    _statusRow('Device Status', _isPaired ? 'AUTHENTICATED' : 'UNPAIRED'),
+                    _statusRow('Device Status', _isPaired ? 'AUTHENTICATED (HARDCODED)' : 'UNPAIRED'),
                     const Divider(color: AppColors.divider, height: AppSpacing.lg),
                     _statusRow('WebSocket Stream', 'ACTIVE (PORT 8000)'),
                     const Divider(color: AppColors.divider, height: AppSpacing.lg),
@@ -83,6 +99,57 @@ class _StatusScreenState extends State<StatusScreen> {
                     _statusRow('Supabase Backup', 'SYNCHRONIZED'),
                   ],
                 ),
+              ),
+
+              const SizedBox(height: AppSpacing.xl),
+              Text('Switch Connection Host', style: AppTypography.caption),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                children: [
+                  Expanded(
+                    child: PressScale(
+                      onTap: () => _switchHost(AppConfig.defaultApiBaseUrl),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: _hostUrl == AppConfig.defaultApiBaseUrl
+                              ? AppColors.selectedChip
+                              : AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          border: Border.all(
+                            color: _hostUrl == AppConfig.defaultApiBaseUrl
+                                ? AppColors.foreground
+                                : AppColors.divider,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text('USB (localhost)', style: AppTypography.button),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: PressScale(
+                      onTap: () => _switchHost(AppConfig.defaultLanBaseUrl),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+                        decoration: BoxDecoration(
+                          color: _hostUrl == AppConfig.defaultLanBaseUrl
+                              ? AppColors.selectedChip
+                              : AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadii.md),
+                          border: Border.all(
+                            color: _hostUrl == AppConfig.defaultLanBaseUrl
+                                ? AppColors.foreground
+                                : AppColors.divider,
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text('Wi-Fi LAN', style: AppTypography.button),
+                      ),
+                    ),
+                  ),
+                ],
               ),
 
               const Spacer(),

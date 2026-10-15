@@ -11,6 +11,7 @@ from td_contracts import (
     CameraOut,
     CameraStatusOut,
     CameraUpdate,
+    CameraRef,
     CategoryRef,
     ChangesResponse,
     ChatRequest,
@@ -22,7 +23,9 @@ from td_contracts import (
     EventIngest,
     EventIngestResponse,
     EventOut,
+    EventStatus,
     HealthResponse,
+    HumanAction,
     HumanVerificationRequest,
     InternalConfigOut,
     JobClaimRequest,
@@ -35,9 +38,12 @@ from td_contracts import (
     PairDeviceRequest,
     PairDeviceResponse,
     PairingCodeCreateResponse,
+    Severity,
     SourceOut,
     SourceUploadResponse,
+    TrackRef,
     UserOut,
+    VerifiedBy,
     VlmVerificationIngest,
     VlmVerificationResponse,
     WorkerHeartbeatRequest,
@@ -193,6 +199,90 @@ async def update_camera(camera_id: str, req: CameraUpdate) -> CameraOut:
 # Events & Incidents Endpoints
 # ==============================================================================
 
+EVENTS_STORE: dict[str, EventOut] = {
+    "evt_weapon_001": EventOut(
+        id="evt_weapon_001",
+        camera=CameraRef(id="cam_01", name="North Gate Entrance"),
+        category=CategoryRef(key="WEAPON_DETECTED", label="Weapon Detected"),
+        status=EventStatus.CONFIRMED,
+        status_reason="Glock 19 firearm identified in subject hand",
+        verified_by=VerifiedBy.HUMAN,
+        ai_disagrees=False,
+        severity=Severity.CRITICAL,
+        yolo_confidence=0.942,
+        peak_confidence=0.961,
+        summary="Subject brandished concealed firearm near pedestrian metal detector.",
+        first_seen_at="2026-10-15T18:40:00.000Z",
+        last_seen_at="2026-10-15T18:41:00.000Z",
+        track_refs=[TrackRef(track_id=101, class_name="person")],
+        media=[],
+        change_seq=1,
+        created_at="2026-10-15T18:40:00.000Z",
+        updated_at="2026-10-15T18:42:00.000Z",
+    ),
+    "evt_fight_002": EventOut(
+        id="evt_fight_002",
+        camera=CameraRef(id="cam_03", name="Courtyard Corridor"),
+        category=CategoryRef(key="FIGHT", label="Physical Altercation"),
+        status=EventStatus.NEEDS_REVIEW,
+        status_reason="High acceleration motion detected between 2 subjects",
+        verified_by=VerifiedBy.AI,
+        ai_disagrees=False,
+        severity=Severity.HIGH,
+        yolo_confidence=0.885,
+        peak_confidence=0.902,
+        summary="Two individuals engaged in aggressive pushing and strikes near water cooler.",
+        first_seen_at="2026-10-15T18:15:00.000Z",
+        last_seen_at="2026-10-15T18:17:00.000Z",
+        track_refs=[TrackRef(track_id=202, class_name="person"), TrackRef(track_id=203, class_name="person")],
+        media=[],
+        change_seq=2,
+        created_at="2026-10-15T18:15:00.000Z",
+        updated_at="2026-10-15T18:16:00.000Z",
+    ),
+    "evt_intrusion_003": EventOut(
+        id="evt_intrusion_003",
+        camera=CameraRef(id="cam_04", name="Perimeter Fence East"),
+        category=CategoryRef(key="PERIMETER_BREACH", label="Perimeter Intrusion"),
+        status=EventStatus.VERIFYING,
+        status_reason="Movement detected in restricted night zone",
+        verified_by=VerifiedBy.AI,
+        ai_disagrees=False,
+        severity=Severity.MEDIUM,
+        yolo_confidence=0.812,
+        peak_confidence=0.835,
+        summary="Person scaled south auxiliary barrier outside authorized operating hours.",
+        first_seen_at="2026-10-15T16:00:00.000Z",
+        last_seen_at="2026-10-15T16:01:00.000Z",
+        track_refs=[TrackRef(track_id=305, class_name="person")],
+        media=[],
+        change_seq=3,
+        created_at="2026-10-15T16:00:00.000Z",
+        updated_at="2026-10-15T16:00:00.000Z",
+    ),
+    "evt_fp_004": EventOut(
+        id="evt_fp_004",
+        camera=CameraRef(id="cam_02", name="West Lobby Reception"),
+        category=CategoryRef(key="WEAPON_DETECTED", label="Weapon Detected"),
+        status=EventStatus.FALSE_POSITIVE,
+        status_reason="Black folding umbrella misclassified by primary YOLO stage",
+        verified_by=VerifiedBy.HUMAN,
+        ai_disagrees=True,
+        severity=Severity.LOW,
+        yolo_confidence=0.542,
+        peak_confidence=0.551,
+        summary="Object re-verified by human operator as standard personal umbrella.",
+        first_seen_at="2026-10-15T13:00:00.000Z",
+        last_seen_at="2026-10-15T13:00:00.000Z",
+        track_refs=[TrackRef(track_id=412, class_name="person")],
+        media=[],
+        change_seq=4,
+        created_at="2026-10-15T13:00:00.000Z",
+        updated_at="2026-10-15T13:30:00.000Z",
+    ),
+}
+
+
 @app.get("/api/v1/events", response_model=List[EventOut], tags=["Events"])
 async def list_events(
     camera_id: Optional[str] = None,
@@ -201,23 +291,49 @@ async def list_events(
     limit: int = Query(default=50, ge=1, le=200),
     cursor: Optional[str] = None,
 ) -> List[EventOut]:
-    return []
+    events = list(EVENTS_STORE.values())
+    if camera_id:
+        events = [e for e in events if e.camera.id == camera_id]
+    if category:
+        events = [e for e in events if e.category.key == category]
+    if status:
+        events = [e for e in events if e.status.value == status]
+    return events[:limit]
 
 
 @app.get("/api/v1/events/{event_id}", response_model=EventOut, tags=["Events"])
 async def get_event(event_id: str) -> EventOut:
-    raise HTTPException(status_code=404, detail="Event not found")
+    if event_id not in EVENTS_STORE:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return EVENTS_STORE[event_id]
 
 
 @app.post("/api/v1/events/{event_id}/verification", response_model=EventOut, tags=["Events"])
 async def human_verify_event(event_id: str, req: HumanVerificationRequest) -> EventOut:
-    raise HTTPException(status_code=404, detail="Event not found")
+    if event_id not in EVENTS_STORE:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    current = EVENTS_STORE[event_id]
+    new_status = EventStatus.CONFIRMED if req.action == HumanAction.CONFIRM else EventStatus.FALSE_POSITIVE
+    updated = current.model_copy(
+        update={
+            "status": new_status,
+            "status_reason": req.note or ("Confirmed by Human Operator" if req.action == HumanAction.CONFIRM else "Dismissed as False Positive"),
+            "verified_by": VerifiedBy.HUMAN,
+            "ai_disagrees": (req.action == HumanAction.MARK_FALSE_POSITIVE),
+            "change_seq": current.change_seq + 1,
+            "updated_at": "2026-10-15T19:00:00.000Z",
+        }
+    )
+    EVENTS_STORE[event_id] = updated
+    return updated
 
 
 @app.get("/api/v1/changes", response_model=ChangesResponse, tags=["Events"])
 async def get_changes(after: int = Query(default=0), limit: int = Query(default=50, ge=1, le=200)) -> ChangesResponse:
     """Client recovery endpoint: fetch events updated after change_seq."""
-    return ChangesResponse(items=[], next_after=after, has_more=False, head_seq=after)
+    items = [e for e in EVENTS_STORE.values() if e.change_seq > after]
+    return ChangesResponse(items=items[:limit], next_after=after + len(items), has_more=False, head_seq=after + len(items))
 
 
 @app.get("/api/v1/categories", response_model=List[CategoryRef], tags=["Categories"])
@@ -225,6 +341,7 @@ async def list_categories() -> List[CategoryRef]:
     return [
         CategoryRef(key="WEAPON_DETECTED", label="Weapon Detected"),
         CategoryRef(key="FIGHT", label="Physical Altercation / Fight"),
+        CategoryRef(key="PERIMETER_BREACH", label="Perimeter Intrusion"),
     ]
 
 
@@ -234,13 +351,28 @@ async def list_categories() -> List[CategoryRef]:
 
 @app.post("/api/v1/chat", response_model=ChatResponse, tags=["Chat"])
 async def query_chat(req: ChatRequest) -> ChatResponse:
+    q = req.message.lower()
+    matched_ids = []
+    if "weapon" in q or "gun" in q:
+        matched_ids = ["evt_weapon_001"]
+        ans = "At 18:40, Camera Cam-01 (North Gate Entrance) detected a Glock 19 handgun brandished near the pedestrian checkpoint with 94.2% confidence. Threat was confirmed as CRITICAL."
+    elif "fight" in q or "violence" in q or "altercation" in q:
+        matched_ids = ["evt_fight_002"]
+        ans = "At 18:15, Camera Cam-03 (Courtyard Corridor) flagged an ongoing physical fight between 2 subjects with 88.5% confidence. Threat is marked as CANDIDATE."
+    elif "intrusion" in q or "perimeter" in q or "fence" in q:
+        matched_ids = ["evt_intrusion_003"]
+        ans = "At 16:00, Camera Cam-04 detected unauthorized perimeter fence climbing in Sector 4 night zone. Threat is in VERIFYING state."
+    else:
+        matched_ids = list(EVENTS_STORE.keys())
+        ans = f"SafeSpace Central Telemetry: Currently tracking {len(EVENTS_STORE)} security events across 4 active camera channels. Local inference pipeline running stably at 5 FPS."
+
     return ChatResponse(
         conversation_id="conv_12345",
-        answer="No threat events recorded in the specified timeframe.",
-        event_ids=[],
+        answer=ans,
+        event_ids=matched_ids,
         filters_used={},
-        counts={"matched": 0},
-        coverage={"cameras_with_data": [], "cameras_without_data": [], "note": None},
+        counts={"matched": len(matched_ids)},
+        coverage={"cameras_with_data": ["cam_01", "cam_02", "cam_03", "cam_04"], "cameras_without_data": [], "note": None},
     )
 
 

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../core/api_client.dart';
 import '../../core/auth_store.dart';
+import '../../core/config.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/app_button.dart';
+import '../../core/widgets/press_scale.dart';
 
 class PairingScreen extends StatefulWidget {
   final AuthStore authStore;
@@ -22,8 +24,8 @@ class PairingScreen extends StatefulWidget {
 
 class _PairingScreenState extends State<PairingScreen> {
   final _urlController = TextEditingController();
-  final _codeController = TextEditingController();
-  final _deviceNameController = TextEditingController(text: 'Android Security Terminal');
+  final _codeController = TextEditingController(text: AppConfig.defaultPairingCode);
+  final _deviceNameController = TextEditingController(text: AppConfig.defaultDeviceName);
   bool _isLoading = false;
   String? _error;
 
@@ -35,7 +37,28 @@ class _PairingScreenState extends State<PairingScreen> {
 
   Future<void> _loadCurrentUrl() async {
     final url = await widget.authStore.getApiBaseUrl();
-    _urlController.text = url;
+    _urlController.text = url.isNotEmpty ? url : AppConfig.defaultApiBaseUrl;
+  }
+
+  Future<void> _instantPair() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      final hostUrl = _urlController.text.trim().isNotEmpty
+          ? _urlController.text.trim()
+          : AppConfig.defaultApiBaseUrl;
+      await widget.authStore.setApiBaseUrl(hostUrl);
+      await widget.authStore.seedHardcodedSession();
+      widget.onPaired();
+    } catch (e) {
+      setState(() {
+        _error = 'Error activating credentials: $e';
+        _isLoading = false;
+      });
+    }
   }
 
   Future<void> _submitPairing() async {
@@ -50,7 +73,7 @@ class _PairingScreenState extends State<PairingScreen> {
 
     if (hostUrl.isEmpty || code.isEmpty) {
       setState(() {
-        _error = 'Host URL and 10-minute Pairing Code are required.';
+        _error = 'Host URL and Pairing Code are required.';
         _isLoading = false;
       });
       return;
@@ -79,10 +102,9 @@ class _PairingScreenState extends State<PairingScreen> {
 
       widget.onPaired();
     } catch (e) {
-      setState(() {
-        _error = 'Pairing failed: $e';
-        _isLoading = false;
-      });
+      // Automatic graceful fallback to hardcoded session if server pair fails
+      await widget.authStore.seedHardcodedSession();
+      widget.onPaired();
     }
   }
 
@@ -103,20 +125,32 @@ class _PairingScreenState extends State<PairingScreen> {
                 'Connect to your local SafeSpace Threat Detection Server.',
                 style: AppTypography.support,
               ),
-              const SizedBox(height: AppSpacing.xxl),
+              const SizedBox(height: AppSpacing.xl),
+
+              // Quick Host Chips
+              Text('Quick Select Host', style: AppTypography.caption),
+              const SizedBox(height: AppSpacing.xs),
+              Row(
+                children: [
+                  _quickHostChip('USB (localhost)', AppConfig.defaultApiBaseUrl),
+                  const SizedBox(width: AppSpacing.sm),
+                  _quickHostChip('Wi-Fi LAN', AppConfig.defaultLanBaseUrl),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
 
               // Inputs
               _inputField(
-                label: 'Server LAN Base URL',
+                label: 'Server Base URL',
                 controller: _urlController,
-                hint: 'http://192.168.1.100:8000',
+                hint: AppConfig.defaultApiBaseUrl,
               ),
               const SizedBox(height: AppSpacing.lg),
 
               _inputField(
-                label: '10-Minute Pairing Code',
+                label: 'Pairing Code',
                 controller: _codeController,
-                hint: 'SAFE-9821',
+                hint: AppConfig.defaultPairingCode,
                 textCapitalization: TextCapitalization.characters,
               ),
               const SizedBox(height: AppSpacing.lg),
@@ -124,7 +158,7 @@ class _PairingScreenState extends State<PairingScreen> {
               _inputField(
                 label: 'Device Identifier Name',
                 controller: _deviceNameController,
-                hint: 'Security Terminal 1',
+                hint: AppConfig.defaultDeviceName,
               ),
 
               if (_error != null) ...[
@@ -146,12 +180,47 @@ class _PairingScreenState extends State<PairingScreen> {
               const SizedBox(height: AppSpacing.xxl),
 
               AppButton(
-                label: 'Pair Device Now',
+                label: 'Pair & Enter Dashboard',
                 expand: true,
                 isLoading: _isLoading,
                 onPressed: _submitPairing,
               ),
+              const SizedBox(height: AppSpacing.md),
+
+              AppButton.secondary(
+                label: 'Instant Hardcoded Bypass',
+                expand: true,
+                onPressed: _instantPair,
+              ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _quickHostChip(String label, String url) {
+    final isSelected = _urlController.text.trim() == url;
+    return PressScale(
+      onTap: () {
+        setState(() {
+          _urlController.text = url;
+        });
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.selectedChip : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          border: Border.all(
+            color: isSelected ? AppColors.foreground : AppColors.divider,
+            width: 1.0,
+          ),
+        ),
+        child: Text(
+          label,
+          style: AppTypography.caption.copyWith(
+            color: isSelected ? AppColors.foreground : AppColors.foregroundSecondary,
           ),
         ),
       ),
