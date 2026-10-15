@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'core/api_client.dart';
 import 'core/auth_store.dart';
+import 'core/theme/tokens.dart';
+import 'core/widgets/fade_scrim.dart';
+import 'core/widgets/floating_nav_pill.dart';
 import 'core/ws_client.dart';
 import 'data/generated/models.dart';
 import 'data/repositories/chat_repository.dart';
@@ -62,7 +66,8 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
       apiClient: widget.apiClient,
       authStore: widget.authStore,
       onEventReceived: (event, isUpdate) {
-        if (!isUpdate && (event.severity == Severity.HIGH || event.severity == Severity.CRITICAL)) {
+        if (!isUpdate &&
+            (event.severity == Severity.HIGH || event.severity == Severity.CRITICAL)) {
           widget.notificationService.showThreatAlert(event);
         }
       },
@@ -94,24 +99,68 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
 
   @override
   Widget build(BuildContext context) {
+    // Edge-to-edge transparent system bars with light icons
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.light,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.light,
+      ),
+    );
+
     if (_isLoading) {
       return const MaterialApp(
         debugShowCheckedModeBanner: false,
         home: Scaffold(
-          backgroundColor: Colors.black,
-          body: Center(child: CircularProgressIndicator(color: Colors.white)),
+          backgroundColor: AppColors.background,
+          body: Center(
+            child: CircularProgressIndicator(
+              color: AppColors.foreground,
+              strokeWidth: 2,
+            ),
+          ),
         ),
       );
     }
 
+    final screens = [
+      IncidentsScreen(eventsRepository: _eventsRepository),
+      ChatScreen(chatRepository: _chatRepository),
+      StatusScreen(authStore: widget.authStore, onUnpaired: _onUnpaired),
+    ];
+
+    const navItems = [
+      FloatingNavItem(
+        index: 0,
+        icon: Icons.shield_outlined,
+        selectedIcon: Icons.shield,
+        label: 'Alerts',
+      ),
+      FloatingNavItem(
+        index: 1,
+        icon: Icons.chat_bubble_outline_rounded,
+        selectedIcon: Icons.chat_bubble_rounded,
+        label: 'Intelligence',
+      ),
+      FloatingNavItem(
+        index: 2,
+        icon: Icons.tune_outlined,
+        selectedIcon: Icons.tune_rounded,
+        label: 'Telemetry',
+      ),
+    ];
+
     return MaterialApp(
       title: 'SafeSpace Alert',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.black,
+      theme: ThemeData(
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColors.background,
         colorScheme: const ColorScheme.dark(
-          primary: Colors.white,
-          surface: Color(0xFF1A1A1A),
+          primary: AppColors.foreground,
+          surface: AppColors.surface,
+          background: AppColors.background,
         ),
       ),
       home: !_isPaired
@@ -121,71 +170,38 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
               onPaired: _onPaired,
             )
           : Scaffold(
-              body: IndexedStack(
-                index: _currentIndex,
+              backgroundColor: AppColors.background,
+              body: Stack(
+                fit: StackFit.expand,
                 children: [
-                  IncidentsScreen(eventsRepository: _eventsRepository),
-                  ChatScreen(chatRepository: _chatRepository),
-                  StatusScreen(authStore: widget.authStore, onUnpaired: _onUnpaired),
-                ],
-              ),
-              bottomNavigationBar: Container(
-                color: Colors.black,
-                padding: const EdgeInsets.only(bottom: 12, top: 8),
-                child: Center(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF1A1A1A),
-                      borderRadius: BorderRadius.circular(30),
-                      border: Border.all(color: Colors.white.withOpacity(0.08)),
-                    ),
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _navItem(0, Icons.shield_outlined, Icons.shield, 'Alerts'),
-                        const SizedBox(width: 8),
-                        _navItem(1, Icons.chat_bubble_outline, Icons.chat_bubble, 'Search'),
-                        const SizedBox(width: 8),
-                        _navItem(2, Icons.tune_outlined, Icons.tune, 'Status'),
-                      ],
+                  // Page View
+                  IndexedStack(
+                    index: _currentIndex,
+                    children: screens,
+                  ),
+
+                  // Bottom dissolve scrim
+                  const Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: FadeScrim(height: 104),
+                  ),
+
+                  // Floating Navigation Pill
+                  Positioned(
+                    bottom: AppSpacing.md,
+                    left: 0,
+                    right: 0,
+                    child: FloatingNavPill(
+                      currentIndex: _currentIndex,
+                      onIndexChanged: (idx) => setState(() => _currentIndex = idx),
+                      items: navItems,
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-    );
-  }
-
-  Widget _navItem(int index, IconData unselectedIcon, IconData selectedIcon, String label) {
-    final isSelected = _currentIndex == index;
-    return GestureDetector(
-      onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withOpacity(0.12) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              isSelected ? selectedIcon : unselectedIcon,
-              color: isSelected ? Colors.white : Colors.white54,
-              size: 20,
-            ),
-            if (isSelected) ...[
-              const SizedBox(width: 6),
-              Text(
-                label,
-                style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
-              ),
-            ],
-          ],
-        ),
-      ),
     );
   }
 }

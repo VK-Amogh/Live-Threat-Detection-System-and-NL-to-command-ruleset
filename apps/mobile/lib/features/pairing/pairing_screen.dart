@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../core/api_client.dart';
 import '../../core/auth_store.dart';
+import '../../core/theme/tokens.dart';
+import '../../core/widgets/app_button.dart';
 
 class PairingScreen extends StatefulWidget {
   final AuthStore authStore;
@@ -21,7 +23,7 @@ class PairingScreen extends StatefulWidget {
 class _PairingScreenState extends State<PairingScreen> {
   final _urlController = TextEditingController();
   final _codeController = TextEditingController();
-  final _deviceNameController = TextEditingController(text: 'Android Security Device');
+  final _deviceNameController = TextEditingController(text: 'Android Security Terminal');
   bool _isLoading = false;
   String? _error;
 
@@ -43,12 +45,12 @@ class _PairingScreenState extends State<PairingScreen> {
     });
 
     final hostUrl = _urlController.text.trim();
-    final code = _codeController.text.trim();
+    final code = _codeController.text.trim().toUpperCase();
     final deviceName = _deviceNameController.text.trim();
 
     if (hostUrl.isEmpty || code.isEmpty) {
       setState(() {
-        _error = 'Please provide both Host URL and Pairing Code.';
+        _error = 'Host URL and 10-minute Pairing Code are required.';
         _isLoading = false;
       });
       return;
@@ -87,82 +89,107 @@ class _PairingScreenState extends State<PairingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text('Pair Device', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Connect to SafeSpace Host',
-              style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Scan QR from the dashboard or enter the 10-minute code generated on your local PC.',
-              style: TextStyle(color: Colors.white.withOpacity(0.6), fontSize: 13, height: 1.4),
-            ),
-            const SizedBox(height: 24),
-            TextField(
-              controller: _urlController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Host API URL (e.g. http://192.168.1.100:8000)'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _codeController,
-              style: const TextStyle(color: Colors.white, letterSpacing: 2, fontWeight: FontWeight.bold),
-              decoration: _inputDecoration('Pairing Code (e.g. SAFE-9821)'),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _deviceNameController,
-              style: const TextStyle(color: Colors.white),
-              decoration: _inputDecoration('Device Name'),
-            ),
-            if (_error != null) ...[
-              const SizedBox(height: 16),
-              Text(_error!, style: const TextStyle(color: Colors.redAccent, fontSize: 13)),
-            ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                ),
-                onPressed: _isLoading ? null : _submitPairing,
-                child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.black)
-                    : const Text(
-                        'Pair Now',
-                        style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 15),
-                      ),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: AppSpacing.lg),
+              Text('Device Pairing', style: AppTypography.screenTitle),
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                'Connect to your local SafeSpace Threat Detection Server.',
+                style: AppTypography.support,
               ),
-            ),
-          ],
+              const SizedBox(height: AppSpacing.xxl),
+
+              // Inputs
+              _inputField(
+                label: 'Server LAN Base URL',
+                controller: _urlController,
+                hint: 'http://192.168.1.100:8000',
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              _inputField(
+                label: '10-Minute Pairing Code',
+                controller: _codeController,
+                hint: 'SAFE-9821',
+                textCapitalization: TextCapitalization.characters,
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
+              _inputField(
+                label: 'Device Identifier Name',
+                controller: _deviceNameController,
+                hint: 'Security Terminal 1',
+              ),
+
+              if (_error != null) ...[
+                const SizedBox(height: AppSpacing.lg),
+                Row(
+                  children: [
+                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.foreground),
+                    const SizedBox(width: AppSpacing.xs),
+                    Expanded(
+                      child: Text(
+                        _error!,
+                        style: AppTypography.caption.copyWith(color: AppColors.foreground),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              const SizedBox(height: AppSpacing.xxl),
+
+              AppButton(
+                label: 'Pair Device Now',
+                expand: true,
+                isLoading: _isLoading,
+                onPressed: _submitPairing,
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  InputDecoration _inputDecoration(String label) {
-    return InputDecoration(
-      labelText: label,
-      labelStyle: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
-      filled: true,
-      fillColor: const Color(0xFF1A1A1A),
-      border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide.none),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(8),
-        borderSide: const BorderSide(color: Colors.white),
-      ),
+  Widget _inputField({
+    required String label,
+    required TextEditingController controller,
+    required String hint,
+    TextCapitalization textCapitalization = TextCapitalization.none,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: AppTypography.caption),
+        const SizedBox(height: AppSpacing.xs),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(AppRadii.lg),
+            border: Border.all(color: AppColors.divider, width: 1.0),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+          child: TextField(
+            controller: controller,
+            textCapitalization: textCapitalization,
+            style: AppTypography.body,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: AppTypography.body.copyWith(
+                color: AppColors.foregroundSecondary,
+              ),
+              border: InputBorder.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

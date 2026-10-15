@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import '../../core/theme/tokens.dart';
+import '../../core/widgets/app_capsule.dart';
+import '../../core/widgets/app_card.dart';
+import '../../core/widgets/empty_state.dart';
+import '../../core/widgets/press_scale.dart';
 import '../../data/generated/models.dart';
 import '../../data/repositories/events_repository.dart';
 import 'incident_detail_screen.dart';
@@ -16,6 +21,7 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
   List<EventOut> _events = [];
   bool _isLoading = true;
   String? _error;
+  String _selectedFilter = 'ALL';
 
   @override
   void initState() {
@@ -28,6 +34,7 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
       _isLoading = true;
       _error = null;
     });
+
     try {
       final events = await widget.eventsRepository.getEvents();
       setState(() {
@@ -42,159 +49,265 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
     }
   }
 
-  Color _severityColor(Severity severity) {
-    switch (severity) {
-      case Severity.CRITICAL:
-        return const Color(0xFFEF4444);
-      case Severity.HIGH:
-        return const Color(0xFFF97316);
-      case Severity.MEDIUM:
-        return const Color(0xFFEAB308);
-      case Severity.LOW:
-        return const Color(0xFF3B82F6);
-    }
+  List<EventOut> get _filteredEvents {
+    if (_selectedFilter == 'ALL') return _events;
+    return _events.where((e) {
+      final cat = e.category.label.toUpperCase();
+      return cat.contains(_selectedFilter);
+    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        elevation: 0,
-        title: const Text(
-          'SafeSpace Alerts',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 20),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh, color: Colors.white),
-            onPressed: _loadEvents,
-          ),
-        ],
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator(color: Colors.white))
-          : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.warning_amber_rounded, color: Colors.white54, size: 48),
-                        const SizedBox(height: 16),
-                        Text(_error!, style: const TextStyle(color: Colors.white70), textAlign: TextAlign.center),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF1A1A1A)),
-                          onPressed: _loadEvents,
-                          child: const Text('Retry', style: TextStyle(color: Colors.white)),
-                        ),
-                      ],
-                    ),
+      backgroundColor: AppColors.background,
+      body: SafeArea(
+        bottom: false,
+        child: RefreshIndicator(
+          color: AppColors.foreground,
+          backgroundColor: AppColors.surface,
+          onRefresh: _loadEvents,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              // Editorial Section Header
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    AppSpacing.md,
+                    AppSpacing.lg,
+                    AppSpacing.sm,
                   ),
-                )
-              : _events.isEmpty
-                  ? Center(
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.shield_outlined, color: Colors.white.withOpacity(0.3), size: 64),
-                          const SizedBox(height: 16),
-                          const Text(
-                            'No Threat Incidents Detected',
-                            style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Active camera streams are quiet.',
-                            style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 13),
+                          Text('Threat Alerts', style: AppTypography.screenTitle),
+                          PressScale(
+                            onTap: _loadEvents,
+                            pressedScale: 0.94,
+                            child: Container(
+                              width: AppSpacing.smallCircle,
+                              height: AppSpacing.smallCircle,
+                              decoration: BoxDecoration(
+                                color: AppColors.surface,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: AppColors.divider, width: 1.0),
+                              ),
+                              child: const Icon(
+                                Icons.refresh_rounded,
+                                size: 20,
+                                color: AppColors.foreground,
+                              ),
+                            ),
                           ),
                         ],
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      itemCount: _events.length,
-                      itemBuilder: (context, index) {
-                        final event = _events[index];
-                        final badgeColor = _severityColor(event.severity);
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'On-premises CCTV Threat Intelligence & Verification',
+                        style: AppTypography.support,
+                      ),
+                      const SizedBox(height: AppSpacing.lg),
+                      // Filter Chips Row
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            _filterChip('ALL', 'All Threats'),
+                            const SizedBox(width: AppSpacing.sm),
+                            _filterChip('WEAPON', 'Weapons'),
+                            const SizedBox(width: AppSpacing.sm),
+                            _filterChip('VIOLENCE', 'Violence'),
+                            const SizedBox(width: AppSpacing.sm),
+                            _filterChip('INTRUSION', 'Intrusion'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                    ],
+                  ),
+                ),
+              ),
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF1A1A1A),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.white.withOpacity(0.08)),
-                          ),
-                          child: ListTile(
-                            contentPadding: const EdgeInsets.all(16),
-                            title: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: badgeColor.withOpacity(0.2),
-                                    borderRadius: BorderRadius.circular(6),
-                                    border: Border.all(color: badgeColor.withOpacity(0.5)),
-                                  ),
-                                  child: Text(
-                                    event.severity.name,
-                                    style: TextStyle(color: badgeColor, fontSize: 11, fontWeight: FontWeight.w700),
-                                  ),
-                                ),
-                                const SizedBox(width: 8),
-                                Expanded(
-                                  child: Text(
-                                    event.category.label,
-                                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: 15),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            subtitle: Padding(
-                              padding: const EdgeInsets.only(top: 8.0),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    event.summary ?? 'Detection on ${event.camera.name}',
-                                    style: TextStyle(color: Colors.white.withOpacity(0.7), fontSize: 13),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Status: ${event.status.name}',
-                                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-                                      ),
-                                      const Spacer(),
-                                      Text(
-                                        'Conf: ${(event.peakConfidence * 100).toStringAsFixed(0)}%',
-                                        style: TextStyle(color: Colors.white.withOpacity(0.5), fontSize: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                            ),
-                            trailing: const Icon(Icons.chevron_right, color: Colors.white38),
-                            onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (ctx) => IncidentDetailScreen(
-                                    event: event,
-                                    eventsRepository: widget.eventsRepository,
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+              // Content Body
+              if (_isLoading)
+                const SliverFillRemaining(
+                  child: Center(
+                    child: CircularProgressIndicator(
+                      color: AppColors.foreground,
+                      strokeWidth: 2,
+                    ),
+                  ),
+                )
+              else if (_error != null)
+                SliverFillRemaining(
+                  child: EmptyState(
+                    icon: Icons.error_outline_rounded,
+                    title: 'Sync Error',
+                    message: _error!,
+                    action: PressScale(
+                      onTap: _loadEvents,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSpacing.xl,
+                          vertical: AppSpacing.md,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.surface,
+                          borderRadius: BorderRadius.circular(AppRadii.pill),
+                          border: Border.all(color: AppColors.divider, width: 1.0),
+                        ),
+                        child: Text('Retry Connection', style: AppTypography.button),
+                      ),
+                    ),
+                  ),
+                )
+              else if (_filteredEvents.isEmpty)
+                const SliverFillRemaining(
+                  child: EmptyState(
+                    icon: Icons.shield_outlined,
+                    title: 'No Threat Incidents',
+                    message: 'Active camera feeds are normal and undisturbed.',
+                  ),
+                )
+              else
+                SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    96, // Bottom padding to clear floating nav bar
+                  ),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        final event = _filteredEvents[index];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: AppSpacing.md),
+                          child: _buildEventCard(event),
                         );
                       },
+                      childCount: _filteredEvents.length,
                     ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _filterChip(String key, String label) {
+    final isSelected = _selectedFilter == key;
+
+    return PressScale(
+      onTap: () => setState(() => _selectedFilter = key),
+      pressedScale: 0.96,
+      child: AnimatedContainer(
+        duration: AppMotion.shortDuration,
+        height: 36,
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.selectedChip : AppColors.surface,
+          borderRadius: BorderRadius.circular(AppRadii.pill),
+          border: Border.all(
+            color: isSelected ? AppColors.foreground : AppColors.divider,
+            width: 1.0,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            label,
+            style: AppTypography.tabLabel.copyWith(
+              color: isSelected ? AppColors.foreground : AppColors.foregroundSecondary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventCard(EventOut event) {
+    final isCritical = event.severity == Severity.CRITICAL;
+
+    return AppCard(
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (ctx) => IncidentDetailScreen(
+              event: event,
+              eventsRepository: widget.eventsRepository,
+            ),
+          ),
+        );
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              if (isCritical)
+                const AppCapsule(
+                  label: 'CRITICAL',
+                  icon: Icons.warning_amber_rounded,
+                  inverted: true,
+                )
+              else
+                AppCapsule(label: event.severity.name),
+              const Spacer(),
+              Text(
+                '${(event.peakConfidence * 100).toStringAsFixed(0)}% Conf',
+                style: AppTypography.support.copyWith(
+                  fontFeatures: const [FontFeature.tabularFigures()],
+                  color: AppColors.foreground,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Text(
+            event.category.label,
+            style: AppTypography.cardHeading,
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            event.summary ?? 'Detection on ${event.camera.name}',
+            style: AppTypography.body.copyWith(
+              color: AppColors.foregroundSecondary,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              const Icon(
+                Icons.videocam_outlined,
+                size: 16,
+                color: AppColors.foregroundSecondary,
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Text(event.camera.name, style: AppTypography.caption),
+              const Spacer(),
+              Text(
+                event.status.name,
+                style: AppTypography.caption.copyWith(
+                  color: AppColors.foreground,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              const Icon(
+                Icons.chevron_right_rounded,
+                size: 18,
+                color: AppColors.foregroundSecondary,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }

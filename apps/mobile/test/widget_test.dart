@@ -1,5 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:safespace_mobile/core/theme/tokens.dart';
+import 'package:safespace_mobile/core/widgets/app_button.dart';
+import 'package:safespace_mobile/core/widgets/glass_surface.dart';
 import 'package:safespace_mobile/data/generated/models.dart';
 
 void main() {
@@ -34,5 +38,28 @@ void main() {
     expect(event.status, EventStatus.NEEDS_REVIEW);
     expect(event.trackRefs.length, 1);
     expect(event.trackRefs.first.className, 'knife');
+  });
+
+  testWidgets('GlassSurface and AppButton render conforming to DESIGN.md tokens',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: GlassSurface(
+            child: AppButton(
+              label: 'Test Button',
+              onPressed: () {},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Test Button'), findsOneWidget);
+    expect(find.byType(GlassSurface), findsOneWidget);
+    expect(find.byType(AppButton), findsOneWidget);
+    expect(AppColors.background, const Color(0xFF000000));
+    expect(AppColors.surface, const Color(0xFF1A1A1A));
+    expect(AppColors.foreground, const Color(0xFFFFFFFF));
   });
 }
