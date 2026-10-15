@@ -13,6 +13,7 @@ import 'features/chat/chat_screen.dart';
 import 'features/incidents/incidents_screen.dart';
 import 'features/pairing/pairing_screen.dart';
 import 'features/status/status_screen.dart';
+import 'features/analyze/analyze_screen.dart';
 import 'services/notification_service.dart';
 
 class SafeSpaceApp extends StatefulWidget {
@@ -49,7 +50,12 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
   }
 
   Future<void> _checkPairing() async {
-    final paired = await widget.authStore.isPaired();
+    var paired = await widget.authStore.isPaired();
+    if (paired) {
+      try { await widget.apiClient.dio.get('/api/v1/auth/me'); }
+      catch (_) { paired = false; }
+    }
+    if (!mounted) return;
     setState(() {
       _isPaired = paired;
       _isLoading = false;
@@ -66,6 +72,7 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
       apiClient: widget.apiClient,
       authStore: widget.authStore,
       onEventReceived: (event, isUpdate) {
+        _eventsRepository.invalidate();
         if (!isUpdate &&
             (event.severity == Severity.HIGH || event.severity == Severity.CRITICAL)) {
           widget.notificationService.showThreatAlert(event);
@@ -126,6 +133,7 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
 
     final screens = [
       IncidentsScreen(eventsRepository: _eventsRepository),
+      AnalyzeScreen(apiClient: widget.apiClient, eventsRepository: _eventsRepository),
       ChatScreen(chatRepository: _chatRepository),
       StatusScreen(authStore: widget.authStore, onUnpaired: _onUnpaired),
     ];
@@ -139,12 +147,18 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
       ),
       FloatingNavItem(
         index: 1,
+        icon: Icons.video_camera_back_outlined,
+        selectedIcon: Icons.video_camera_back,
+        label: 'Analyze',
+      ),
+      FloatingNavItem(
+        index: 2,
         icon: Icons.chat_bubble_outline_rounded,
         selectedIcon: Icons.chat_bubble_rounded,
         label: 'Intelligence',
       ),
       FloatingNavItem(
-        index: 2,
+        index: 3,
         icon: Icons.tune_outlined,
         selectedIcon: Icons.tune_rounded,
         label: 'Telemetry',

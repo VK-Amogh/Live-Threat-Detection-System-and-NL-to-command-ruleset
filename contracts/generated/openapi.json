@@ -1,189 +1,20 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "SafeSpace Threat Detection API",
-    "description": "Local-first AI surveillance and threat detection backend API",
-    "version": "1.0.0"
+    "title": "SafeSpace API",
+    "version": "2.0.0"
   },
   "paths": {
-    "/health/live": {
+    "/api/v1/health/live": {
       "get": {
-        "tags": [
-          "Health"
-        ],
-        "summary": "Live Health",
-        "description": "Unauthenticated liveness probe.",
-        "operationId": "live_health_health_live_get",
+        "summary": "Health Live",
+        "operationId": "health_live_api_v1_health_live_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LiveHealthResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/health": {
-      "get": {
-        "tags": [
-          "Health"
-        ],
-        "summary": "Detailed Health",
-        "description": "Authenticated component health inspection.",
-        "operationId": "detailed_health_api_v1_health_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HealthResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
+                "schema": {}
               }
             }
           }
@@ -192,11 +23,7 @@
     },
     "/api/v1/auth/login": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
         "summary": "Login",
-        "description": "Admin login with device credential issuance.",
         "operationId": "login_api_v1_auth_login_post",
         "requestBody": {
           "content": {
@@ -219,164 +46,12 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
           "422": {
             "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/auth/pairing-codes": {
-      "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Create Pairing Code",
-        "description": "Admin creates a 10-minute single-use pairing code and QR payload.",
-        "operationId": "create_pairing_code_api_v1_auth_pairing_codes_post",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/PairingCodeCreateResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -386,12 +61,8 @@
     },
     "/api/v1/auth/pair": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Pair Device",
-        "description": "Mobile device exchanges 10-minute code for a permanent device token.",
-        "operationId": "pair_device_api_v1_auth_pair_post",
+        "summary": "Pair",
+        "operationId": "pair_api_v1_auth_pair_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -413,72 +84,12 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
           "422": {
             "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -488,11 +99,8 @@
     },
     "/api/v1/auth/me": {
       "get": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Get Current User",
-        "operationId": "get_current_user_api_v1_auth_me_get",
+        "summary": "Me",
+        "operationId": "me_api_v1_auth_me_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -503,187 +111,35 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
           }
         }
       }
     },
-    "/api/v1/devices": {
-      "get": {
-        "tags": [
-          "Devices"
-        ],
-        "summary": "List Devices",
-        "operationId": "list_devices_api_v1_devices_get",
+    "/api/v1/auth/logout": {
+      "post": {
+        "summary": "Logout",
+        "operationId": "logout_api_v1_auth_logout_post",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/DeviceOut"
-                  },
-                  "type": "array",
-                  "title": "Response List Devices Api V1 Devices Get"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
+                "schema": {}
               }
             }
           }
         }
       }
     },
-    "/api/v1/devices/me": {
-      "patch": {
-        "tags": [
-          "Devices"
-        ],
-        "summary": "Update Device Me",
-        "operationId": "update_device_me_api_v1_devices_me_patch",
+    "/api/v1/auth/password": {
+      "post": {
+        "summary": "Change Password",
+        "operationId": "change_password_api_v1_auth_password_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/DeviceUpdateRequest"
+                "$ref": "#/components/schemas/PasswordChange"
               }
             }
           },
@@ -694,59 +150,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/DeviceOut"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
+                "schema": {}
               }
             }
           },
@@ -755,17 +159,78 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
-          },
-          "500": {
-            "description": "Internal Server Error",
+          }
+        }
+      }
+    },
+    "/api/v1/auth/pairing-code": {
+      "post": {
+        "summary": "Pairing Code",
+        "operationId": "pairing_code_api_v1_auth_pairing_code_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/PairingCodeCreateResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/devices": {
+      "get": {
+        "summary": "Devices",
+        "operationId": "devices_api_v1_devices_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/devices/{ident}": {
+      "delete": {
+        "summary": "Revoke Device",
+        "operationId": "revoke_device_api_v1_devices__ident__delete",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -775,12 +240,8 @@
     },
     "/api/v1/ws-tickets": {
       "post": {
-        "tags": [
-          "Auth"
-        ],
-        "summary": "Create Ws Ticket",
-        "description": "Issue a 30-second single-use ticket for WebSocket authentication.",
-        "operationId": "create_ws_ticket_api_v1_ws_tickets_post",
+        "summary": "Ws Ticket",
+        "operationId": "ws_ticket_api_v1_ws_tickets_post",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -791,393 +252,14 @@
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/cameras": {
-      "get": {
-        "tags": [
-          "Cameras"
-        ],
-        "summary": "List Cameras",
-        "operationId": "list_cameras_api_v1_cameras_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/CameraOut"
-                  },
-                  "type": "array",
-                  "title": "Response List Cameras Api V1 Cameras Get"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "Cameras"
-        ],
-        "summary": "Create Camera",
-        "operationId": "create_camera_api_v1_cameras_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CameraCreate"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CameraOut"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/cameras/{camera_id}": {
-      "patch": {
-        "tags": [
-          "Cameras"
-        ],
-        "summary": "Update Camera",
-        "operationId": "update_camera_api_v1_cameras__camera_id__patch",
-        "parameters": [
-          {
-            "name": "camera_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Camera Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CameraUpdate"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/CameraOut"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
           }
         }
       }
     },
     "/api/v1/events": {
       "get": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "List Events",
-        "operationId": "list_events_api_v1_events_get",
+        "summary": "Events",
+        "operationId": "events_api_v1_events_get",
         "parameters": [
           {
             "name": "camera_id",
@@ -1228,6 +310,22 @@
             }
           },
           {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
             "name": "limit",
             "in": "query",
             "required": false,
@@ -1240,19 +338,14 @@
             }
           },
           {
-            "name": "cursor",
+            "name": "offset",
             "in": "query",
             "required": false,
             "schema": {
-              "anyOf": [
-                {
-                  "type": "string"
-                },
-                {
-                  "type": "null"
-                }
-              ],
-              "title": "Cursor"
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Offset"
             }
           }
         ],
@@ -1266,57 +359,7 @@
                   "items": {
                     "$ref": "#/components/schemas/EventOut"
                   },
-                  "title": "Response List Events Api V1 Events Get"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "title": "Response Events Api V1 Events Get"
                 }
               }
             }
@@ -1326,17 +369,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1344,21 +377,18 @@
         }
       }
     },
-    "/api/v1/events/{event_id}": {
+    "/api/v1/events/{ident}": {
       "get": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "Get Event",
-        "operationId": "get_event_api_v1_events__event_id__get",
+        "summary": "Event",
+        "operationId": "event_api_v1_events__ident__get",
         "parameters": [
           {
-            "name": "event_id",
+            "name": "ident",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Event Id"
+              "title": "Ident"
             }
           }
         ],
@@ -1373,72 +403,12 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
           "422": {
             "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1446,21 +416,18 @@
         }
       }
     },
-    "/api/v1/events/{event_id}/verification": {
+    "/api/v1/events/{ident}/verification": {
       "post": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "Human Verify Event",
-        "operationId": "human_verify_event_api_v1_events__event_id__verification_post",
+        "summary": "Verify",
+        "operationId": "verify_api_v1_events__ident__verification_post",
         "parameters": [
           {
-            "name": "event_id",
+            "name": "ident",
             "in": "path",
             "required": true,
             "schema": {
               "type": "string",
-              "title": "Event Id"
+              "title": "Ident"
             }
           }
         ],
@@ -1485,72 +452,12 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
           "422": {
             "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1560,12 +467,8 @@
     },
     "/api/v1/changes": {
       "get": {
-        "tags": [
-          "Events"
-        ],
-        "summary": "Get Changes",
-        "description": "Client recovery endpoint: fetch events updated after change_seq.",
-        "operationId": "get_changes_api_v1_changes_get",
+        "summary": "Changes",
+        "operationId": "changes_api_v1_changes_get",
         "parameters": [
           {
             "name": "after",
@@ -1573,6 +476,7 @@
             "required": false,
             "schema": {
               "type": "integer",
+              "minimum": 0,
               "default": 0,
               "title": "After"
             }
@@ -1601,53 +505,49 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
+          }
+        }
+      }
+    },
+    "/api/v1/events/{ident}/media/{filename}": {
+      "get": {
+        "summary": "Media",
+        "operationId": "media_api_v1_events__ident__media__filename__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
             }
           },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
+          {
+            "name": "filename",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Filename"
             }
-          },
-          "404": {
-            "description": "Not Found",
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
+                "schema": {}
               }
             }
           },
@@ -1656,17 +556,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1676,11 +566,24 @@
     },
     "/api/v1/categories": {
       "get": {
-        "tags": [
-          "Categories"
-        ],
-        "summary": "List Categories",
-        "operationId": "list_categories_api_v1_categories_get",
+        "summary": "Categories",
+        "operationId": "categories_api_v1_categories_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sources": {
+      "get": {
+        "summary": "Sources",
+        "operationId": "sources_api_v1_sources_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1688,60 +591,36 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "$ref": "#/components/schemas/CategoryRef"
+                    "$ref": "#/components/schemas/SourceRecord"
                   },
                   "type": "array",
-                  "title": "Response List Categories Api V1 Categories Get"
+                  "title": "Response Sources Api V1 Sources Get"
                 }
               }
             }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
+          }
+        }
+      },
+      "post": {
+        "summary": "Upload",
+        "operationId": "upload_api_v1_sources_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_api_v1_sources_post"
               }
             }
           },
-          "401": {
-            "description": "Unauthorized",
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/SourceRecord"
                 }
               }
             }
@@ -1751,17 +630,377 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sources/{ident}": {
+      "get": {
+        "summary": "Source",
+        "operationId": "source_api_v1_sources__ident__get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRecord"
                 }
               }
             }
           },
-          "500": {
-            "description": "Internal Server Error",
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sources/{ident}/media": {
+      "get": {
+        "summary": "Source Media",
+        "operationId": "source_media_api_v1_sources__ident__media_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inference/predict-frame": {
+      "post": {
+        "summary": "Predict Frame",
+        "operationId": "predict_frame_api_v1_inference_predict_frame_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_predict_frame_api_v1_inference_predict_frame_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FrameResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cameras": {
+      "get": {
+        "summary": "Cameras",
+        "operationId": "cameras_api_v1_cameras_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CameraOut"
+                  },
+                  "type": "array",
+                  "title": "Response Cameras Api V1 Cameras Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Add Camera",
+        "operationId": "add_camera_api_v1_cameras_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CameraCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CameraOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cameras/{ident}": {
+      "patch": {
+        "summary": "Update Camera",
+        "operationId": "update_camera_api_v1_cameras__ident__patch",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CameraUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CameraOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cameras/{ident}/start": {
+      "post": {
+        "summary": "Start Camera",
+        "operationId": "start_camera_api_v1_cameras__ident__start_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SourceRecord"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cameras/{ident}/stop": {
+      "post": {
+        "summary": "Stop Camera",
+        "operationId": "stop_camera_api_v1_cameras__ident__stop_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cameras/{ident}/frame": {
+      "get": {
+        "summary": "Camera Frame",
+        "operationId": "camera_frame_api_v1_cameras__ident__frame_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/chat/stream": {
+      "post": {
+        "summary": "Stream Chat",
+        "operationId": "stream_chat_api_v1_chat_stream_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChatRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1771,11 +1010,8 @@
     },
     "/api/v1/chat": {
       "post": {
-        "tags": [
-          "Chat"
-        ],
-        "summary": "Query Chat",
-        "operationId": "query_chat_api_v1_chat_post",
+        "summary": "Ask Chat",
+        "operationId": "ask_chat_api_v1_chat_post",
         "requestBody": {
           "content": {
             "application/json": {
@@ -1797,72 +1033,12 @@
               }
             }
           },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
           "422": {
             "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -1870,437 +1046,31 @@
         }
       }
     },
-    "/api/v1/internal/events": {
-      "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Create Event",
-        "description": "Ingest candidate threat incident from worker with idempotency.",
-        "operationId": "internal_create_event_api_v1_internal_events_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EventIngest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "201": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventIngestResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/events/{event_id}/extend": {
-      "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Extend Event",
-        "description": "Extend ongoing active incident with new frames and updated confidence.",
-        "operationId": "internal_extend_event_api_v1_internal_events__event_id__extend_post",
-        "parameters": [
-          {
-            "name": "event_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Event Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/EventExtendRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EventIngestResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/events/{event_id}/verification": {
-      "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Verify Event",
-        "description": "Post raw VLM verification verdict from worker.",
-        "operationId": "internal_verify_event_api_v1_internal_events__event_id__verification_post",
-        "parameters": [
-          {
-            "name": "event_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Event Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/VlmVerificationIngest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/VlmVerificationResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/internal/config": {
+    "/api/v1/settings": {
       "get": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Get Config",
-        "operationId": "internal_get_config_api_v1_internal_config_get",
+        "summary": "Get Settings",
+        "operationId": "get_settings_api_v1_settings_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/InternalConfigOut"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/RuntimeSettings"
                 }
               }
             }
           }
         }
-      }
-    },
-    "/api/v1/internal/jobs/claim": {
+      },
       "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Claim Job",
-        "operationId": "internal_claim_job_api_v1_internal_jobs_claim_post",
+        "summary": "Set Settings",
+        "operationId": "set_settings_api_v1_settings_post",
         "requestBody": {
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/JobClaimRequest"
+                "$ref": "#/components/schemas/RuntimeSettings"
               }
             }
           },
@@ -2312,57 +1082,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/JobClaimResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/RuntimeSettings"
                 }
               }
             }
@@ -2372,17 +1092,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -2390,113 +1100,17 @@
         }
       }
     },
-    "/api/v1/internal/jobs/{job_id}/progress": {
-      "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Job Progress",
-        "operationId": "internal_job_progress_api_v1_internal_jobs__job_id__progress_post",
-        "parameters": [
-          {
-            "name": "job_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Job Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JobProgressRequest"
-              }
-            }
-          }
-        },
+    "/api/v1/health": {
+      "get": {
+        "summary": "System",
+        "operationId": "system_api_v1_health_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Internal Job Progress Api V1 Internal Jobs  Job Id  Progress Post"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/SystemSnapshot"
                 }
               }
             }
@@ -2504,113 +1118,17 @@
         }
       }
     },
-    "/api/v1/internal/jobs/{job_id}/complete": {
-      "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Job Complete",
-        "operationId": "internal_job_complete_api_v1_internal_jobs__job_id__complete_post",
-        "parameters": [
-          {
-            "name": "job_id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "string",
-              "title": "Job Id"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/JobCompleteRequest"
-              }
-            }
-          }
-        },
+    "/api/v1/system": {
+      "get": {
+        "summary": "System",
+        "operationId": "system_api_v1_system_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "type": "object",
-                  "additionalProperties": true,
-                  "title": "Response Internal Job Complete Api V1 Internal Jobs  Job Id  Complete Post"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
+                  "$ref": "#/components/schemas/SystemSnapshot"
                 }
               }
             }
@@ -2618,103 +1136,16 @@
         }
       }
     },
-    "/api/v1/internal/heartbeat": {
+    "/api/v1/models/reload": {
       "post": {
-        "tags": [
-          "Internal"
-        ],
-        "summary": "Internal Heartbeat",
-        "operationId": "internal_heartbeat_api_v1_internal_heartbeat_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/WorkerHeartbeatRequest"
-              }
-            }
-          },
-          "required": true
-        },
+        "summary": "Reload Models",
+        "operationId": "reload_models_api_v1_models_reload_post",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response Internal Heartbeat Api V1 Internal Heartbeat Post"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Bad Request",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Unauthorized",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Forbidden",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Not Found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Conflict",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorEnvelope"
-                }
+                "schema": {}
               }
             }
           }
@@ -2724,6 +1155,45 @@
   },
   "components": {
     "schemas": {
+      "Body_predict_frame_api_v1_inference_predict_frame_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_predict_frame_api_v1_inference_predict_frame_post"
+      },
+      "Body_upload_api_v1_sources_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "camera_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_api_v1_sources_post"
+      },
       "CameraCreate": {
         "properties": {
           "name": {
@@ -2958,8 +1428,78 @@
           },
           "message": {
             "type": "string",
+            "maxLength": 4000,
             "minLength": 1,
             "title": "Message"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string",
+                "pattern": "^(ollama|groq)$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "maxItems": 20,
+            "title": "Event Ids"
+          },
+          "camera_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Id"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "after": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "After"
+          },
+          "before": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Before"
+          },
+          "include_images": {
+            "type": "boolean",
+            "title": "Include Images",
+            "default": false
           }
         },
         "additionalProperties": false,
@@ -3000,6 +1540,36 @@
           },
           "coverage": {
             "$ref": "#/components/schemas/ChatCoverage"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Model"
+          },
+          "media": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Media"
           }
         },
         "type": "object",
@@ -3010,356 +1580,62 @@
         ],
         "title": "ChatResponse"
       },
-      "DeviceOut": {
+      "Detection": {
         "properties": {
-          "id": {
+          "class_name": {
             "type": "string",
-            "title": "Id"
+            "title": "Class Name"
           },
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "created_at": {
-            "type": "string",
-            "title": "Created At"
-          },
-          "last_seen_at": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Seen At"
-          },
-          "notify_enabled": {
-            "type": "boolean",
-            "title": "Notify Enabled",
-            "default": true
-          },
-          "min_severity": {
-            "$ref": "#/components/schemas/Severity",
-            "default": "MEDIUM"
-          }
-        },
-        "type": "object",
-        "required": [
-          "id",
-          "name",
-          "created_at"
-        ],
-        "title": "DeviceOut"
-      },
-      "DeviceUpdateRequest": {
-        "properties": {
-          "notify_enabled": {
-            "anyOf": [
-              {
-                "type": "boolean"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Notify Enabled"
-          },
-          "min_severity": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/Severity"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "title": "DeviceUpdateRequest"
-      },
-      "ErrorBody": {
-        "properties": {
-          "code": {
-            "type": "string",
-            "title": "Code",
-            "description": "Standardized error code enum string"
-          },
-          "message": {
-            "type": "string",
-            "title": "Message",
-            "description": "Human-readable explanation of the error"
-          },
-          "details": {
-            "items": {
-              "$ref": "#/components/schemas/ErrorDetail"
-            },
-            "type": "array",
-            "title": "Details",
-            "description": "Detailed field or context errors"
-          },
-          "request_id": {
-            "type": "string",
-            "title": "Request Id",
-            "description": "Traceable correlation ID for the request"
-          }
-        },
-        "type": "object",
-        "required": [
-          "code",
-          "message",
-          "request_id"
-        ],
-        "title": "ErrorBody"
-      },
-      "ErrorDetail": {
-        "properties": {
-          "loc": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Loc",
-            "description": "Location of the validation error"
-          },
-          "msg": {
-            "type": "string",
-            "title": "Msg",
-            "description": "Error message description"
-          },
-          "type": {
-            "type": "string",
-            "title": "Type",
-            "description": "Error type identifier"
-          }
-        },
-        "type": "object",
-        "required": [
-          "msg",
-          "type"
-        ],
-        "title": "ErrorDetail"
-      },
-      "ErrorEnvelope": {
-        "properties": {
-          "error": {
-            "$ref": "#/components/schemas/ErrorBody"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "error"
-        ],
-        "title": "ErrorEnvelope"
-      },
-      "EventExtendRequest": {
-        "properties": {
-          "last_seen_at": {
-            "type": "string",
-            "title": "Last Seen At"
-          },
-          "peak_confidence": {
+          "confidence": {
             "type": "number",
             "maximum": 1.0,
             "minimum": 0.0,
-            "title": "Peak Confidence"
+            "title": "Confidence"
           },
-          "evidence": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/EvidenceInfo"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "track_refs": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/TrackRef"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Track Refs"
-          },
-          "media": {
-            "anyOf": [
-              {
-                "items": {
-                  "$ref": "#/components/schemas/MediaItemIngest"
-                },
-                "type": "array"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Media"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "last_seen_at",
-          "peak_confidence"
-        ],
-        "title": "EventExtendRequest"
-      },
-      "EventIngest": {
-        "properties": {
-          "schema_version": {
-            "type": "integer",
-            "title": "Schema Version",
-            "default": 1
-          },
-          "event_id": {
-            "type": "string",
-            "title": "Event Id"
-          },
-          "camera_id": {
-            "type": "string",
-            "title": "Camera Id"
-          },
-          "video_source_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Video Source Id"
-          },
-          "detected_at": {
-            "type": "string",
-            "title": "Detected At"
-          },
-          "first_seen_at": {
-            "type": "string",
-            "title": "First Seen At"
-          },
-          "last_seen_at": {
-            "type": "string",
-            "title": "Last Seen At"
-          },
-          "media_offset_ms": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Media Offset Ms"
-          },
-          "yolo_class_raw": {
-            "type": "string",
-            "title": "Yolo Class Raw"
-          },
-          "category": {
-            "type": "string",
-            "title": "Category"
-          },
-          "yolo_confidence": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Yolo Confidence"
-          },
-          "peak_confidence": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Peak Confidence"
-          },
-          "severity": {
-            "$ref": "#/components/schemas/Severity"
-          },
-          "evidence": {
-            "$ref": "#/components/schemas/EvidenceInfo"
-          },
-          "track_refs": {
+          "box": {
             "items": {
-              "$ref": "#/components/schemas/TrackRef"
+              "type": "number"
             },
             "type": "array",
-            "title": "Track Refs"
-          },
-          "media": {
-            "items": {
-              "$ref": "#/components/schemas/MediaItemIngest"
-            },
-            "type": "array",
-            "title": "Media"
+            "maxItems": 4,
+            "minItems": 4,
+            "title": "Box"
           },
           "model": {
-            "additionalProperties": true,
-            "type": "object",
+            "type": "string",
             "title": "Model"
           },
-          "verify": {
-            "type": "boolean",
-            "title": "Verify",
-            "default": true
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category"
+          },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
           }
         },
-        "additionalProperties": false,
         "type": "object",
         "required": [
-          "event_id",
-          "camera_id",
-          "detected_at",
-          "first_seen_at",
-          "last_seen_at",
-          "yolo_class_raw",
-          "category",
-          "yolo_confidence",
-          "peak_confidence",
-          "severity",
-          "evidence",
+          "class_name",
+          "confidence",
+          "box",
           "model"
         ],
-        "title": "EventIngest"
-      },
-      "EventIngestResponse": {
-        "properties": {
-          "event_id": {
-            "type": "string",
-            "title": "Event Id"
-          },
-          "result": {
-            "type": "string",
-            "title": "Result",
-            "description": "created | duplicate"
-          },
-          "status": {
-            "$ref": "#/components/schemas/EventStatus"
-          },
-          "change_seq": {
-            "type": "integer",
-            "title": "Change Seq"
-          }
-        },
-        "type": "object",
-        "required": [
-          "event_id",
-          "result",
-          "status",
-          "change_seq"
-        ],
-        "title": "EventIngestResponse"
+        "title": "Detection"
       },
       "EventOut": {
         "properties": {
@@ -3519,29 +1795,6 @@
         ],
         "title": "EventStatus"
       },
-      "EvidenceInfo": {
-        "properties": {
-          "hits": {
-            "type": "integer",
-            "title": "Hits"
-          },
-          "window": {
-            "type": "integer",
-            "title": "Window"
-          },
-          "sample_fps": {
-            "type": "integer",
-            "title": "Sample Fps"
-          }
-        },
-        "type": "object",
-        "required": [
-          "hits",
-          "window",
-          "sample_fps"
-        ],
-        "title": "EvidenceInfo"
-      },
       "FeedbackOut": {
         "properties": {
           "id": {
@@ -3591,29 +1844,88 @@
         ],
         "title": "FeedbackOut"
       },
-      "HealthResponse": {
+      "FrameResult": {
         "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "description": "ok | degraded | down"
+          "detections": {
+            "items": {
+              "$ref": "#/components/schemas/Detection"
+            },
+            "type": "array",
+            "title": "Detections"
           },
-          "components": {
-            "additionalProperties": true,
-            "type": "object",
-            "title": "Components"
+          "threat_detected": {
+            "type": "boolean",
+            "title": "Threat Detected"
           },
-          "timestamp": {
-            "type": "string",
-            "title": "Timestamp"
+          "inference_ms": {
+            "type": "number",
+            "title": "Inference Ms"
+          },
+          "width": {
+            "type": "integer",
+            "title": "Width"
+          },
+          "height": {
+            "type": "integer",
+            "title": "Height"
+          },
+          "models": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Models"
+          },
+          "covered_classes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Covered Classes"
+          },
+          "created_event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Created Event Ids"
+          },
+          "source_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Id"
           }
         },
         "type": "object",
         "required": [
-          "status",
-          "timestamp"
+          "detections",
+          "threat_detected",
+          "inference_ms",
+          "width",
+          "height",
+          "models",
+          "covered_classes"
         ],
-        "title": "HealthResponse"
+        "title": "FrameResult"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
       },
       "HumanAction": {
         "type": "string",
@@ -3664,164 +1976,6 @@
         ],
         "title": "HumanVerificationRequest"
       },
-      "InternalConfigOut": {
-        "properties": {
-          "config_version": {
-            "type": "integer",
-            "title": "Config Version"
-          },
-          "cameras": {
-            "items": {
-              "$ref": "#/components/schemas/CameraOut"
-            },
-            "type": "array",
-            "title": "Cameras"
-          },
-          "enabled_categories": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Enabled Categories"
-          }
-        },
-        "type": "object",
-        "required": [
-          "config_version"
-        ],
-        "title": "InternalConfigOut"
-      },
-      "JobClaimRequest": {
-        "properties": {
-          "worker_id": {
-            "type": "string",
-            "title": "Worker Id"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "worker_id"
-        ],
-        "title": "JobClaimRequest"
-      },
-      "JobClaimResponse": {
-        "properties": {
-          "job_id": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Job Id"
-          },
-          "lease_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Lease Token"
-          },
-          "payload": {
-            "anyOf": [
-              {
-                "additionalProperties": true,
-                "type": "object"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Payload"
-          }
-        },
-        "type": "object",
-        "title": "JobClaimResponse"
-      },
-      "JobCompleteRequest": {
-        "properties": {
-          "lease_token": {
-            "type": "string",
-            "title": "Lease Token"
-          },
-          "status": {
-            "$ref": "#/components/schemas/JobStatus"
-          },
-          "error_message": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Error Message"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "lease_token",
-          "status"
-        ],
-        "title": "JobCompleteRequest"
-      },
-      "JobProgressRequest": {
-        "properties": {
-          "lease_token": {
-            "type": "string",
-            "title": "Lease Token"
-          },
-          "progress_pct": {
-            "type": "number",
-            "maximum": 100.0,
-            "minimum": 0.0,
-            "title": "Progress Pct"
-          },
-          "stage": {
-            "type": "string",
-            "title": "Stage"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "lease_token",
-          "progress_pct",
-          "stage"
-        ],
-        "title": "JobProgressRequest"
-      },
-      "JobStatus": {
-        "type": "string",
-        "enum": [
-          "PENDING",
-          "RUNNING",
-          "DONE",
-          "FAILED",
-          "CANCELED"
-        ],
-        "title": "JobStatus"
-      },
-      "LiveHealthResponse": {
-        "properties": {
-          "status": {
-            "type": "string",
-            "title": "Status",
-            "default": "ok"
-          }
-        },
-        "type": "object",
-        "title": "LiveHealthResponse"
-      },
       "LoginRequest": {
         "properties": {
           "username": {
@@ -3840,6 +1994,12 @@
             "maxLength": 100,
             "minLength": 1,
             "title": "Device Name"
+          },
+          "client_type": {
+            "type": "string",
+            "pattern": "^(web|mobile)$",
+            "title": "Client Type",
+            "default": "web"
           }
         },
         "additionalProperties": false,
@@ -3880,62 +2040,6 @@
           "device_name"
         ],
         "title": "LoginResponse"
-      },
-      "MediaItemIngest": {
-        "properties": {
-          "kind": {
-            "$ref": "#/components/schemas/MediaKind"
-          },
-          "role": {
-            "type": "string",
-            "title": "Role",
-            "description": "peak, first, last, context"
-          },
-          "path": {
-            "type": "string",
-            "title": "Path",
-            "description": "Relative storage path"
-          },
-          "sha256": {
-            "type": "string",
-            "title": "Sha256"
-          },
-          "bytes": {
-            "type": "integer",
-            "title": "Bytes"
-          },
-          "width": {
-            "type": "integer",
-            "title": "Width"
-          },
-          "height": {
-            "type": "integer",
-            "title": "Height"
-          },
-          "offset_ms": {
-            "anyOf": [
-              {
-                "type": "integer"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Offset Ms"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "kind",
-          "role",
-          "path",
-          "sha256",
-          "bytes",
-          "width",
-          "height"
-        ],
-        "title": "MediaItemIngest"
       },
       "MediaItemOut": {
         "properties": {
@@ -4089,6 +2193,27 @@
         ],
         "title": "PairingCodeCreateResponse"
       },
+      "PasswordChange": {
+        "properties": {
+          "current_password": {
+            "type": "string",
+            "title": "Current Password"
+          },
+          "new_password": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 10,
+            "title": "New Password"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "current_password",
+          "new_password"
+        ],
+        "title": "PasswordChange"
+      },
       "ReasoningOut": {
         "properties": {
           "confidence": {
@@ -4126,6 +2251,32 @@
         ],
         "title": "ReasoningOut"
       },
+      "RuntimeSettings": {
+        "properties": {
+          "chat_provider": {
+            "type": "string",
+            "enum": [
+              "ollama",
+              "groq"
+            ],
+            "title": "Chat Provider",
+            "default": "ollama"
+          },
+          "ollama_model": {
+            "type": "string",
+            "title": "Ollama Model",
+            "default": "gemma4:e2b"
+          },
+          "groq_model": {
+            "type": "string",
+            "title": "Groq Model",
+            "default": "qwen/qwen3.8-27b"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuntimeSettings"
+      },
       "Severity": {
         "type": "string",
         "enum": [
@@ -4136,6 +2287,104 @@
         ],
         "title": "Severity"
       },
+      "SourceRecord": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "filename": {
+            "type": "string",
+            "title": "Filename"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "image",
+              "video",
+              "live"
+            ],
+            "title": "Kind"
+          },
+          "camera_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Camera Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "title": "Created At"
+          },
+          "progress_pct": {
+            "type": "number",
+            "title": "Progress Pct",
+            "default": 0
+          },
+          "frames_analyzed": {
+            "type": "integer",
+            "title": "Frames Analyzed",
+            "default": 0
+          },
+          "event_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Event Ids"
+          },
+          "result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FrameResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "error": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Error"
+          },
+          "media_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Media Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "filename",
+          "kind",
+          "status",
+          "created_at"
+        ],
+        "title": "SourceRecord"
+      },
       "SourceType": {
         "type": "string",
         "enum": [
@@ -4144,6 +2393,56 @@
           "RTSP"
         ],
         "title": "SourceType"
+      },
+      "SystemSnapshot": {
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "title": "Timestamp"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Counts"
+          },
+          "inference": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Inference"
+          },
+          "chat": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Chat"
+          },
+          "training": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Training"
+          },
+          "resources": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Resources"
+          }
+        },
+        "type": "object",
+        "required": [
+          "timestamp",
+          "status",
+          "counts",
+          "inference",
+          "chat",
+          "training",
+          "resources"
+        ],
+        "title": "SystemSnapshot"
       },
       "TrackRef": {
         "properties": {
@@ -4213,6 +2512,46 @@
         ],
         "title": "UserOut"
       },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
       "VerifiedBy": {
         "type": "string",
         "enum": [
@@ -4245,224 +2584,6 @@
           "name"
         ],
         "title": "VlmModelRef"
-      },
-      "VlmModelSpec": {
-        "properties": {
-          "name": {
-            "type": "string",
-            "title": "Name"
-          },
-          "digest": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Digest"
-          }
-        },
-        "type": "object",
-        "required": [
-          "name"
-        ],
-        "title": "VlmModelSpec"
-      },
-      "VlmResultPayload": {
-        "properties": {
-          "incident_visible": {
-            "type": "string",
-            "title": "Incident Visible",
-            "description": "yes | no | uncertain"
-          },
-          "category": {
-            "type": "string",
-            "title": "Category"
-          },
-          "confidence": {
-            "type": "number",
-            "maximum": 1.0,
-            "minimum": 0.0,
-            "title": "Confidence"
-          },
-          "uncertainty": {
-            "type": "string",
-            "title": "Uncertainty"
-          },
-          "evidence_insufficient": {
-            "type": "boolean",
-            "title": "Evidence Insufficient",
-            "default": false
-          },
-          "visible_facts": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Visible Facts"
-          },
-          "cannot_determine": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Cannot Determine"
-          },
-          "summary": {
-            "type": "string",
-            "title": "Summary"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "incident_visible",
-          "category",
-          "confidence",
-          "uncertainty",
-          "summary"
-        ],
-        "title": "VlmResultPayload"
-      },
-      "VlmStatus": {
-        "type": "string",
-        "enum": [
-          "OK",
-          "INVALID_OUTPUT",
-          "TIMEOUT",
-          "UNAVAILABLE",
-          "SKIPPED_QUEUE_FULL"
-        ],
-        "title": "VlmStatus"
-      },
-      "VlmVerificationIngest": {
-        "properties": {
-          "schema_version": {
-            "type": "integer",
-            "title": "Schema Version",
-            "default": 1
-          },
-          "verification_id": {
-            "type": "string",
-            "title": "Verification Id"
-          },
-          "vlm": {
-            "$ref": "#/components/schemas/VlmModelSpec"
-          },
-          "status": {
-            "$ref": "#/components/schemas/VlmStatus"
-          },
-          "latency_ms": {
-            "type": "integer",
-            "title": "Latency Ms"
-          },
-          "frames_used": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array",
-            "title": "Frames Used"
-          },
-          "result": {
-            "anyOf": [
-              {
-                "$ref": "#/components/schemas/VlmResultPayload"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "verification_id",
-          "vlm",
-          "status",
-          "latency_ms"
-        ],
-        "title": "VlmVerificationIngest"
-      },
-      "VlmVerificationResponse": {
-        "properties": {
-          "event_id": {
-            "type": "string",
-            "title": "Event Id"
-          },
-          "status": {
-            "$ref": "#/components/schemas/EventStatus"
-          },
-          "verified_by": {
-            "$ref": "#/components/schemas/VerifiedBy"
-          },
-          "change_seq": {
-            "type": "integer",
-            "title": "Change Seq"
-          },
-          "applied": {
-            "type": "boolean",
-            "title": "Applied"
-          }
-        },
-        "type": "object",
-        "required": [
-          "event_id",
-          "status",
-          "verified_by",
-          "change_seq",
-          "applied"
-        ],
-        "title": "VlmVerificationResponse"
-      },
-      "WorkerHeartbeatRequest": {
-        "properties": {
-          "worker_id": {
-            "type": "string",
-            "title": "Worker Id"
-          },
-          "uptime_seconds": {
-            "type": "number",
-            "title": "Uptime Seconds"
-          },
-          "model_name": {
-            "type": "string",
-            "title": "Model Name"
-          },
-          "fps": {
-            "type": "number",
-            "title": "Fps"
-          },
-          "queue_depths": {
-            "additionalProperties": {
-              "type": "integer"
-            },
-            "type": "object",
-            "title": "Queue Depths"
-          },
-          "last_error": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Last Error"
-          }
-        },
-        "additionalProperties": false,
-        "type": "object",
-        "required": [
-          "worker_id",
-          "uptime_seconds",
-          "model_name",
-          "fps"
-        ],
-        "title": "WorkerHeartbeatRequest"
       },
       "WsTicketResponse": {
         "properties": {

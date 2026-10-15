@@ -17,10 +17,13 @@ dependencies:
   flutter_local_notifications: ^17.2.1
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.2.3
-  supabase_flutter: ^2.8.0
+  file_picker: ^10.3.0
+  image_picker: ^1.2.0
+  camera: ^0.11.2
+  video_player: ^2.10.0
+  flutter_svg: ^2.2.0
   intl: ^0.19.0
   uuid: ^4.6.0
-  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:
@@ -29,3 +32,12 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/icons/
+  fonts:
+    - family: AppSerif
+      fonts:
+        - asset: assets/fonts/Arapey-Regular.ttf
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf

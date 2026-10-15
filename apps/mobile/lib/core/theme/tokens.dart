@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+
 
 /// Design tokens strictly conforming to DESIGN.md
 abstract final class AppColors {
@@ -79,7 +79,7 @@ abstract final class AppMotion {
 
 abstract final class AppTypography {
   /// Large editorial section titles (Photos, Incidents...) that scroll away
-  static TextStyle get screenTitle => GoogleFonts.arapey(
+  static TextStyle get screenTitle => const TextStyle(fontFamily: 'AppSerif',
         fontSize: 42,
         height: 48 / 42,
         fontWeight: FontWeight.w400,
@@ -88,7 +88,7 @@ abstract final class AppTypography {
       );
 
   /// Section headings, sheet titles, empty-state titles
-  static TextStyle get sectionHeading => GoogleFonts.arapey(
+  static TextStyle get sectionHeading => const TextStyle(fontFamily: 'AppSerif',
         fontSize: 28,
         height: 34 / 28,
         fontWeight: FontWeight.w400,
@@ -97,7 +97,7 @@ abstract final class AppTypography {
       );
 
   /// Titles over cards, dialog titles
-  static TextStyle get cardHeading => GoogleFonts.arapey(
+  static TextStyle get cardHeading => const TextStyle(fontFamily: 'AppSerif',
         fontSize: 24,
         height: 30 / 24,
         fontWeight: FontWeight.w400,
@@ -106,7 +106,7 @@ abstract final class AppTypography {
       );
 
   /// Day headers, subsection titles
-  static TextStyle get heading3 => GoogleFonts.arapey(
+  static TextStyle get heading3 => const TextStyle(fontFamily: 'AppSerif',
         fontSize: 20,
         height: 26 / 20,
         fontWeight: FontWeight.w400,
@@ -115,7 +115,7 @@ abstract final class AppTypography {
       );
 
   /// Card names, list item titles
-  static TextStyle get cardTitle => GoogleFonts.inter(
+  static TextStyle get cardTitle => const TextStyle(fontFamily: 'Inter',
         fontSize: 15,
         height: 20 / 15,
         fontWeight: FontWeight.w600,
@@ -124,7 +124,7 @@ abstract final class AppTypography {
       );
 
   /// Paragraphs, menu rows, input text
-  static TextStyle get body => GoogleFonts.inter(
+  static TextStyle get body => const TextStyle(fontFamily: 'Inter',
         fontSize: 14,
         height: 20 / 14,
         fontWeight: FontWeight.w400,
@@ -133,7 +133,7 @@ abstract final class AppTypography {
       );
 
   /// Subtitles, counts, tabular figures
-  static TextStyle get support => GoogleFonts.inter(
+  static TextStyle get support => const TextStyle(fontFamily: 'Inter',
         fontSize: 13,
         height: 18 / 13,
         fontWeight: FontWeight.w400,
@@ -142,7 +142,7 @@ abstract final class AppTypography {
       );
 
   /// Dates, sizes, capsule text
-  static TextStyle get caption => GoogleFonts.inter(
+  static TextStyle get caption => const TextStyle(fontFamily: 'Inter',
         fontSize: 12,
         height: 16 / 12,
         fontWeight: FontWeight.w500,
@@ -151,7 +151,7 @@ abstract final class AppTypography {
       );
 
   /// Chip labels
-  static TextStyle get tabLabel => GoogleFonts.inter(
+  static TextStyle get tabLabel => const TextStyle(fontFamily: 'Inter',
         fontSize: 12,
         height: 16 / 12,
         fontWeight: FontWeight.w500,
@@ -160,7 +160,7 @@ abstract final class AppTypography {
       );
 
   /// Button labels
-  static TextStyle get button => GoogleFonts.inter(
+  static TextStyle get button => const TextStyle(fontFamily: 'Inter',
         fontSize: 14,
         height: 20 / 14,
         fontWeight: FontWeight.w600,
@@ -168,3 +168,5 @@ abstract final class AppTypography {
         color: AppColors.foreground,
       );
 }
+
+

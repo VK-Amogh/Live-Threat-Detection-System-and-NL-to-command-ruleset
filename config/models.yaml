@@ -1,0 +1,21 @@
+# Only existing weight files are loaded. Labels are read from the model itself.
+models:
+  - name: weapons
+    path: storage/models/best.pt
+  - name: fire
+    path: storage/models/fire.pt
+
+inference:
+  image_size: 640
+  confidence: 0.35
+  device: auto
+  sample_fps: 2
+  incident_gap_seconds: 10
+
+# Behavioral categories need temporal models + labeled video evaluation.
+unsupported:
+  - Physical fights and assault
+  - Falls and medical emergencies
+  - Robbery or criminal intent
+  - Intrusion without a configured restricted zone
+  - Explosives and concealed weapons

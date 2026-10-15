@@ -26,7 +26,14 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
   @override
   void initState() {
     super.initState();
+    widget.eventsRepository.revision.addListener(_loadEvents);
     _loadEvents();
+  }
+
+  @override
+  void dispose() {
+    widget.eventsRepository.revision.removeListener(_loadEvents);
+    super.dispose();
   }
 
   Future<void> _loadEvents() async {
@@ -37,11 +44,13 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
 
     try {
       final events = await widget.eventsRepository.getEvents();
+      if (!mounted) return;
       setState(() {
         _events = events;
         _isLoading = false;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() {
         _error = e.toString();
         _isLoading = false;

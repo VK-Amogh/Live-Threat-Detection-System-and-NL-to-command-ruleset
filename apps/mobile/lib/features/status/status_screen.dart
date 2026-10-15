@@ -1,180 +1,41 @@
 import 'package:flutter/material.dart';
 import '../../core/auth_store.dart';
-import '../../core/config.dart';
+import '../../core/api_client.dart';
 import '../../core/theme/tokens.dart';
-import '../../core/widgets/app_button.dart';
 import '../../core/widgets/app_card.dart';
-import '../../core/widgets/app_dialog.dart';
-import '../../core/widgets/press_scale.dart';
+import '../../core/widgets/app_button.dart';
 
 class StatusScreen extends StatefulWidget {
   final AuthStore authStore;
   final VoidCallback onUnpaired;
-
   const StatusScreen({super.key, required this.authStore, required this.onUnpaired});
-
   @override
   State<StatusScreen> createState() => _StatusScreenState();
 }
-
 class _StatusScreenState extends State<StatusScreen> {
-  String _hostUrl = '';
-  bool _isPaired = false;
-
+  Map<String, dynamic>? data;
+  String? error;
+  String host = '';
+  bool loading = true;
   @override
-  void initState() {
-    super.initState();
-    _loadStatus();
+  void initState() { super.initState(); load(); }
+  Future<void> load() async {
+    try { host = await widget.authStore.getApiBaseUrl(); final response = await ApiClient(widget.authStore).dio.get('/api/v1/system'); if (mounted) setState(() { data = Map<String,dynamic>.from(response.data); error = null; }); }
+    catch (e) { if (mounted) setState(() => error = 'Server could not be reached. Pull to retry, or sign out and reconnect.'); }
+    finally { if (mounted) setState(() => loading = false); }
   }
-
-  Future<void> _loadStatus() async {
-    final url = await widget.authStore.getApiBaseUrl();
-    final paired = await widget.authStore.isPaired();
-    setState(() {
-      _hostUrl = url;
-      _isPaired = paired;
-    });
-  }
-
-  Future<void> _switchHost(String newUrl) async {
-    await widget.authStore.setApiBaseUrl(newUrl);
-    await _loadStatus();
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Switched API Base to $newUrl'),
-          backgroundColor: AppColors.surface,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-    }
-  }
-
-  Future<void> _unpair() async {
-    final confirmed = await showAppConfirmDialog(
-      context,
-      title: 'Unpair Device?',
-      body: 'You will stop receiving local threat notifications on this device until re-paired.',
-      confirmLabel: 'Unpair',
-    );
-
-    if (confirmed) {
-      await widget.authStore.clearSession();
-      widget.onUnpaired();
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.sm),
-              Text('System Telemetry', style: AppTypography.screenTitle),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'On-premises Server & Real-time Stream Diagnostics',
-                style: AppTypography.support,
-              ),
-              const SizedBox(height: AppSpacing.xxl),
-
-              AppCard(
-                child: Column(
-                  children: [
-                    _statusRow('LAN Host API', _hostUrl),
-                    const Divider(color: AppColors.divider, height: AppSpacing.lg),
-                    _statusRow('Device Status', _isPaired ? 'AUTHENTICATED (HARDCODED)' : 'UNPAIRED'),
-                    const Divider(color: AppColors.divider, height: AppSpacing.lg),
-                    _statusRow('WebSocket Stream', 'ACTIVE (PORT 8000)'),
-                    const Divider(color: AppColors.divider, height: AppSpacing.lg),
-                    _statusRow('Detection Model', 'YOLOv8 (5 FPS, FP16)'),
-                    const Divider(color: AppColors.divider, height: AppSpacing.lg),
-                    _statusRow('Verification Engine', 'Local VLM (Ollama)'),
-                    const Divider(color: AppColors.divider, height: AppSpacing.lg),
-                    _statusRow('Supabase Backup', 'SYNCHRONIZED'),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: AppSpacing.xl),
-              Text('Switch Connection Host', style: AppTypography.caption),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: [
-                  Expanded(
-                    child: PressScale(
-                      onTap: () => _switchHost(AppConfig.defaultApiBaseUrl),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: _hostUrl == AppConfig.defaultApiBaseUrl
-                              ? AppColors.selectedChip
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                          border: Border.all(
-                            color: _hostUrl == AppConfig.defaultApiBaseUrl
-                                ? AppColors.foreground
-                                : AppColors.divider,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text('USB (localhost)', style: AppTypography.button),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: PressScale(
-                      onTap: () => _switchHost(AppConfig.defaultLanBaseUrl),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
-                        decoration: BoxDecoration(
-                          color: _hostUrl == AppConfig.defaultLanBaseUrl
-                              ? AppColors.selectedChip
-                              : AppColors.surface,
-                          borderRadius: BorderRadius.circular(AppRadii.md),
-                          border: Border.all(
-                            color: _hostUrl == AppConfig.defaultLanBaseUrl
-                                ? AppColors.foreground
-                                : AppColors.divider,
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text('Wi-Fi LAN', style: AppTypography.button),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const Spacer(),
-
-              if (_isPaired)
-                AppButton.secondary(
-                  label: 'Unpair Device',
-                  expand: true,
-                  onPressed: _unpair,
-                ),
-              const SizedBox(height: 72), // Clearance for floating nav pill
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _statusRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(label, style: AppTypography.support),
-        Text(value, style: AppTypography.cardTitle),
-      ],
-    );
-  }
+  Widget build(BuildContext context) => SafeArea(child: RefreshIndicator(onRefresh: load, child: ListView(padding: const EdgeInsets.all(AppSpacing.lg), children: [
+    Text('Your system', style: AppTypography.screenTitle), const SizedBox(height: AppSpacing.lg),
+    Text(host, style: AppTypography.support), const SizedBox(height: AppSpacing.lg),
+    if (error != null) Text(error!, style: AppTypography.body),
+    if (loading) Text('Reading server status…', style: AppTypography.support),
+    if (data != null) ...[
+      AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Engine health', style: AppTypography.cardHeading), const SizedBox(height: AppSpacing.md), Text('Detector: ${data!['inference']['ready'] == true ? 'ready' : 'unavailable'}\nLocal chat: ${data!['chat']['local_available'] == true ? 'connected' : 'unavailable'}\nTraining: ${data!['training']['status']}', style: AppTypography.body)])),
+      const SizedBox(height: AppSpacing.lg), AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Recorded activity', style: AppTypography.cardHeading), const SizedBox(height: AppSpacing.md), for (final entry in (data!['counts'] as Map).entries) Padding(padding: const EdgeInsets.only(bottom: AppSpacing.sm), child: Text('${entry.key.toString().replaceAll('_', ' ')}: ${entry.value}', style: AppTypography.body))])),
+      const SizedBox(height: AppSpacing.lg), AppCard(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('Outside detection coverage', style: AppTypography.cardHeading), for (final item in (data!['inference']['unsupported'] as List? ?? [])) Padding(padding: const EdgeInsets.only(top: AppSpacing.sm), child: Text(item.toString(), style: AppTypography.support))])),
+    ],
+    const SizedBox(height: AppSpacing.xl), AppButton(label: 'Sign out', onPressed: () async { try { await ApiClient(widget.authStore).dio.post('/api/v1/auth/logout'); } catch (_) { /* Local credentials must still be removable offline. */ } await widget.authStore.clearSession(); if (mounted) widget.onUnpaired(); }),
+    const SizedBox(height: 96),
+  ])));
 }

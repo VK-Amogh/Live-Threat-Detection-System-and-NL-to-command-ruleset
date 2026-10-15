@@ -63,6 +63,38 @@
     },
     "coverage": {
       "$ref": "#/$defs/ChatCoverage"
+    },
+    "provider": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Provider"
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model"
+    },
+    "media": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Media",
+      "type": "array"
     }
   },
   "required": [

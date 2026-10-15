@@ -2,6 +2,31 @@
 # Maps raw detector classes to high-level incident categories
 
 mappings:
+  fire:
+    category: FIRE
+    min_confidence: 0.55
+    severity: CRITICAL
+    trigger_incident: true
+  smoke:
+    category: SMOKE
+    min_confidence: 0.55
+    severity: HIGH
+    trigger_incident: true
+  handgun:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: CRITICAL
+    trigger_incident: true
+  rifle:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: CRITICAL
+    trigger_incident: true
+  long_gun:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: CRITICAL
+    trigger_incident: true
   weapon:
     category: WEAPON_DETECTED
     min_confidence: 0.65

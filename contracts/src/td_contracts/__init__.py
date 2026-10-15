@@ -9,6 +9,7 @@ from td_contracts.enums import (
     JobStatus,
     ErrorCode,
 )
+from td_contracts.detection import Detection, FrameResult, SourceRecord, PasswordChange, RuntimeSettings, SystemSnapshot
 from td_contracts.common import (
     ErrorDetail,
     ErrorBody,

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/app_button.dart';
-import '../../core/widgets/app_capsule.dart';
+
 import '../../core/widgets/app_card.dart';
 import '../../core/widgets/app_dialog.dart';
 import '../../core/widgets/page_header.dart';
+import '../../core/widgets/evidence_media.dart';
 import '../../data/generated/models.dart';
 import '../../data/repositories/events_repository.dart';
 
@@ -83,7 +84,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   @override
   Widget build(BuildContext context) {
     final media = _currentEvent.media;
-    final isCritical = _currentEvent.severity == Severity.CRITICAL;
+
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -103,53 +104,15 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Keyframe Media Container
-                    Container(
-                      height: 240,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(AppRadii.card),
-                        border: Border.all(color: AppColors.divider, width: 1.0),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(AppRadii.card),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            if (media.isNotEmpty)
-                              Image.network(
-                                media.first.url,
-                                fit: BoxFit.cover,
-                                errorBuilder: (ctx, err, stack) => _placeholderKeyframe(),
-                              )
-                            else
-                              _placeholderKeyframe(),
-                            Positioned(
-                              top: AppSpacing.md,
-                              left: AppSpacing.md,
-                              child: isCritical
-                                  ? const AppCapsule(
-                                      label: 'CRITICAL THREAT',
-                                      icon: Icons.warning_amber_rounded,
-                                      inverted: true,
-                                    )
-                                  : AppCapsule(label: _currentEvent.severity.name),
-                            ),
-                            Positioned(
-                              bottom: AppSpacing.md,
-                              left: AppSpacing.md,
-                              child: AppCapsule(
-                                label: _currentEvent.camera.name,
-                                icon: Icons.videocam_outlined,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
+                    if (media.isNotEmpty)
+                      EvidenceMedia(
+                        url: (media.where((m) => m.kind == MediaKind.CLIP).isNotEmpty ? media.firstWhere((m) => m.kind == MediaKind.CLIP) : media.first).url,
+                        video: media.any((m) => m.kind == MediaKind.CLIP),
+                        offsetMs: (media.where((m) => m.kind == MediaKind.CLIP).isNotEmpty ? media.firstWhere((m) => m.kind == MediaKind.CLIP) : media.first).offsetMs ?? 0,
+                      )
+                    else
+                      Text('No evidence attached to this incident.', style: AppTypography.support),
                     const SizedBox(height: AppSpacing.lg),
-
                     // Event Details Card
                     AppCard(
                       child: Column(
@@ -173,7 +136,7 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
 
                     // VLM Reasoning Card
                     if (_currentEvent.summary != null) ...[
-                      Text('VLM Intelligence Analysis', style: AppTypography.cardHeading),
+                      Text('Detection summary', style: AppTypography.cardHeading),
                       const SizedBox(height: AppSpacing.sm),
                       AppCard(
                         child: Text(
@@ -220,30 +183,14 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
     );
   }
 
-  Widget _placeholderKeyframe() {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.camera_alt_outlined,
-            size: 40,
-            color: AppColors.foregroundSecondary,
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Text('Keyframe Processing', style: AppTypography.caption),
-        ],
-      ),
-    );
-  }
-
   Widget _infoRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(label, style: AppTypography.support),
-        Text(value, style: AppTypography.cardTitle),
+        Expanded(child: Text(value, style: AppTypography.cardTitle, textAlign: TextAlign.right)),
       ],
     );
   }
 }
+

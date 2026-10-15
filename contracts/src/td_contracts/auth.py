@@ -7,6 +7,7 @@ class LoginRequest(BaseModel):
     username: str = Field(..., min_length=1, max_length=100)
     password: str = Field(..., min_length=1)
     device_name: str = Field(..., min_length=1, max_length=100)
+    client_type: str = Field(default='web', pattern='^(web|mobile)$')
 
 class LoginResponse(BaseModel):
     device_id: str

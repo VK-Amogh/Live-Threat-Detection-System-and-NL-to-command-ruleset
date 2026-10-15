@@ -1,264 +1,52 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import '../../core/api_client.dart';
 import '../../core/auth_store.dart';
-import '../../core/config.dart';
 import '../../core/theme/tokens.dart';
 import '../../core/widgets/app_button.dart';
-import '../../core/widgets/press_scale.dart';
 
 class PairingScreen extends StatefulWidget {
   final AuthStore authStore;
   final ApiClient apiClient;
   final VoidCallback onPaired;
-
-  const PairingScreen({
-    super.key,
-    required this.authStore,
-    required this.apiClient,
-    required this.onPaired,
-  });
-
+  const PairingScreen({super.key, required this.authStore, required this.apiClient, required this.onPaired});
   @override
   State<PairingScreen> createState() => _PairingScreenState();
 }
-
 class _PairingScreenState extends State<PairingScreen> {
-  final _urlController = TextEditingController();
-  final _codeController = TextEditingController(text: AppConfig.defaultPairingCode);
-  final _deviceNameController = TextEditingController(text: AppConfig.defaultDeviceName);
-  bool _isLoading = false;
-  String? _error;
-
+  final url = TextEditingController();
+  final email = TextEditingController();
+  final password = TextEditingController();
+  final code = TextEditingController();
+  bool pair = false, busy = false;
+  String? error;
   @override
-  void initState() {
-    super.initState();
-    _loadCurrentUrl();
-  }
-
-  Future<void> _loadCurrentUrl() async {
-    final url = await widget.authStore.getApiBaseUrl();
-    _urlController.text = url.isNotEmpty ? url : AppConfig.defaultApiBaseUrl;
-  }
-
-  Future<void> _instantPair() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      final hostUrl = _urlController.text.trim().isNotEmpty
-          ? _urlController.text.trim()
-          : AppConfig.defaultApiBaseUrl;
-      await widget.authStore.setApiBaseUrl(hostUrl);
-      await widget.authStore.seedHardcodedSession();
-      widget.onPaired();
-    } catch (e) {
-      setState(() {
-        _error = 'Error activating credentials: $e';
-        _isLoading = false;
-      });
-    }
-  }
-
-  Future<void> _submitPairing() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    final hostUrl = _urlController.text.trim();
-    final code = _codeController.text.trim().toUpperCase();
-    final deviceName = _deviceNameController.text.trim();
-
-    if (hostUrl.isEmpty || code.isEmpty) {
-      setState(() {
-        _error = 'Host URL and Pairing Code are required.';
-        _isLoading = false;
-      });
-      return;
-    }
-
-    try {
-      await widget.authStore.setApiBaseUrl(hostUrl);
-
-      final response = await widget.apiClient.dio.post(
-        '/api/v1/auth/pair',
-        data: {
-          'code': code,
-          'device_name': deviceName,
-        },
-      );
-
-      final data = response.data as Map<String, dynamic>;
-      final deviceId = data['device_id'] as String;
-      final deviceToken = data['device_token'] as String;
-
-      await widget.authStore.savePairingSession(
-        deviceId: deviceId,
-        deviceName: deviceName,
-        deviceToken: deviceToken,
-      );
-
-      widget.onPaired();
-    } catch (e) {
-      // Automatic graceful fallback to hardcoded session if server pair fails
-      await widget.authStore.seedHardcodedSession();
-      widget.onPaired();
-    }
-  }
-
+  void initState() { super.initState(); widget.authStore.getApiBaseUrl().then((value) { if (mounted) url.text = value; }); }
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: AppSpacing.lg),
-              Text('Device Pairing', style: AppTypography.screenTitle),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                'Connect to your local SafeSpace Threat Detection Server.',
-                style: AppTypography.support,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-
-              // Quick Host Chips
-              Text('Quick Select Host', style: AppTypography.caption),
-              const SizedBox(height: AppSpacing.xs),
-              Row(
-                children: [
-                  _quickHostChip('USB (localhost)', AppConfig.defaultApiBaseUrl),
-                  const SizedBox(width: AppSpacing.sm),
-                  _quickHostChip('Wi-Fi LAN', AppConfig.defaultLanBaseUrl),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Inputs
-              _inputField(
-                label: 'Server Base URL',
-                controller: _urlController,
-                hint: AppConfig.defaultApiBaseUrl,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              _inputField(
-                label: 'Pairing Code',
-                controller: _codeController,
-                hint: AppConfig.defaultPairingCode,
-                textCapitalization: TextCapitalization.characters,
-              ),
-              const SizedBox(height: AppSpacing.lg),
-
-              _inputField(
-                label: 'Device Identifier Name',
-                controller: _deviceNameController,
-                hint: AppConfig.defaultDeviceName,
-              ),
-
-              if (_error != null) ...[
-                const SizedBox(height: AppSpacing.lg),
-                Row(
-                  children: [
-                    const Icon(Icons.info_outline_rounded, size: 16, color: AppColors.foreground),
-                    const SizedBox(width: AppSpacing.xs),
-                    Expanded(
-                      child: Text(
-                        _error!,
-                        style: AppTypography.caption.copyWith(color: AppColors.foreground),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-
-              const SizedBox(height: AppSpacing.xxl),
-
-              AppButton(
-                label: 'Pair & Enter Dashboard',
-                expand: true,
-                isLoading: _isLoading,
-                onPressed: _submitPairing,
-              ),
-              const SizedBox(height: AppSpacing.md),
-
-              AppButton.secondary(
-                label: 'Instant Hardcoded Bypass',
-                expand: true,
-                onPressed: _instantPair,
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  void dispose() { for (final c in [url,email,password,code]) { c.dispose(); } super.dispose(); }
+  Future<void> submit() async {
+    setState(() { busy = true; error = null; });
+    try {
+      await widget.authStore.setApiBaseUrl(url.text.trim());
+      final response = await widget.apiClient.dio.post(pair ? '/api/v1/auth/pair' : '/api/v1/auth/login', data: pair ? {
+        'code': code.text.trim(), 'device_name': 'SafeSpace mobile',
+      } : {'username': email.text.trim(), 'password': password.text, 'device_name': 'SafeSpace mobile', 'client_type': 'mobile'});
+      await widget.authStore.savePairingSession(deviceId: response.data['device_id'], deviceName: response.data['device_name'], deviceToken: response.data['device_token']);
+      if (mounted) widget.onPaired();
+    } catch (e) {
+      if (mounted) setState(() => error = e is DioException ? (e.response?.data is Map ? e.response?.data['detail']?.toString() : null) ?? 'Cannot reach your PC. Check the address and Wi-Fi connection.' : e.toString());
+    } finally { if (mounted) setState(() => busy = false); }
   }
-
-  Widget _quickHostChip(String label, String url) {
-    final isSelected = _urlController.text.trim() == url;
-    return PressScale(
-      onTap: () {
-        setState(() {
-          _urlController.text = url;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.xs),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.selectedChip : AppColors.surface,
-          borderRadius: BorderRadius.circular(AppRadii.pill),
-          border: Border.all(
-            color: isSelected ? AppColors.foreground : AppColors.divider,
-            width: 1.0,
-          ),
-        ),
-        child: Text(
-          label,
-          style: AppTypography.caption.copyWith(
-            color: isSelected ? AppColors.foreground : AppColors.foregroundSecondary,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _inputField({
-    required String label,
-    required TextEditingController controller,
-    required String hint,
-    TextCapitalization textCapitalization = TextCapitalization.none,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(label, style: AppTypography.caption),
-        const SizedBox(height: AppSpacing.xs),
-        Container(
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(AppRadii.lg),
-            border: Border.all(color: AppColors.divider, width: 1.0),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-          child: TextField(
-            controller: controller,
-            textCapitalization: textCapitalization,
-            style: AppTypography.body,
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: AppTypography.body.copyWith(
-                color: AppColors.foregroundSecondary,
-              ),
-              border: InputBorder.none,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
+  @override
+  Widget build(BuildContext context) => Scaffold(body: SafeArea(child: Center(child: SingleChildScrollView(padding: const EdgeInsets.all(AppSpacing.xl), child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 480), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+    Text('SafeSpace', style: AppTypography.screenTitle), const SizedBox(height: AppSpacing.sm),
+    Text('Your space. In focus.', style: AppTypography.cardHeading), const SizedBox(height: AppSpacing.xl),
+    Text('Connect to your PC on the same network. Use the server address shown by the launcher.', style: AppTypography.support), const SizedBox(height: AppSpacing.xl),
+    field(url, 'Server address', hint: 'http://192.168.1.10:8000'),
+    if (pair) field(code, 'Pairing code') else ...[field(email, 'Email'), field(password, 'Password', secret: true)],
+    if (error != null) Padding(padding: const EdgeInsets.only(bottom: AppSpacing.lg), child: Text(error!, style: AppTypography.body)),
+    AppButton(label: pair ? 'Pair device' : 'Sign in', expand: true, isLoading: busy, onPressed: busy ? null : submit),
+    const SizedBox(height: AppSpacing.md), TextButton(onPressed: busy ? null : () => setState(() { pair = !pair; error = null; }), child: Text(pair ? 'Use email and password' : 'Use a single-use pairing code', style: AppTypography.support)),
+  ]))))));
+  Widget field(TextEditingController c, String label, {String? hint, bool secret = false}) => Padding(padding: const EdgeInsets.only(bottom: AppSpacing.lg), child: TextField(controller: c, obscureText: secret, autocorrect: false, decoration: InputDecoration(labelText: label, hintText: hint, border: OutlineInputBorder(borderRadius: BorderRadius.circular(AppRadii.card)))));
 }
