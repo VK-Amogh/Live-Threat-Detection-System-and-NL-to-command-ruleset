@@ -49,7 +49,9 @@ async def lifespan(app):
     for camera in db.all_objects('camera'):
         camera['is_online']=False
         db.put('camera',camera)
+    warm = asyncio.create_task(chat.warmup())
     yield
+    warm.cancel()
     await pipeline.shutdown()
 
 
@@ -376,6 +378,16 @@ async def stop_camera(ident:str):
     return {'ok':True}
 
 
+@api.get('/cameras/{ident}/live')
+async def camera_live(ident:str):
+    """Latest detector output for a running camera, for drawing boxes over the live preview."""
+    required('camera',ident)
+    source=pipeline.ACTIVE.get(ident)
+    if not source:
+        return {'running':False}
+    return {'running':True,'frames_analyzed':source['frames_analyzed'],'result':source.get('result'),'event_ids':source['event_ids']}
+
+
 @api.get('/cameras/{ident}/frame')
 async def camera_frame(ident:str):
     capture=pipeline.LIVE.get(ident)
@@ -439,6 +451,13 @@ async def system():
     except (ValueError,OSError):
         training={'status':'unavailable'}
     import os
+    benchmarks={}
+    for path in sorted((STORAGE/'benchmarks').glob('*.json')):
+        try:
+            benchmarks[path.stem]=json.loads(path.read_text())
+        except (ValueError,OSError):
+            continue
+    training['benchmarks']=benchmarks
     memory=psutil.virtual_memory()
     setup_path=STORAGE/'local-chat-setup.json'
     try:

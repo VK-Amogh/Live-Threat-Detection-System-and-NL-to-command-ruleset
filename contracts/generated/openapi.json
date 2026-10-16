@@ -1570,6 +1570,14 @@
             },
             "type": "array",
             "title": "Media"
+          },
+          "cited": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Cited"
           }
         },
         "type": "object",

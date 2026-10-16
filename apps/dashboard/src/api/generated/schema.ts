@@ -676,6 +676,10 @@ export interface components {
             media?: {
                 [key: string]: unknown;
             }[];
+            /** Cited */
+            cited?: {
+                [key: string]: unknown;
+            }[];
         };
         /** Detection */
         Detection: {

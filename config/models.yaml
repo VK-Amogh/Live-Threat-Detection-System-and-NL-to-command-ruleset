@@ -1,21 +1,24 @@
-# Only existing weight files are loaded. Labels are read from the model itself.
+# Weights listed here are loaded if the file exists. Class names come from the weights themselves and
+# alert thresholds from the calibration sidecar next to each file (storage/models/<weights>.json),
+# written by scripts/benchmark_detector.py when a candidate is promoted.
 models:
-  - name: weapons
-    path: storage/models/best.pt
-  - name: fire
-    path: storage/models/fire.pt
+  - name: fire_smoke
+    path: storage/models/fire_smoke.pt
+    imgsz: 512
+  # weapons: enabled after promotion (scripts/benchmark_detector.py --export-to storage/models/weapons.pt)
+
+violence:
+  head: storage/models/violence_head.pt     # DINOv2-base encoder + temporal head, thresholds in the .json sidecar
 
 inference:
   image_size: 640
-  confidence: 0.35
+  floor_confidence: 0.15   # raw detections below this are never reported; per-class thresholds are stricter
   device: auto
-  sample_fps: 2
-  incident_gap_seconds: 10
 
-# Behavioral categories need temporal models + labeled video evaluation.
+# Categories this system cannot reliably detect from object boxes or short clips.
 unsupported:
-  - Physical fights and assault
   - Falls and medical emergencies
-  - Robbery or criminal intent
+  - Robbery, theft or criminal intent
   - Intrusion without a configured restricted zone
   - Explosives and concealed weapons
+  - Fights outside what the violence recogniser was trained on (e.g. night-time, very distant crowds)

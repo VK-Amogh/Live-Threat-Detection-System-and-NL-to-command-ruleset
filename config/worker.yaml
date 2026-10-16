@@ -16,8 +16,9 @@ detection:
   tracker: "bytetrack"
 
 temporal_filter:
-  k_hits: 3
-  n_window: 5
+  k_hits: 2 # candidate must appear in 2 of the last 4 sampled frames (2 fps) ...
+  n_window: 4
+  immediate_confidence: 0.85 # ... unless a single frame is already this confident
   gap_timeout_seconds: 3.0
   iou_match_threshold: 0.3
 

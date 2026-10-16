@@ -91,7 +91,7 @@ def test_cross_origin_cookie_mutation_blocked(client):
 
 
 def test_detection_review_media_and_persistence(client,monkeypatch):
-    async def predict(_):
+    async def predict(_, *args):
         return result()
     monkeypatch.setattr(pipeline,'detector',predict)
     login(client)
@@ -123,7 +123,7 @@ def test_detection_review_media_and_persistence(client,monkeypatch):
 
 
 def test_person_is_not_a_threat(client,monkeypatch):
-    async def predict(_):
+    async def predict(_, *args):
         return result(False)
     monkeypatch.setattr(pipeline,'detector',predict)
     login(client)
@@ -135,7 +135,7 @@ def test_person_is_not_a_threat(client,monkeypatch):
 
 
 def test_upload_failures_are_not_clear_results(client,monkeypatch):
-    async def predict(_):
+    async def predict(_, *args):
         raise RuntimeError('Invalid image')
     monkeypatch.setattr(pipeline,'detector',predict)
     login(client)
@@ -178,3 +178,88 @@ def test_system_uses_real_storage_and_reports_unavailable_dependencies(client):
     assert body['counts']['incidents']==0
     assert body['resources']['disk_free_gb']>0
     assert 'status' in body['training']
+
+
+def make_video(path,seconds=6,fps=10):
+    import cv2
+    import numpy as np
+    writer=cv2.VideoWriter(str(path),cv2.VideoWriter_fourcc(*'MJPG'),fps,(64,48))
+    for i in range(seconds*fps):
+        writer.write(np.full((48,64,3),(i*3)%255,np.uint8))
+    writer.release()
+
+
+def scripted_detector(confidences):
+    """Detector double that returns a fire detection with the given confidence (None = clear frame) per call."""
+    calls=iter(confidences)
+    async def predict(_, *args):
+        conf=next(calls,None)
+        if conf is None:
+            return result(False)
+        out=result()
+        out.detections[0].confidence=conf
+        return out
+    return predict
+
+
+def run_video(client,tmp_path):
+    video=tmp_path/'clip.avi'
+    make_video(video)
+    response=client.post('/api/v1/sources',files={'file':('clip.avi',video.read_bytes(),'video/x-msvideo')})
+    assert response.status_code==202,response.text
+    ident=response.json()['id']
+    for _ in range(200):
+        source=client.get('/api/v1/sources/'+ident).json()
+        if source['status'] in ('DONE','FAILED'):
+            return source
+        time.sleep(.1)
+    raise AssertionError('video did not finish')
+
+
+def test_video_candidate_needs_persistence(client,monkeypatch,tmp_path):
+    # One isolated low-confidence frame must not become an incident; two hits in the window do.
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.5]+[None]*40))
+    login(client)
+    assert run_video(client,tmp_path)['event_ids']==[]
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.5,.55]+[None]*40))
+    source=run_video(client,tmp_path)
+    assert len(source['event_ids'])==1
+    event=client.get('/api/v1/events/'+source['event_ids'][0]).json()
+    assert event['media_offset_ms'] is not None
+    assert any(m['kind']=='CLIP' for m in event['media'])
+
+
+def test_video_single_confident_frame_alerts_immediately(client,monkeypatch,tmp_path):
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.95]+[None]*40))
+    login(client)
+    assert len(run_video(client,tmp_path)['event_ids'])==1
+
+
+def test_chat_dossier_contains_detector_output_and_cites_footage(client,monkeypatch,tmp_path):
+    from app import chat
+    from td_contracts import ChatRequest
+    monkeypatch.setattr(chat,'STORAGE',tmp_path)
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.95]+[None]*40))
+    login(client)
+    source=run_video(client,tmp_path)
+    ident=source['event_ids'][0]
+    with database.connection() as con:
+        user=con.execute('SELECT id FROM users').fetchone()['id']
+    info,history,records,prompt=chat.context(ChatRequest(message='What happened with the fire?'),{'user_id':user})
+    assert info['event_ids']==[ident]
+    assert 'detections_in_keyframe' in prompt and '"fire"' in prompt and 'frame_area_pct' in prompt
+    assert '"by_category"' in prompt
+    cited=chat.cited_media(f'See {ident} for details.',records,False)
+    assert cited[0]['event_id']==ident and cited[0]['clip_url']
+    assert chat.cited_media('No ids here.',records,True)[0]['event_id']==ident
+    assert chat.cited_media('No ids here.',records,False)==[]
+    frames=chat.sample_clip_frames(records[0])
+    assert 1<=len(frames)<=chat.CLIP_FRAMES
+
+
+def test_system_reports_published_benchmarks(client,tmp_path,monkeypatch):
+    login(client)
+    (tmp_path/'benchmarks').mkdir()
+    (tmp_path/'benchmarks'/'fire_smoke.json').write_text(json.dumps({'overall':{'mAP50':.5}}))
+    body=client.get('/api/v1/system').json()
+    assert body['training']['benchmarks']['fire_smoke']['overall']['mAP50']==.5

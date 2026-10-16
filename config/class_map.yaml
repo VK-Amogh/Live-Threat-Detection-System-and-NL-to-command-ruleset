@@ -1,64 +1,41 @@
-# SafeSpace — Detection Class to Category Mapping
-# Maps raw detector classes to high-level incident categories
-
+# SafeSpace — detection class to incident category mapping.
+# Alert thresholds are NOT set here: they are calibrated per class on validation data by the benchmark scripts
+# and stored beside each weight file (storage/models/<weights>.json). min_confidence is only the fallback
+# used when a weight file ships without a calibration sidecar.
 mappings:
   fire:
     category: FIRE
-    min_confidence: 0.55
+    min_confidence: 0.50
     severity: CRITICAL
     trigger_incident: true
   smoke:
     category: SMOKE
-    min_confidence: 0.55
+    min_confidence: 0.50
     severity: HIGH
     trigger_incident: true
-  handgun:
-    category: WEAPON_DETECTED
-    min_confidence: 0.65
-    severity: CRITICAL
-    trigger_incident: true
-  rifle:
-    category: WEAPON_DETECTED
-    min_confidence: 0.65
-    severity: CRITICAL
-    trigger_incident: true
-  long_gun:
-    category: WEAPON_DETECTED
-    min_confidence: 0.65
-    severity: CRITICAL
-    trigger_incident: true
-  weapon:
-    category: WEAPON_DETECTED
-    min_confidence: 0.65
-    severity: HIGH
-    trigger_incident: true
-
-  knife:
-    category: WEAPON_DETECTED
-    min_confidence: 0.65
-    severity: HIGH
-    trigger_incident: true
-
   gun:
     category: WEAPON_DETECTED
-    min_confidence: 0.65
+    min_confidence: 0.60
     severity: CRITICAL
     trigger_incident: true
-
-  pistol:
+  knife:
     category: WEAPON_DETECTED
-    min_confidence: 0.65
-    severity: CRITICAL
+    min_confidence: 0.60
+    severity: HIGH
     trigger_incident: true
-
-  person:
-    category: null
-    min_confidence: 0.40
-    severity: null
-    trigger_incident: false # Tracking reference only unless paired with weapon/altercation
-
   violence:
     category: FIGHT
     min_confidence: 0.70
     severity: CRITICAL
     trigger_incident: true
+  # Legacy single-class weights (kept so older checkpoints still map to incidents).
+  weapon:
+    category: WEAPON_DETECTED
+    min_confidence: 0.65
+    severity: HIGH
+    trigger_incident: true
+  person:
+    category: null
+    min_confidence: 0.40
+    severity: null
+    trigger_incident: false

@@ -95,6 +95,14 @@
       },
       "title": "Media",
       "type": "array"
+    },
+    "cited": {
+      "items": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Cited",
+      "type": "array"
     }
   },
   "required": [

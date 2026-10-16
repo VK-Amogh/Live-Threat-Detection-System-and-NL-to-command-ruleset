@@ -28,3 +28,4 @@ class ChatResponse(BaseModel):
     provider: Optional[str] = None
     model: Optional[str] = None
     media: List[Dict[str, Any]] = Field(default_factory=list)
+    cited: List[Dict[str, Any]] = Field(default_factory=list)
