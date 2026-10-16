@@ -9,11 +9,13 @@ import 'core/ws_client.dart';
 import 'data/generated/models.dart';
 import 'data/repositories/chat_repository.dart';
 import 'data/repositories/events_repository.dart';
+import 'data/repositories/rules_repository.dart';
 import 'features/chat/chat_screen.dart';
 import 'features/incidents/incidents_screen.dart';
 import 'features/pairing/pairing_screen.dart';
 import 'features/status/status_screen.dart';
 import 'features/analyze/analyze_screen.dart';
+import 'features/rules/rules_screen.dart';
 import 'services/notification_service.dart';
 
 class SafeSpaceApp extends StatefulWidget {
@@ -35,6 +37,7 @@ class SafeSpaceApp extends StatefulWidget {
 class _SafeSpaceAppState extends State<SafeSpaceApp> {
   late final EventsRepository _eventsRepository;
   late final ChatRepository _chatRepository;
+  late final RulesRepository _rulesRepository;
   WebSocketService? _wsService;
 
   bool _isPaired = false;
@@ -46,6 +49,7 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
     super.initState();
     _eventsRepository = EventsRepository(widget.apiClient);
     _chatRepository = ChatRepository(widget.apiClient);
+    _rulesRepository = RulesRepository(widget.apiClient);
     _checkPairing();
   }
 
@@ -74,7 +78,8 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
       onEventReceived: (event, isUpdate) {
         _eventsRepository.invalidate();
         if (!isUpdate &&
-            (event.severity == Severity.HIGH || event.severity == Severity.CRITICAL)) {
+            (event.category.key == 'RULE_ALERT' ||
+             event.severity == Severity.HIGH || event.severity == Severity.CRITICAL)) {
           widget.notificationService.showThreatAlert(event);
         }
       },
@@ -134,6 +139,7 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
     final screens = [
       IncidentsScreen(eventsRepository: _eventsRepository),
       AnalyzeScreen(apiClient: widget.apiClient, eventsRepository: _eventsRepository),
+      RulesScreen(repository: _rulesRepository),
       ChatScreen(chatRepository: _chatRepository),
       StatusScreen(authStore: widget.authStore, onUnpaired: _onUnpaired),
     ];
@@ -153,12 +159,18 @@ class _SafeSpaceAppState extends State<SafeSpaceApp> {
       ),
       FloatingNavItem(
         index: 2,
+        icon: Icons.rule_outlined,
+        selectedIcon: Icons.rule,
+        label: 'Rules',
+      ),
+      FloatingNavItem(
+        index: 3,
         icon: Icons.chat_bubble_outline_rounded,
         selectedIcon: Icons.chat_bubble_rounded,
         label: 'Intelligence',
       ),
       FloatingNavItem(
-        index: 3,
+        index: 4,
         icon: Icons.tune_outlined,
         selectedIcon: Icons.tune_rounded,
         label: 'Telemetry',

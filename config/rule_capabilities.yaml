@@ -1,0 +1,11 @@
+capabilities:
+  entity_present: {requires: detect_objects, status: SUPPORTED}
+  in_zone: {requires: [detect_objects, track_objects, zone], status: SUPPORTED}
+  line_cross: {requires: [detect_objects, track_objects, line], status: SUPPORTED}
+  unique_count_at_least: {requires: [detect_objects, track_objects, line], status: SUPPORTED}
+  dwell_at_least: {requires: [detect_objects, track_objects], status: SUPPORTED}
+  moving_toward: {requires: [detect_objects, track_objects, zone], status: SUPPORTED}
+  distance_below: {requires: [detect_objects, track_objects, homography], status: EXPERIMENTAL}
+  time_window: {requires: clock, status: SUPPORTED}
+  action_recognition: {requires: unavailable, status: UNSUPPORTED}
+  open_vocab_detect: {requires: unavailable, status: UNSUPPORTED}

@@ -1,0 +1,10 @@
+entities:
+  someone: person
+  anyone: person
+  somebody: person
+  people: person
+  persons: person
+  automobile: car
+  automobiles: car
+  cars: car
+  trucks: truck

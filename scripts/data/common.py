@@ -216,3 +216,34 @@ def collect_yolo_split(root: Path, source: str, split_dirs: dict[str, str], clas
 
 def save_provenance(out: Path, info: dict):
     (out / 'provenance.json').write_text(json.dumps(info, indent=2))
+
+
+def pool_negatives(domain_classes, hard=3000, easy=3000, val=300, test_cap=1500, seed=17):
+    """Threat-free real video frames as background Items (empty labels).
+
+    train: `hard` frames on which the current detector fires on `domain_classes` (conf >= 0.3) + `easy` random frames;
+    val: `val` random frames; test: up to `test_cap` frames (the blind false-alarm frames; never trained on).
+    DCSASS frames only from calm categories (normal sub-clips of Arson/Explosion/Shooting videos can show the event).
+    """
+    rng = random.Random(seed)
+    clip_category = {r['clip']: r['category'] for r in json.loads((ROOT / 'storage/datasets/dcsass/manifest.json').read_text())}
+    calm = {'RoadAccidents', 'Shoplifting', 'Stealing', 'Vandalism', 'Burglary'}
+    raw = json.loads((ROOT / 'storage/eval/negpool_raw.json').read_text())
+    pool = {'train': [], 'val': [], 'test': []}
+    for item in json.loads((ROOT / 'storage/datasets/negpool/index.json').read_text()):
+        if item['source'] == 'dcsass' and clip_category.get(Path(item['path']).stem.rsplit('_', 1)[0]) not in calm:
+            continue
+        pool[item['split']].append(item)
+    def is_hard(item):
+        return any(d['cls'] in domain_classes and d['conf'] >= 0.3 for d in raw.get(item['path'], {}).get('det', []))
+    out = []
+    hard_items = [i for i in pool['train'] if is_hard(i)]
+    rng.shuffle(hard_items)
+    chosen = hard_items[:hard]
+    rest = [i for i in pool['train'] if i not in chosen]
+    rng.shuffle(rest)
+    chosen += rest[:easy]
+    for split, items in (('train', chosen), ('val', rng.sample(pool['val'], min(val, len(pool['val'])))), ('test', rng.sample(pool['test'], min(test_cap, len(pool['test']))))):
+        for i in items:
+            out.append(Item('video' + i['source'], Path(i['path']), split, [], dedupe=False))
+    return out

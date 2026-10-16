@@ -5,7 +5,8 @@ from pydantic import BaseModel, ConfigDict, Field
 
 class Detection(BaseModel):
     class_name: str
-    confidence: float = Field(ge=0, le=1)
+    confidence: float = Field(ge=0, le=1)  # alert confidence (verifier probability when a verifier is configured)
+    detector_confidence: float | None = Field(default=None, ge=0, le=1)  # raw YOLO score of the proposal
     box: list[float] = Field(min_length=4, max_length=4)
     model: str
     category: str | None = None
@@ -50,6 +51,7 @@ class RuntimeSettings(BaseModel):
     chat_provider: Literal['ollama', 'groq'] = 'ollama'
     ollama_model: str = 'gemma4:e2b'
     groq_model: str = 'qwen/qwen3.8-27b'
+    ai_review: bool = False   # ask the VLM for a second opinion on every new incident (a manual button always exists)
 
 
 class SystemSnapshot(BaseModel):

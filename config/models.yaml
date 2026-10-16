@@ -5,14 +5,21 @@ models:
   - name: fire_smoke
     path: storage/models/fire_smoke.pt
     imgsz: 512
-  # weapons: enabled after promotion (scripts/benchmark_detector.py --export-to storage/models/weapons.pt)
+  - name: weapons
+    path: storage/models/weapons.pt
+    imgsz: 640   # the verifier was trained on proposals made at this size (the benchmark used 704; keep config and verifier consistent)
+
+verifier:
+  weights: storage/models/verifier.pt        # DINOv2 crop re-scorer; thresholds in the .json sidecar. Remove this block to fall back to raw YOLO thresholds.
 
 violence:
-  head: storage/models/violence_head.pt     # DINOv2-base encoder + temporal head, thresholds in the .json sidecar
+  head: storage/models/violence_head.pt     # DINOv2-base encoder + temporal head (scene/pose; also scores single stills), thresholds in the .json sidecar
+  motion: storage/models/violence_videomae.pt      # VideoMAE-K400 + head (motion over ~3 s); used for video/live together with `head`
+  ensemble: storage/models/violence_ensemble.json  # logistic stack of both scores (coefficients + threshold fitted on validation clips)
 
 inference:
   image_size: 640
-  floor_confidence: 0.15   # raw detections below this are never reported; per-class thresholds are stricter
+  floor_confidence: 0.10   # proposals below this never reach the verifier; the verifier was trained on proposals >= this floor
   device: auto
 
 # Categories this system cannot reliably detect from object boxes or short clips.

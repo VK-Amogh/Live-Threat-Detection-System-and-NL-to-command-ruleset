@@ -1,0 +1,12 @@
+{
+  "clip": "v001_converted 3.avi",
+  "model": "gemma4:e2b",
+  "images": 3,
+  "result": {
+    "visible_evidence": "The scene includes an outdoor area with tables and chairs, and a paved area resembling a street or sidewalk.",
+    "uncertainty": "The specific nature of the activity occurring around the tables is unclear.",
+    "possible_false_positive": false
+  },
+  "status": "PASS",
+  "elapsed_s": 84.48
+}

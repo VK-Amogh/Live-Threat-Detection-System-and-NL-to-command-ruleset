@@ -5,32 +5,45 @@ detection comes from models that ran on your own GPU. No cloud is needed for det
 the incident assistant (Groq is an optional, explicitly selected alternative for the assistant).
 
 ```
- Upload image/video ─┐                    ┌─ Fire / smoke  (YOLO26s, trained here)
- Browser camera ─────┼─▶ API :8000 ─────▶ │─ Gun / knife   (YOLO26s, trained here)
- Webcam / RTSP ──────┘   auth · SQLite     └─ Violence      (DINOv2 + temporal head, trained here)
+ Upload image/video ─┐                  ┌─ 1. YOLO26s proposals: fire/smoke, gun/knife (trained here)
+ Browser camera ─────┼─▶ API :8000 ───▶ │─ 2. DINOv2 verifier re-scores every proposed box
+ Webcam / RTSP ──────┘   auth · SQLite   └─ 3. Violence: DINOv2 scene head + VideoMAE motion head, logistic stack
                          WebSocket                │  detector service :8001 (loopback only)
-        Dashboard (React) ◀──┤                   ▼
-        Android app (Flutter)◀┘        incidents + evidence frames + clips
+        Dashboard (React) ◀──┤                   ▼  k-of-n persistence → incidents + evidence frames + clips
+        Android app (Flutter)◀┘
                          │
                          └─▶ Incident assistant ─▶ local Gemma 4 (Ollama)  or  Groq (open-weights Qwen)
-                             answers from dossiers + real frames, streams the footage back
+                             answers from dossiers + real frames, streams the footage back;
+                             optional "AI second opinion" on each incident (advisory only)
 ```
 
 ## What it detects
 
 | Threat | Model | Notes |
 |---|---|---|
-| Fire, smoke | YOLO26s detector | boxes, per-class calibrated threshold |
-| Handguns / rifles, knives | YOLO26s detector | trained on real CCTV frames plus curated sets |
-| Physical violence / fights | frozen DINOv2-base features + temporal transformer | scores a single still *and* temporal windows of video/live frames |
+| Fire, smoke | YOLO26s proposals → frozen DINOv2-base crop verifier | the verifier is what removes "smoke on a wall / face" false alarms; per-class thresholds are calibrated on threat-free validation data |
+| Handguns / rifles, knives | YOLO26s proposals → DINOv2 verifier | trained on real CCTV frames plus curated sets; hard negatives mined from real video |
+| Physical violence / fights | DINOv2 temporal head + VideoMAE-K400 motion head, logistic stack | video uses both heads; a still image uses the scene head only (and is much less sensitive) |
+
+Uploaded video needs 3 of 4 consecutive sampled frames (5 fps) to agree before an incident is raised; live
+streams need 2 of 4. The only exception is a single frame where the raw detector itself is ≥ 0.85 confident
+*and* the verifier agrees. Violence never skips persistence.
 
 Everything else (falls, intrusion, intent, concealed weapons…) is listed as **unsupported** in the
 dashboard rather than silently ignored. A clean result means "none of the supported classes crossed
 their thresholds", never "safe".
 
-Measured accuracy, false-alarm rates, latency and the dataset provenance are in
-[docs/benchmarks.md](docs/benchmarks.md) (generated from `storage/benchmarks/*.json`, also shown on the
-dashboard **System** screen) and [docs/ml-pipeline.md](docs/ml-pipeline.md).
+## How accurate is it, honestly
+
+The headline numbers are on **blind footage**: DCSASS CCTV clips from parent videos that never took part in
+training, mining or calibration, replayed through the same decision code as an upload. In-distribution test
+splits are reported too but are not the headline. The weak spots are listed next to the numbers rather than hidden:
+low-resolution CCTV fire/smoke is the worst (1 of 47 blind arson clips alerts, although at least 15 show visible fire), subtle
+assault recall is moderate, still-image violence is insensitive and CCTV gun recall is modest. What the cascade fixed is
+false alarms: 0 of 1,155 clean blind clips raised fire/smoke, 0 of 741 raised a weapon and 10 of 589 raised a fight.
+See [docs/benchmarks.md](docs/benchmarks.md) (generated from `storage/benchmarks/*.json`, also shown on the
+dashboard **System** screen) and [docs/ml-pipeline.md](docs/ml-pipeline.md) for method, data provenance and
+limits. `docs/video-evaluation.md` is an older diagnostic of the first model and is kept for history only.
 
 ## Run it
 
@@ -51,15 +64,21 @@ change it under System → Change your password). `start.ps1` prints the LAN add
 * **Assistant.** Investigation tab (dashboard) / Ask tab (phone). Choose *Local · Gemma* or *Groq*; the
   Groq key lives only in `.env` (`GROQ_API_KEY`). Answers cite incident ids, and the matching clip is
   played inline starting just before the detection.
+* **AI second opinion (optional).** System → *AI second opinion* (or the button on an incident) asks the
+  assistant model to look at the evidence frame and say whether it agrees. It is advisory: it never
+  confirms or dismisses an incident, and a disagreement shows as an "AI disagrees" badge.
 
 ## Reproduce the training
 
 ```powershell
-.venv\Scripts\python scripts/data/prepare_fire.py          # D-Fire (+Jimei) -> storage/datasets/fire_smoke
-.venv\Scripts\python scripts/data/prepare_weapons.py       # CCTV guns + HARIS -> storage/datasets/weapons
-.venv\Scripts\python scripts/train_detector.py --name fire_smoke --data storage/datasets/fire_smoke/data.yaml --imgsz 512 --time 1.0
-.venv\Scripts\python scripts/benchmark_detector.py --name fire_smoke --weights <best.pt> --data ... --export-to storage/models/fire_smoke.pt
-.venv\Scripts\python scripts/violence/build_manifest.py && scripts/violence/extract_features.py --manifest ... && scripts/violence/train_head.py
+.venv\Scripts\python scripts/data/prepare_fire_v2.py       # D-Fire + extra fire/smoke + hard negatives -> storage/datasets/fire_smoke_v2
+.venv\Scripts\python scripts/data/prepare_weapons_v2.py    # CCTV guns + curated weapons + hard negatives -> storage/datasets/weapons_v2
+.venv\Scripts\python scripts/train_detector.py --name fire_smoke_v2 --data storage/datasets/fire_smoke_v2/data.yaml --imgsz 512 --time 1.0
+.venv\Scripts\python scripts/benchmark_detector.py --name fire_smoke_v2 --weights <best.pt> --data ... --export-to storage/models/fire_smoke.pt
+bash scripts/pipeline_v3.sh                                 # proposals -> verifier crops -> train + calibrate the verifier
+.venv\Scripts\python scripts/violence/build_manifest.py   # then extract_features.py, train_head.py, extract_videomae.py,
+                                                           # train_videomae_head.py, ensemble_eval.py (fits the logistic stack)
+bash scripts/final_eval.sh                                  # fresh blind DCSASS sample + still-image stack (stop :8001 first)
 .venv\Scripts\python scripts/report.py                     # rewrites docs/benchmarks.md
 ```
 

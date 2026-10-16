@@ -18,6 +18,17 @@ class _EvidenceMediaState extends State<EvidenceMedia> {
   String? error;
   @override
   void initState() { super.initState(); load(); }
+  @override
+  void didUpdateWidget(covariant EvidenceMedia oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url || oldWidget.video != widget.video || oldWidget.offsetMs != widget.offsetMs) {
+      controller?.dispose();
+      controller = null;
+      fullUrl = null;
+      error = null;
+      load();
+    }
+  }
   Future<void> load() async {
     try {
       final store = AuthStore(); final base = await store.getApiBaseUrl(); final token = await store.getDeviceToken();

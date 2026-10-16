@@ -11,7 +11,8 @@ import cv2
 import httpx
 import yaml
 from td_contracts import EventOut, FrameResult
-from . import database as db
+from . import database as db, review
+from .chat import settings as chat_settings
 from .security import now
 from .settings import ROOT, STORAGE, INFERENCE_URL, INTERNAL_TOKEN
 
@@ -45,13 +46,23 @@ async def detector(data, stream_id=None):
     raise RuntimeError('Detector busy; try again')
 
 
-def temporal_policy():
+def temporal_policy(kind=None):
     path = ROOT/'config/worker.yaml'
     try:
         policy = yaml.safe_load(path.read_text()).get('temporal_filter', {})
     except (OSError, yaml.YAMLError):
         policy = {}
-    return int(policy.get('k_hits', 2)), int(policy.get('n_window', 4)), float(policy.get('immediate_confidence', 0.85))
+    k_hits = policy.get('uploaded_video_k_hits', policy.get('k_hits', 2)) if kind == 'video' else policy.get('k_hits', 2)
+    return int(k_hits), int(policy.get('n_window', 4)), float(policy.get('immediate_confidence', 0.85))
+
+
+def video_sample_fps():
+    path = ROOT/'config/worker.yaml'
+    try:
+        capture = yaml.safe_load(path.read_text()).get('capture', {})
+    except (OSError, yaml.YAMLError):
+        capture = {}
+    return max(0.1, float(capture.get('target_fps', 2)))
 
 
 PENDING = {}
@@ -65,7 +76,7 @@ async def process_frame(data, source, offset_ms=0, clip_url=None):
     for box in result.detections:
         if box.category:
             grouped.setdefault(box.category, []).append(box)
-    k_hits, n_window, immediate = temporal_policy()
+    k_hits, n_window, immediate = temporal_policy(source['kind'])
     window = PENDING.setdefault(source['id'], {})
     for category in list(window):
         if category not in grouped:
@@ -95,7 +106,10 @@ async def process_frame(data, source, offset_ms=0, clip_url=None):
             hits.append({'conf':confidence,'data':data,'offset':offset_ms,'result':result.model_dump_json(),'detections':detections})
             del hits[:-n_window]
             present = [h for h in hits if h]
-            if confidence < immediate and len(present) < k_hits:
+            # Single-frame bypass only for a strong *raw detector* score that the verifier also approved. Verifier and violence
+            # probabilities saturate near 1.0, so using them here would switch persistence off for almost every alert.
+            strong = max((x.detector_confidence or 0.0 for x in detections), default=0.0)
+            if strong < immediate and len(present) < k_hits:
                 continue
             peak = max(present, key=lambda h: h['conf'])
             window.pop(category, None)
@@ -120,6 +134,8 @@ async def process_frame(data, source, offset_ms=0, clip_url=None):
         source['event_ids'].append(ident)
         result.created_event_ids.append(ident)
         await publish('event.created', {'event':EventOut.model_validate(event).model_dump(mode='json',by_alias=True)})
+        if chat_settings().get('ai_review'):
+            asyncio.create_task(review.auto_review(ident, publish))
     source['frames_analyzed']+=1
     source['result']=result.model_dump(mode='json')
     save_source(source)
@@ -160,7 +176,7 @@ async def process_source(source, path):
                     raise ValueError('Video cannot be opened')
                 fps=cap.get(cv2.CAP_PROP_FPS) or 25
                 total=int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-                stride=max(1,int(fps/2))
+                stride=max(1,int(fps/video_sample_fps()))
                 index=0
                 while True:
                     ok,frame=await asyncio.to_thread(cap.read)

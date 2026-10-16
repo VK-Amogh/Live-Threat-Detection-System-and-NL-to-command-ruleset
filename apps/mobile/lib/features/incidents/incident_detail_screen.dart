@@ -26,11 +26,55 @@ class IncidentDetailScreen extends StatefulWidget {
 class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
   late EventOut _currentEvent;
   bool _isSubmitting = false;
+  bool _aiBusy = false;
+  Map<String, dynamic>? _ai; // reasoning + disagreement flag from the server's AI second opinion
+  String? _ruleId;
+  int? _ruleVersion;
+  String? _uncertainty;
 
   @override
   void initState() {
     super.initState();
     _currentEvent = widget.event;
+    widget.eventsRepository.revision.addListener(_loadAi);
+    _loadAi();
+  }
+
+  @override
+  void dispose() {
+    widget.eventsRepository.revision.removeListener(_loadAi);
+    super.dispose();
+  }
+
+  void _setAi(Map<String, dynamic> raw) {
+    if (mounted) {
+      setState(() {
+        _currentEvent = EventOut.fromJson(raw);
+        _ruleId = raw['rule_id'] as String?;
+        _ruleVersion = raw['rule_version'] as int?;
+        _uncertainty = raw['uncertainty'] as String?;
+        _ai = raw['reasoning'] == null ? null : {'reasoning': raw['reasoning'], 'disagrees': raw['ai_disagrees'] == true, 'model': (raw['models']?['vlm']?['name'])};
+      });
+    }
+  }
+
+  Future<void> _loadAi() async {
+    try {
+      final response = await widget.eventsRepository.apiClient.dio.get('/api/v1/events/${widget.event.id}');
+      _setAi(Map<String, dynamic>.from(response.data));
+    } catch (_) {}
+  }
+
+  Future<void> _askAi() async {
+    setState(() => _aiBusy = true);
+    try {
+      final response = await widget.eventsRepository.apiClient.dio.post('/api/v1/events/${_currentEvent.id}/ai-review');
+      _setAi(Map<String, dynamic>.from(response.data));
+    } catch (_) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(backgroundColor: AppColors.surface, content: Text('The assistant could not review this incident. Check the server.', style: AppTypography.body)));
+    } finally {
+      if (mounted) setState(() => _aiBusy = false);
+    }
   }
 
   Future<void> _handleDecision(HumanAction action) async {
@@ -129,6 +173,10 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                           ),
                           const Divider(color: AppColors.divider, height: AppSpacing.md),
                           _infoRow('Detected At', _currentEvent.firstSeenAt),
+                          if (_ruleId != null) ...[
+                            const Divider(color: AppColors.divider, height: AppSpacing.md),
+                            _infoRow('Rule', '$_ruleId · version ${_ruleVersion ?? '?'}'),
+                          ],
                         ],
                       ),
                     ),
@@ -149,6 +197,34 @@ class _IncidentDetailScreenState extends State<IncidentDetailScreen> {
                       ),
                       const SizedBox(height: AppSpacing.xl),
                     ],
+                    if (_ruleId != null && _uncertainty != null) ...[
+                      Text('What remains uncertain', style: AppTypography.cardHeading),
+                      const SizedBox(height: AppSpacing.sm),
+                      AppCard(child: Text(_uncertainty!, style: AppTypography.support)),
+                      const SizedBox(height: AppSpacing.xl),
+                    ],
+
+                    Text('AI second opinion', style: AppTypography.cardHeading),
+                    const SizedBox(height: AppSpacing.sm),
+                    AppCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          if (_ai != null) ...[
+                            Text(_ai!['disagrees'] == true ? 'Disagrees with the detector' : (_ai!['reasoning']['evidence_insufficient'] == true ? 'Inconclusive' : 'Consistent with the detector'), style: AppTypography.cardTitle),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text('${_ai!['reasoning']['uncertainty']}', style: AppTypography.body),
+                            for (final fact in (_ai!['reasoning']['visible_facts'] as List? ?? const [])) Text('•  $fact', style: AppTypography.support),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text('${_ai!['model'] ?? 'Vision model'} · advisory only, you decide.', style: AppTypography.caption),
+                          ] else
+                            Text('An open-weights vision model can double-check the evidence frames. It never confirms or dismisses an incident for you.', style: AppTypography.support),
+                          const SizedBox(height: AppSpacing.md),
+                          AppButton.secondary(label: _ai == null ? 'Ask the AI to double-check' : 'Ask again', expand: true, isLoading: _aiBusy, onPressed: _aiBusy ? null : _askAi),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.xl),
 
                     // Action Buttons Row
                     Row(

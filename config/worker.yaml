@@ -16,9 +16,10 @@ detection:
   tracker: "bytetrack"
 
 temporal_filter:
-  k_hits: 2 # candidate must appear in 2 of the last 4 sampled frames (2 fps) ...
+  k_hits: 2 # live camera candidate: 2 of the last 4 sampled frames
+  uploaded_video_k_hits: 3 # uploaded video at 5 fps: require 3 of the last 4 frames
   n_window: 4
-  immediate_confidence: 0.85 # ... unless a single frame is already this confident
+  immediate_confidence: 0.85 # ... unless the raw detector score of a verifier-approved frame is already this high (violence never bypasses)
   gap_timeout_seconds: 3.0
   iou_match_threshold: 0.3
 

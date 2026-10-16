@@ -42,6 +42,47 @@
           "title": "Id",
           "type": "string"
         },
+        "rule_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Id"
+        },
+        "rule_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rule Version"
+        },
+        "uncertainty": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Uncertainty"
+        },
+        "needs_visual_review": {
+          "default": false,
+          "title": "Needs Visual Review",
+          "type": "boolean"
+        },
         "camera": {
           "$ref": "#/$defs/CameraRef"
         },

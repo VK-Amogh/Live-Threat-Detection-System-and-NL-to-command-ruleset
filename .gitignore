@@ -19,6 +19,7 @@ __pycache__/
 htmlcov/
 dist/
 build/
+runs/
 *.egg-info/
 
 # Storage contents (keep directory structure with .gitkeep)

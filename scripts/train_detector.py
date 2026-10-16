@@ -46,6 +46,7 @@ def main():
     p.add_argument('--time', type=float, default=None, help='hard wall-clock budget in hours (overrides epochs)')
     p.add_argument('--device', default='0')
     p.add_argument('--resume', action='store_true')
+    p.add_argument('--finetune', action='store_true', help='low learning rate and mild augmentation for an existing domain checkpoint')
     a = p.parse_args()
 
     from ultralytics import YOLO
@@ -63,7 +64,10 @@ def main():
         model.train(
             data=a.data, epochs=a.epochs, imgsz=a.imgsz, batch=a.batch, device=a.device, workers=a.workers, fraction=a.fraction,
             project=str(ROOT / 'storage/training'), name=run_name, patience=a.patience, seed=42, deterministic=False, amp=True,
-            cache=False, plots=False, verbose=False, time=a.time, close_mosaic=5, cos_lr=True, mosaic=1.0, mixup=0.05,
+            cache=False, plots=False, verbose=False, time=a.time, close_mosaic=2 if a.finetune else 5,
+            cos_lr=True, mosaic=0.2 if a.finetune else 1.0, mixup=0.0 if a.finetune else 0.05,
+            optimizer='AdamW' if a.finetune else 'auto', lr0=0.0005 if a.finetune else 0.01,
+            warmup_epochs=0.0 if a.finetune else 3.0,
             hsv_h=0.015, hsv_s=0.6, hsv_v=0.4, degrees=3.0, translate=0.1, scale=0.5, fliplr=0.5,
         )
         best = Path(model.trainer.best)

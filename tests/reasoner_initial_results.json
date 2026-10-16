@@ -1,0 +1,32 @@
+[
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_0.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "The frames show a crowded indoor setting with multiple tables and chairs. Several people are visible sitting at or standing near the tables. Some people are moving throughout the space.",
+      "uncertainty": "The specific duration of visibility for any individual is not quantifiable from the static frames. The exact nature of the movement or interaction between individuals cannot be determined.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 55.24
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_1.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 0.77,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in the frames. Some individuals are standing, and others appear to be moving. Tables and chairs are visible in the area. Dark shapes, possibly dogs, are visible near the furniture. People are moving across the scene in the sampled frames.",
+      "uncertainty": "The specific duration of visibility for any individual is not quantifiable from this description alone.",
+      "possible_false_positive": true
+    },
+    "images": 3,
+    "elapsed_s": 51.33
+  }
+]

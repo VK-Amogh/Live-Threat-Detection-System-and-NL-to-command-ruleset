@@ -1,0 +1,33 @@
+timezone: Asia/Kolkata
+
+camera:
+  process_fps: 5
+
+detector:
+  weights: weights/yolo26n.pt
+  confidence: 0.35
+  image_size: 640
+  tracker: bytetrack.yaml
+
+llm:
+  base_url: http://127.0.0.1:11434
+  model: gemma4:e2b
+  timeout_s: 120
+  # num_gpu / num_ctx must equal the assistant's (OLLAMA_NUM_GPU in .env, ollama_runtime() in services/api/app/chat.py):
+  # Ollama reloads the model whenever they differ between requests, which made the next chat answer wait 10-16 s.
+  num_gpu: 99
+  num_ctx: 6144
+
+openvocab:
+  enabled: false
+
+storage:
+  pre_roll_s: 8
+  post_roll_s: 8
+  retention_days: 14
+
+engine:
+  min_hold_s: 1.5
+  track_gap_s: 1
+  missing_frame_s: 5
+  cooldown_s: 120

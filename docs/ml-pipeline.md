@@ -1,81 +1,137 @@
 # ML pipeline: data, training, evaluation, latency
 
-All models are trained locally on the RTX 4050 (6 GB). Only open datasets are used; each prepared dataset
-carries a `provenance.json` (sources, licences, split rules, duplicate removal counts).
+Everything here was trained and measured locally on one RTX 4050 (6 GB). Only open datasets and open-weights models
+are used. Numbers live in [benchmarks.md](benchmarks.md) (generated from `storage/benchmarks/*.json`); this page explains
+*how* they were produced and what they do and do not mean.
 
-## Why three detectors instead of one merged model
+## Architecture: detect -> verify -> decide
 
-Fire/smoke datasets label only fire and smoke; weapon datasets label only guns and knives. Merging them
-into one training set teaches a detector that an unlabeled gun in a fire image is *background*. One
-detector per domain avoids that, costs ~10 ms each at 512–640 px, and the inference service runs them
-together (`config/models.yaml`). Violence has no box, so it uses a separate scene-level recogniser.
+```
+frame ──▶ YOLO26s fire/smoke (512 px) ┐
+      └─▶ YOLO26s gun/knife (640 px) ─┴─▶ proposals (high recall, conf >= 0.10)
+                                              │  crop + context, whole-frame feature
+                                              ▼
+                       DINOv2-base (frozen) ──▶ verifier MLP: "is this proposal a real <class>?"
+                                              │  per-class thresholds calibrated on validation negatives
+                                              ▼
+ stream of frames ──▶ DINOv2 temporal head (scene / pose, also scores a single still)
+                  └─▶ VideoMAE-K400 + head (motion over ~3 s)      } logistic stack ─▶ violence
+                                              ▼
+                              k-of-n persistence over sampled frames ─▶ incident
+```
+
+* **Why a verifier.** The first system (YOLO only, thresholds picked on its own validation split) looked fine on held-out
+  images of the same datasets and failed on real video: it called violins, wine bottles, tennis players and archery sights
+  "gun" at 0.7-0.8, and grey walls, shadows, table felt and ice "smoke". The verifier is a second opinion trained on the detector's
+  *own* mistakes plus true positives. Measured effect (benchmarks.md section 1, same images, detector-only vs full stack): gun/knife false
+  alarms on threat-free still images fall from 7.5-19.5 % to 0-2.7 % while recall rises (HARIS 86.5 -> 92.7 %); on threat-free video frames
+  weapon false alarms fall from 2.9 % to 0.6 % (RLVS) and fire/smoke from 1.5 % to 0.5 % (DCSASS). For fire/smoke the verifier is also used to
+  *raise* sensitivity: the proposal floor is 0.10 instead of the raw 0.35-0.5, so recall on still images rises by 9-30 points
+  (e.g. v9 54.5 -> 83.6 %) and false alarms on the Roboflow still sets rise too (v9 1.4 -> 6.5 %, Ironwolf 0 -> 4.5 %). That is a deliberate
+  trade; the user-facing failure (false alarms on ordinary video) still falls.
+* **Why one detector per domain.** Fire/smoke datasets label only fire and smoke; weapon datasets only guns and knives.
+  Merging them teaches a detector that an unlabeled gun in a fire photo is background.
+* **Why two violence signals.** A frame-wise encoder sees poses and scenes and works on stills; a Kinetics-pretrained video
+  model sees motion. Their errors differ (the scene head is better on low-resolution CCTV, the motion head on RWF-2000). A logistic stack
+  fitted on validation clips has the best AUC on blind DCSASS clips (89.1 % vs 86.6 % scene head, 83.9 % motion head) and a low calm-clip
+  false-alarm rate (1.3 % vs 3.1 %), but it is *not* better at every operating point: at a common 5 % calm false-alarm budget it recalls 62.7 % of
+  blind violent clips, below the scene head alone (65.1 %) and max-of-both (68.7 %) (table in benchmarks.md). It was chosen on validation clips
+  and earlier blind samples, for its false-alarm behaviour, and was not changed after the fresh sample was scored.
 
 ## Data
 
 | Domain | Sources | Role |
 |---|---|---|
-| Fire / smoke | D-Fire (Kaggle mirror of the official split), Jimei (Hugging Face, test portion) | train / val / held-out test |
-| Gun / knife | Univ. of Granada–Seville real CCTV frames (1920×1080, VOC XML), HARIS curated set (web + UCF-Crime hard negatives) | CCTV split by **camera segment**; HARIS `val` held out as test |
-| Violence | SCVD (CCTV), RWF-2000 (surveillance), Real-Life Violence Situations, Hockey Fights | official splits where they exist, otherwise **block** splits |
+| Fire / smoke | D-Fire (official split), Roboflow Fire&Smoke v9, Roboflow fire-detection (its `light` / `nonfire` classes become background), Simuletic CCTV smoke/fire | train / val / test, one merged leakage-controlled set |
+| Gun / knife | Seville/Granada real CCTV (1920x1080, split by camera *segment*), HARIS curated web set, Granada pistol detection (3 000 frames), Granada knife detection (2 078 frames) | train / val / test |
+| Hard negatives | ~26 000 threat-free frames from RLVS, hockey, SCVD and DCSASS (calm categories only) | train / val / **test (blind false-alarm frames, never trained on)** |
+| Violence | RWF-2000 (official split), RLVS, SCVD, Hockey Fights, DCSASS dev parents, threat-free stills | train / val / test |
+| Blind video | DCSASS (UCF-Crime CCTV) **parents never used** in training, mining or calibration | evaluation only |
 
-### Leakage control (the part that makes the benchmark honest)
+### Label-noise lessons (each one changed a number)
 
-* Perceptual hashing (dHash-64, Hamming ≤ 4) groups near-duplicates across *all* sources. A group inherits
-  its most protected split (test > val > train); copies in weaker splits are dropped. On D-Fire this removed
-  roughly half of the official training images: its random train/test split contains frames of the same
-  fires from the same fixed cameras (verified by eye on a contact sheet).
-* Fixed-camera CCTV frames are perceptually identical by construction, so dedupe is disabled for that source
-  and the split is by video segment instead (adjacent frames never straddle train/test).
-* Violence clips are split in **blocks of consecutive clip numbers**. A per-clip random split gave a
-  validation AUC of 0.998 and a held-out CCTV AUC of 0.72 — the validation set was a near-copy of training.
-* Thresholds are selected on the validation split only. For the two YOLO detectors the test split was evaluated
-  once per trained model. **For violence it was not**: the data mix, split scheme and still-image negatives were
-  chosen over several iterations while looking at held-out results (a per-clip split exposed leakage; SCVD
-  CCTV false alarms exposed the missing non-person negatives). Treat the violence test numbers — especially the
-  82-clip SCVD CCTV figure — as moderately optimistic, not as a clean one-shot estimate.
+* DCSASS sub-clip labels are coarse: a "normal" sub-clip of an Arson/Explosion/Shooting/fight video can show the event.
+  Using them as negatives pushed the verifier's fire threshold to its ceiling (the top-scoring "false alarms" were real
+  burning vehicles) and made an early FIGHT false-alarm figure meaningless. Negatives now come from calm *categories*
+  (RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary), never from labels alone.
+* Un-annotated CCTV frames are not clean negatives: the verifier's highest-scoring "gun false alarms" included real handguns
+  in frames nobody annotated. v2 drops them.
+* D-Fire's official train/test split contains frames of the same fixed-camera fires on both sides; perceptual hashing removed
+  about half of its training images so the held-out number is honest.
+* Violence clips are split in blocks of consecutive clip numbers; a per-clip random split gave validation AUC 0.998 and held-out
+  CCTV AUC 0.72.
+
+### Leakage control
+
+dHash-64 groups near-duplicates across all sources; a group inherits its most protected split (test > val > train) and the
+copies in weaker splits are dropped. Fixed-camera CCTV frames and video-frame negatives are exempt (split by segment / clip).
 
 ## Training
 
-* `scripts/train_detector.py`: YOLO26s from COCO weights, AMP, mosaic + mild HSV/scale/rotation
-  augmentation, cosine LR, wall-clock budget (`--time`) so a run always ends on schedule. Progress and
-  metrics stream to `storage/training.json` (System screen).
-* Violence: frozen DINOv2-base features (CLS + mean patch, 224²) cached for 16 frames per clip, plus flipped
-  and cropped views of training clips; a 2-layer temporal transformer is trained on windows of
-  1/2/4/8/16 frames, so the *same weights score a single uploaded still and a live/video window*. The
-  per-frame auxiliary head keeps stills meaningful. Training takes about a minute once features exist.
+* Detectors: `scripts/train_detector.py` — YOLO26s, AMP, mosaic + HSV/scale/rotation, cosine LR, a wall-clock budget so a run
+  always ends on schedule; fire/smoke v2 and weapons v2 are fine-tuned from the v1 weights on the merged sets.
+  Progress streams to `storage/training.json` (System screen).
+* Verifier: `scripts/verify/build_crops.py` + `adapt_crops.py` + `train_verifier.py` — DINOv2 features of every YOLO
+  proposal (crop with 35 % context + whole frame), positives from annotations (jittered like detector noise) and real-CCTV
+  fire/explosion proposals from DCSASS dev parents, negatives from the detector's false alarms on train frames. Thresholds are
+  the lowest verifier probability whose frame-level false-alarm rate on *validation* video frames is <= 0.1 %, never below 0.6.
+* Violence: frozen DINOv2 features (16 frames/clip, flipped + cropped training views) -> 2-layer temporal transformer
+  (`train_head.py`); VideoMAE-K400 clip features -> MLP (`train_videomae_head.py`); logistic stack + threshold on validation
+  clips (`ensemble_eval.py`). Training each head takes about a minute once features are cached.
 
-## Evaluation (`scripts/benchmark_detector.py`, `scripts/violence/train_head.py`)
+## Evaluation protocol
 
-* mAP50 / mAP50-95 (Ultralytics), per-class precision/recall/F1 at the **deployed** threshold, image-level
-  alert precision/recall, and the **false-alarm rate on threat-free images** (the "all clear" case).
-* The previous weights (`fire.pt`, `best.pt`) are scored on the same images; new weights are promoted only
-  if they win.
-* Violence is reported per dataset and as clip-level (8 frames) and single-frame results.
-* Latency is the warm per-frame time (FP16, resize + inference + NMS) and peak VRAM.
+1. **Component benchmarks** (`benchmark_detector.py`, `train_verifier.py`, `ensemble_eval.py`): mAP / precision / recall at the
+   deployed thresholds, per source, previous weights on the same images, latency and VRAM.
+2. **Still-image stack** (`scripts/eval/image_eval.py`): held-out annotated images + blind video frames through the whole
+   deployed stack, detector-only vs full stack, including violence on stills.
+3. **Blind video** (`scripts/eval/blind_cache.py` + `blind_score.py`): DCSASS clips replayed exactly like an upload (JPEG
+   frames at the configured fps, per-clip stream), scored with the *production* `decide()` code and the API's k-of-n rule.
+   Ground truth is by category (see the scorer's docstring). Weapon recall is not scored because a Shooting/Robbery clip may
+   not show the weapon.
+4. **Fresh sample.** Earlier blind samples guided design decisions (cleaning negatives, adding CCTV fire positives, the
+   threshold floor, the ensemble). After freezing every configuration the final numbers come from a new sample that excludes
+   every clip inspected before. `TestVideos/*` are SCVD clips that were in the training/validation manifest: they are demo
+   clips, not blind data.
 
 ## How detections become incidents
 
-`/predict` returns detections whose class maps to a category in `config/class_map.yaml`
-(`fire→FIRE`, `smoke→SMOKE`, `gun|knife→WEAPON_DETECTED`, `violence→FIGHT`). For still images the first
-detection above its calibrated threshold creates an incident. For video and live sources a candidate must
-persist in 2 of the last 4 sampled frames (2 fps) unless a single frame is already ≥ 0.85 confident; the
-violence recogniser keeps a per-source window of the last 8 frames in the detector service.
-Humans make the final call: incidents are `NEEDS_REVIEW` until an operator confirms or dismisses them.
+`/predict` returns detections whose class maps to a category in `config/class_map.yaml`. Still images raise an incident on the
+first verified detection. For video and live sources a category must persist in 3 of the last 4 sampled frames (uploads, 5 fps)
+or 2 of 4 (live); a single frame bypasses this only when the *raw detector score* is >= 0.85 and the verifier approved (verifier
+and violence probabilities saturate near 1.0, so they cannot be used for the bypass). The violence stack uses the scene head alone
+until a stream has buffered 8 frames. Humans make the final call: incidents are `NEEDS_REVIEW` until an operator confirms or
+dismisses them. An optional AI second opinion (open-weights VLM) can double-check the evidence and flags disagreement without
+ever deciding.
 
 ## Assistant latency choices
 
-* Streaming (NDJSON) so the first tokens appear while the rest generates.
-* Gemma 4's "thinking" mode is switched off (`think: false`): with it on, the first visible token waited on
-  hidden reasoning (first token was ~43 s cold on CPU under training load; ~0.1 s warm with a cached prefix and
-  thinking off — a warm, text-only, prefix-cached number, not a typical one).
-* The local model is loaded at API start-up (`keep_alive` 30 min) so the first question does not pay the load.
-* A static system prompt + stable dossier layout so Ollama can reuse its KV prefix; flash attention and q8 KV
-  cache on the Ollama server.
-* Retrieval is a compact dossier (detector boxes with locations, source timeline, aggregate statistics) plus
-  at most 6 real frames (annotated keyframe + frames sampled around the detection), not raw logs.
-* Local model: Gemma 4 E2B — the only Gemma 4 size that fits next to the detectors on a 6 GB card. The stock
-  `gemma4:e2b` Ollama build already ships its official multi-token-prediction drafter (`DRAFT` blob,
-  `draft_num_predict 3`). Whether that speeds anything up on this machine is measured in `docs/benchmarks.md`
-  against a copy of the same model without the drafter; no speed-up is claimed beyond what is measured there.
-* Detector latency is ~12 ms/frame (FP16, fused) while video/live sampling is 2 fps, so the detector is not the
-  bottleneck and ONNX/TensorRT export was deliberately not pursued; JPEG transport + the LLM dominate.
+* NDJSON streaming; static system prompt placed first (a prefix Ollama can reuse); the local model is loaded at
+  API start (`keep_alive` 30 min); Gemma 4 "thinking" is switched off (it made the first visible token wait on hidden reasoning).
+* Groq's on-demand tier allows ~7 000 input tokens/min, so Groq gets one annotated keyframe per question and a text-only retry on HTTP 429.
+* Local model: Gemma 4 E2B — the only Gemma 4 size that fits next to the detectors on a 6 GB card. The stock `gemma4:e2b` build
+  ships its multi-token-prediction drafter (speculative decoding). Measured with a different incident id in every request (so nothing is
+  served from the KV prefix cache), see benchmarks.md section 4: with every layer on the GPU the drafter raises decode speed from ~81 to
+  ~130-140 tokens/s; on the CPU from ~25 to ~33-47 tokens/s (run-to-run spread; with only 12 layers offloaded the gain was inconsistent, so
+  no claim is made there). The bigger lever was GPU offload: first token arrives in ~0.1 s (text) / ~0.46 s (with an evidence frame) versus
+  ~1.6 s / ~10-11 s on the CPU, so `OLLAMA_NUM_GPU` defaults to 99; the detectors plus the assistant peaked at 4.8 GB of the 6 GB card in the
+  ecosystem check.
+* Ollama reloads the model whenever `num_ctx` or `num_gpu` differ between requests; warm-up, chat and AI review therefore share one
+  `ollama_runtime()` setting. (Before this, a different `num_ctx` per call made the first local answer take 10-16 s.)
+* Each YOLO26s detector takes ~11 ms per frame on the RTX 4050 (`fire_smoke.json`, `weapons.json`); the verifier and motion head add DINOv2/VideoMAE
+  forward passes on top. An image upload returns end to end in tens of milliseconds once the service is warm (benchmarks.md section 5), and sampling is
+  2-5 fps, so detection is not the bottleneck; ONNX/TensorRT was not pursued.
+
+## Known limits
+
+* **Fire and smoke in low-resolution CCTV is the weakest part.** On the fresh blind sample only 1 of 47 Arson clips alerts although at least 15
+  of them show visible flames or a burning vehicle (benchmarks.md section 2 audit): three parent videos never produce a proposal, and on a burning
+  car the verifier scores below its fire threshold. Closing this needs labelled low-resolution CCTV fire footage; none was available as boxes.
+  Fire/smoke on ordinary-resolution images is much better (95.8 % recall on D-Fire stills). The earlier smoke/fire clip results on Explosion clips came
+  from a sample that influenced design decisions and are not independent.
+* CCTV gun recall is modest (46.3 % of annotated frames with the detector alone, 55.6 % with the verifier, on only 54 frames) and the verifier may have learned
+  camera-specific cues; objects it has never seen as negatives (it still confuses archery sights with guns at times) need more mining.
+* Violence recall on subtle assaults/abuse in DCSASS is moderate (stack recall 46 % at its threshold on blind clips) and still-image violence recall is low
+  (the single-frame threshold is 0.999). The scene head also fires on about 6 % of Ironwolf fire stills (2 % on v9).
+* Blind *weapon* recall is not scored: a DCSASS Shooting/Robbery clip may not show the weapon. Weapon numbers on video are false-alarm rates only.
+* Everything outside fire, smoke, guns, knives and physical fights is listed as unsupported in `config/models.yaml`.

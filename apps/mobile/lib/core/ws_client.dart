@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'api_client.dart';
 import 'auth_store.dart';
@@ -16,7 +17,14 @@ class WebSocketService {
   WebSocketChannel? _channel;
   StreamSubscription? _subscription;
   Timer? _reconnectTimer;
+  Timer? _pollTimer;
   bool _isDisposed = false;
+  bool _catchingUp = false;
+  bool _catchAgain = false;
+  int _lastSeq = 0;
+  bool _initialSync = false;
+  SharedPreferences? _prefs;
+  String _cursorKey = 'safespace.changeSeq';
 
   WebSocketService({
     required ApiClient apiClient,
@@ -31,6 +39,10 @@ class WebSocketService {
     try {
       final isPaired = await _authStore.isPaired();
       if (!isPaired) return;
+      _prefs ??= await SharedPreferences.getInstance();
+      _cursorKey = 'safespace.changeSeq.${await _authStore.getDeviceId()}';
+      _initialSync = !(_prefs?.containsKey(_cursorKey) ?? false);
+      _lastSeq = _prefs?.getInt(_cursorKey) ?? 0;
 
       // 1. Fetch short-lived ticket
       final response = await _apiClient.dio.post('/api/v1/ws-tickets');
@@ -63,6 +75,9 @@ class WebSocketService {
           _scheduleReconnect();
         },
       );
+      _pollTimer?.cancel();
+      _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _catchUp());
+      await _catchUp();
     } catch (e) {
       debugPrint('[WS] Connection failed: $e');
       _scheduleReconnect();
@@ -79,21 +94,53 @@ class WebSocketService {
         return;
       }
 
-      if (type == 'event.created' || type == 'event.updated') {
-        final payload = data['data'] as Map<String, dynamic>?;
-        if (payload != null && payload.containsKey('event')) {
-          final event = EventOut.fromJson(payload['event'] as Map<String, dynamic>);
-          onEventReceived(event, type == 'event.updated');
-        }
+      if (type == 'hello' && (data['data']?['head_seq'] as int? ?? 0) < _lastSeq) {
+        _lastSeq = 0;
+        _catchUp();
       }
+      if (type == 'event.created' || type == 'event.updated') _catchUp();
     } catch (e) {
       debugPrint('[WS] Message parsing error: $e');
+    }
+  }
+
+  Future<void> _catchUp() async {
+    if (_isDisposed) return;
+    if (_catchingUp) { _catchAgain = true; return; }
+    _catchingUp = true;
+    var failed = false;
+    try {
+      do {
+        _catchAgain = false;
+        final response = await _apiClient.dio.get('/api/v1/changes',
+            queryParameters: {'after': _lastSeq, 'limit': 200});
+        final page = ChangesResponse.fromJson(Map<String, dynamic>.from(response.data));
+        if (page.headSeq < _lastSeq) { _lastSeq = 0; _catchAgain = true; continue; }
+        for (final event in page.items) {
+          if (event.changeSeq <= _lastSeq) continue;
+          _lastSeq = event.changeSeq;
+          onEventReceived(event, _initialSync || event.createdAt != event.updatedAt);
+          await _prefs?.setInt(_cursorKey, _lastSeq);
+        }
+        if (page.hasMore) _catchAgain = true;
+        if (!page.hasMore) {
+          _initialSync = false;
+          await _prefs?.setInt(_cursorKey, _lastSeq);
+        }
+      } while (_catchAgain && !_isDisposed);
+    } catch (error) {
+      failed = true;
+      debugPrint('[WS] Change-feed catch-up failed: $error');
+    } finally {
+      _catchingUp = false;
+      if (_catchAgain && !failed && !_isDisposed) _catchUp();
     }
   }
 
   void _scheduleReconnect() {
     if (_isDisposed) return;
     _subscription?.cancel();
+    _pollTimer?.cancel();
     _channel = null;
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(const Duration(seconds: 5), connect);
@@ -102,6 +149,7 @@ class WebSocketService {
   void disconnect() {
     _isDisposed = true;
     _reconnectTimer?.cancel();
+    _pollTimer?.cancel();
     _subscription?.cancel();
     _channel?.sink.close();
   }

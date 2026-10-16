@@ -18,6 +18,11 @@ foreach ($service in @(@{Name='inference'; Port=8001; App='server:app'; Host='12
     $process = Start-Process -FilePath $python -ArgumentList @('-m','uvicorn',$service.App,'--host',$service.Host,'--port',"$($service.Port)") -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput "$projectRoot\storage\logs\$($service.Name).log" -RedirectStandardError "$projectRoot\storage\logs\$($service.Name).error.log"
     $processes += @{name=$service.Name;pid=$process.Id;port=$service.Port}
 }
+$env:SAFESPACE_API_URL = "http://127.0.0.1:$Port"
+$manager = Start-Process -FilePath $python -ArgumentList @('-m','services.rules.manager') -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput "$projectRoot\storage\logs\rule-manager.log" -RedirectStandardError "$projectRoot\storage\logs\rule-manager.error.log"
+$processes += @{name='rule-manager';pid=$manager.Id;port=0}
+$reasoner = Start-Process -FilePath $python -ArgumentList @('-m','services.reasoner.loop') -WorkingDirectory $projectRoot -WindowStyle Hidden -PassThru -RedirectStandardOutput "$projectRoot\storage\logs\reasoner.log" -RedirectStandardError "$projectRoot\storage\logs\reasoner.error.log"
+$processes += @{name='reasoner';pid=$reasoner.Id;port=0}
 $processes | ConvertTo-Json | Set-Content -LiteralPath storage/server-processes.json
 $ollama = Join-Path $projectRoot 'storage\runtime\ollama\ollama.exe'
 if ((Test-Path -LiteralPath $ollama) -and !(Get-NetTCPConnection -State Listen -LocalPort 11434 -ErrorAction SilentlyContinue)) {

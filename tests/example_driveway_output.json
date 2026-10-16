@@ -1,0 +1,42 @@
+{
+  "request": "Alert me when a person stays in the driveway for 3 seconds between midnight and 5 a.m.",
+  "compile": {
+    "entity": "person",
+    "when": {
+      "all": [
+        {
+          "type": "in_zone",
+          "zone": "driveway"
+        },
+        {
+          "type": "dwell_at_least",
+          "seconds": 3.0
+        },
+        {
+          "type": "time_window",
+          "start": "00:00",
+          "end": "05:00",
+          "tz": "Asia/Kolkata"
+        }
+      ]
+    },
+    "support_level": "SUPPORTED",
+    "status": "draft",
+    "readback": "Alert when a tracked person is inside driveway and remains there for at least 3 seconds between 00:00 and 05:00 Asia/Kolkata."
+  },
+  "activation": {
+    "rule_version": 2,
+    "status": "active"
+  },
+  "replay": {
+    "track_id": 12,
+    "seconds_until_fire": 3.0,
+    "events_fired": 1
+  },
+  "persistence": {
+    "event_id": "dcb080c1-bcc1-551d-9d12-9d37ab4702bc",
+    "initial_change_seq": 1,
+    "clip_change_seq": 2,
+    "duplicate_created": false
+  }
+}

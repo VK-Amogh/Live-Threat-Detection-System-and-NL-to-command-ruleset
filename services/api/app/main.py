@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from td_contracts import (LoginRequest, LoginResponse, PairDeviceRequest, PairDeviceResponse, PairingCodeCreateResponse, UserOut, WsTicketResponse, CameraCreate, CameraOut, CameraUpdate, EventOut, ChangesResponse, HumanVerificationRequest, ChatRequest, ChatResponse, SourceRecord, FrameResult, PasswordChange, RuntimeSettings, SystemSnapshot)
-from . import database as db, pipeline, chat
+from . import database as db, pipeline, chat, review, rule_routes
 from .security import authenticated, bootstrap, check_password, create_session, digest, now, password_hash, session_for
 from .settings import ROOT, STORAGE, INFERENCE_URL, INTERNAL_TOKEN, OLLAMA_URL, COOKIE_SECURE, ALLOWED_ORIGINS, MAX_UPLOAD
 
@@ -42,6 +42,7 @@ async def lifespan(app):
     db.initialize()
     bootstrap()
     pipeline.BROADCAST=broadcast
+    rule_routes.BROADCAST=broadcast
     for source in db.all_objects('source'):
         if source['status'] in ('PENDING','RUNNING'):
             source.update(status='FAILED',error='Server restarted. Upload again or restart the camera.')
@@ -239,6 +240,18 @@ async def verify(ident:str,req:HumanVerificationRequest,request:Request):
     return event
 
 
+@api.post('/events/{ident}/ai-review',response_model=EventOut)
+async def ai_review(ident:str):
+    required('event',ident)
+    try:
+        updated=await review.review(ident,pipeline.publish)
+    except (httpx.HTTPError,ValueError,KeyError) as exc:
+        raise HTTPException(503,'The assistant could not review this incident. Check System and try again.') from exc
+    if not updated:
+        raise HTTPException(404,'Event not found')
+    return updated
+
+
 @api.get('/changes',response_model=ChangesResponse)
 async def changes(after:int=Query(0,ge=0),limit:int=Query(50,ge=1,le=200)):
     with db.connection() as con:
@@ -332,7 +345,12 @@ async def predict_frame(file:UploadFile=File(...)):
 
 @api.get('/cameras',response_model=list[CameraOut])
 async def cameras():
-    return db.all_objects('camera')
+    rows=db.all_objects('camera')
+    with db.connection() as con:
+        recent={row['camera_id']:row['last_frame_ts'] for row in con.execute('SELECT camera_id,last_frame_ts FROM camera_health')}
+    for camera in rows:
+        camera['is_online']=bool(camera.get('desired_active') and time.time()-(recent.get(camera['id']) or 0)<=5)
+    return rows
 
 
 @api.post('/cameras',response_model=CameraOut,status_code=201)
@@ -358,23 +376,29 @@ async def update_camera(ident:str,req:CameraUpdate):
 @api.post('/cameras/{ident}/start',response_model=SourceRecord)
 async def start_camera(ident:str):
     cam=required('camera',ident)
-    if ident in pipeline.LIVE:
+    if cam.get('desired_active'):
         raise HTTPException(409,'Camera already running')
     if not cam['enabled']:
         raise HTTPException(409,'Camera is disabled')
     source=SourceRecord(id=uuid.uuid4().hex,filename=cam['name'],kind='live',camera_id=ident,status='RUNNING',created_at=now()).model_dump()
+    source['_started_epoch']=time.time()
     db.put('source',source)
-    task=asyncio.create_task(pipeline.camera_loop(cam,source))
-    pipeline.TASKS[source['id']]=task
-    task.add_done_callback(lambda _:pipeline.TASKS.pop(source['id'],None))
+    cam['desired_active']=True
+    cam['_active_source_id']=source['id']
+    db.put('camera',cam)
     return source
 
 
 @api.post('/cameras/{ident}/stop')
 async def stop_camera(ident:str):
-    required('camera',ident)
-    if ident in pipeline.LIVE:
-        pipeline.LIVE[ident].stopped=True
+    cam=required('camera',ident)
+    cam['desired_active']=False
+    cam['is_online']=False
+    db.put('camera',cam)
+    source=db.get('source',cam.get('_active_source_id'))
+    if source and source['status']=='RUNNING':
+        source['status']='CANCELED'
+        db.put('source',source)
     return {'ok':True}
 
 
@@ -382,22 +406,22 @@ async def stop_camera(ident:str):
 async def camera_live(ident:str):
     """Latest detector output for a running camera, for drawing boxes over the live preview."""
     required('camera',ident)
-    source=pipeline.ACTIVE.get(ident)
-    if not source:
+    camera=required('camera',ident)
+    source=db.get('source',camera.get('_active_source_id'))
+    if not source or source['status']!='RUNNING' or not camera.get('desired_active'):
         return {'running':False}
     return {'running':True,'frames_analyzed':source['frames_analyzed'],'result':source.get('result'),'event_ids':source['event_ids']}
 
 
 @api.get('/cameras/{ident}/frame')
 async def camera_frame(ident:str):
-    capture=pipeline.LIVE.get(ident)
-    if not capture:
+    camera=required('camera',ident)
+    if not camera.get('desired_active'):
         raise HTTPException(409,'Camera is not running')
-    _,frame=capture.snapshot()
-    if frame is None:
-        raise HTTPException(503,'Waiting for camera')
-    import cv2
-    return Response(cv2.imencode('.jpg',frame)[1].tobytes(),media_type='image/jpeg')
+    preview=STORAGE/'previews'/f'{ident}.jpg'
+    if not preview.is_file():
+        raise HTTPException(409,'Camera is not running')
+    return FileResponse(preview,media_type='image/jpeg')
 
 
 @api.post('/chat/stream')
@@ -451,13 +475,23 @@ async def system():
     except (ValueError,OSError):
         training={'status':'unavailable'}
     import os
+    import yaml as _yaml
+    try:
+        deployed={m['name'] for m in _yaml.safe_load((ROOT/'config/models.yaml').read_text())['models']}
+    except (OSError,ValueError,KeyError):
+        deployed=set()
+    shown=deployed|{'verifier','violence_ensemble','stack_images','blind_fresh','chat','ecosystem'}      # candidate/previous benchmarks stay on disk but off the screen
     benchmarks={}
     for path in sorted((STORAGE/'benchmarks').glob('*.json')):
+        if path.stem not in shown:
+            continue
         try:
             benchmarks[path.stem]=json.loads(path.read_text())
         except (ValueError,OSError):
             continue
     training['benchmarks']=benchmarks
+    if isinstance(training.get('runs'),dict):
+        training['runs']={k:v for k,v in training['runs'].items() if k in deployed or v.get('status') in ('training','preparing','failed')}
     memory=psutil.virtual_memory()
     setup_path=STORAGE/'local-chat-setup.json'
     try:
@@ -479,6 +513,8 @@ async def reload_models():
 
 
 app.include_router(api)
+app.include_router(rule_routes.router)
+app.include_router(rule_routes.worker_router)
 dashboard=ROOT/'apps/dashboard/dist'
 if dashboard.exists():
     app.mount('/',StaticFiles(directory=dashboard,html=True),name='dashboard')

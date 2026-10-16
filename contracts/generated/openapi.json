@@ -465,6 +465,45 @@
         }
       }
     },
+    "/api/v1/events/{ident}/ai-review": {
+      "post": {
+        "summary": "Ai Review",
+        "operationId": "ai_review_api_v1_events__ident__ai_review_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/changes": {
       "get": {
         "summary": "Changes",
@@ -935,6 +974,44 @@
         }
       }
     },
+    "/api/v1/cameras/{ident}/live": {
+      "get": {
+        "summary": "Camera Live",
+        "description": "Latest detector output for a running camera, for drawing boxes over the live preview.",
+        "operationId": "camera_live_api_v1_cameras__ident__live_get",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cameras/{ident}/frame": {
       "get": {
         "summary": "Camera Frame",
@@ -1151,10 +1228,596 @@
           }
         }
       }
+    },
+    "/api/v1/rules/compile": {
+      "post": {
+        "summary": "Compile Rule",
+        "operationId": "compile_rule_api_v1_rules_compile_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleCompileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RuleCompileResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rules": {
+      "get": {
+        "summary": "List Rules",
+        "operationId": "list_rules_api_v1_rules_get",
+        "parameters": [
+          {
+            "name": "camera_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Camera Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rules/{ident}/activate": {
+      "post": {
+        "summary": "Activate Rule",
+        "operationId": "activate_rule_api_v1_rules__ident__activate_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleActivationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/rules/{ident}": {
+      "patch": {
+        "summary": "Change Rule Status",
+        "operationId": "change_rule_status_api_v1_rules__ident__patch",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleStatusRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cameras/{camera_id}/geometry": {
+      "get": {
+        "summary": "Get Geometry",
+        "operationId": "get_geometry_api_v1_cameras__camera_id__geometry_get",
+        "parameters": [
+          {
+            "name": "camera_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Camera Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/CameraGeometry"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Get Geometry Api V1 Cameras  Camera Id  Geometry Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Put Geometry",
+        "operationId": "put_geometry_api_v1_cameras__camera_id__geometry_put",
+        "parameters": [
+          {
+            "name": "camera_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Camera Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CameraGeometry"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/rules": {
+      "get": {
+        "summary": "Worker Rules",
+        "operationId": "worker_rules_api_v1_internal_rules_get",
+        "parameters": [
+          {
+            "name": "camera_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Camera Id"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/cameras": {
+      "get": {
+        "summary": "Worker Cameras",
+        "operationId": "worker_cameras_api_v1_internal_cameras_get",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/live-frame": {
+      "post": {
+        "summary": "Ingest Live Frame",
+        "operationId": "ingest_live_frame_api_v1_internal_live_frame_post",
+        "parameters": [
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_ingest_live_frame_api_v1_internal_live_frame_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/rule-events": {
+      "post": {
+        "summary": "Ingest Rule Event",
+        "operationId": "ingest_rule_event_api_v1_internal_rule_events_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RuleEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/health-events": {
+      "post": {
+        "summary": "Ingest Health Event",
+        "operationId": "ingest_health_event_api_v1_internal_health_events_post",
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Idempotency-Key"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CameraHealthEvent"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/internal/events/{ident}/clip": {
+      "post": {
+        "summary": "Attach Clip",
+        "operationId": "attach_clip_api_v1_internal_events__ident__clip_post",
+        "parameters": [
+          {
+            "name": "ident",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Ident"
+            }
+          },
+          {
+            "name": "authorization",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "",
+              "title": "Authorization"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Body_ingest_live_frame_api_v1_internal_live_frame_post": {
+        "properties": {
+          "camera_id": {
+            "type": "string",
+            "title": "Camera Id"
+          },
+          "frame_ts": {
+            "type": "number",
+            "title": "Frame Ts"
+          },
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "camera_id",
+          "frame_ts",
+          "file"
+        ],
+        "title": "Body_ingest_live_frame_api_v1_internal_live_frame_post"
+      },
       "Body_predict_frame_api_v1_inference_predict_frame_post": {
         "properties": {
           "file": {
@@ -1225,6 +1888,134 @@
           "name"
         ],
         "title": "CameraCreate"
+      },
+      "CameraGeometry": {
+        "properties": {
+          "zones": {
+            "additionalProperties": {
+              "items": {
+                "prefixItems": [
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "type": "array",
+                "maxItems": 2,
+                "minItems": 2
+              },
+              "type": "array"
+            },
+            "type": "object",
+            "title": "Zones"
+          },
+          "lines": {
+            "additionalProperties": {
+              "prefixItems": [
+                {
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array",
+                  "maxItems": 2,
+                  "minItems": 2
+                },
+                {
+                  "prefixItems": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "number"
+                    }
+                  ],
+                  "type": "array",
+                  "maxItems": 2,
+                  "minItems": 2
+                }
+              ],
+              "type": "array",
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "type": "object",
+            "title": "Lines"
+          },
+          "homography": {
+            "anyOf": [
+              {
+                "items": {
+                  "items": {
+                    "type": "number"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Homography"
+          },
+          "snapshot_width": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Snapshot Width"
+          },
+          "snapshot_height": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "Snapshot Height"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "snapshot_width",
+          "snapshot_height"
+        ],
+        "title": "CameraGeometry"
+      },
+      "CameraHealthEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Event Id"
+          },
+          "camera_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Camera Id"
+          },
+          "ts": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Ts"
+          },
+          "reason": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "camera_id",
+          "ts",
+          "reason"
+        ],
+        "title": "CameraHealthEvent"
       },
       "CameraOut": {
         "properties": {
@@ -1600,6 +2391,19 @@
             "minimum": 0.0,
             "title": "Confidence"
           },
+          "detector_confidence": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Detector Confidence"
+          },
           "box": {
             "items": {
               "type": "number"
@@ -1650,6 +2454,44 @@
           "id": {
             "type": "string",
             "title": "Id"
+          },
+          "rule_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Id"
+          },
+          "rule_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rule Version"
+          },
+          "uncertainty": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uncertainty"
+          },
+          "needs_visual_review": {
+            "type": "boolean",
+            "title": "Needs Visual Review",
+            "default": false
           },
           "camera": {
             "$ref": "#/components/schemas/CameraRef"
@@ -2259,6 +3101,501 @@
         ],
         "title": "ReasoningOut"
       },
+      "RuleActivationRequest": {
+        "properties": {
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          },
+          "confirmed_readback_hash": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Confirmed Readback Hash"
+          },
+          "acknowledge_experimental": {
+            "type": "boolean",
+            "title": "Acknowledge Experimental",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "expected_version",
+          "confirmed_readback_hash"
+        ],
+        "title": "RuleActivationRequest"
+      },
+      "RuleCompileRequest": {
+        "properties": {
+          "camera_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Camera Id"
+          },
+          "text": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 1,
+            "title": "Text"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "camera_id",
+          "text"
+        ],
+        "title": "RuleCompileRequest"
+      },
+      "RuleCompileResult": {
+        "properties": {
+          "spec": {
+            "$ref": "#/components/schemas/RuleSpec"
+          },
+          "readback": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Readback"
+          },
+          "readback_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Readback Hash"
+          },
+          "support_level": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "EXPERIMENTAL",
+              "UNSUPPORTED"
+            ],
+            "title": "Support Level"
+          },
+          "problems": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Problems"
+          },
+          "can_activate": {
+            "type": "boolean",
+            "title": "Can Activate"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "spec",
+          "readback",
+          "support_level",
+          "problems",
+          "can_activate"
+        ],
+        "title": "RuleCompileResult"
+      },
+      "RuleEvent": {
+        "properties": {
+          "event_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Event Id"
+          },
+          "camera_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Camera Id"
+          },
+          "rule_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "rule_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Rule Version"
+          },
+          "ts": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Ts"
+          },
+          "episode_start": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Episode Start"
+          },
+          "status": {
+            "type": "string",
+            "const": "DETECTED",
+            "title": "Status",
+            "default": "DETECTED"
+          },
+          "tracks": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Tracks"
+          },
+          "model_versions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Model Versions"
+          },
+          "confidence": {
+            "type": "number",
+            "maximum": 1.0,
+            "minimum": 0.0,
+            "title": "Confidence"
+          },
+          "uncertainty": {
+            "type": "string",
+            "title": "Uncertainty"
+          },
+          "needs_visual_review": {
+            "type": "boolean",
+            "title": "Needs Visual Review",
+            "default": false
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "event_id",
+          "camera_id",
+          "rule_id",
+          "rule_version",
+          "ts",
+          "episode_start",
+          "tracks",
+          "model_versions",
+          "confidence",
+          "uncertainty"
+        ],
+        "title": "RuleEvent"
+      },
+      "RuleSpec": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Rule Id"
+          },
+          "camera_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Camera Id"
+          },
+          "version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Version"
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "entity": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Entity"
+          },
+          "when": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuleWhen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "min_hold_s": {
+            "type": "number",
+            "maximum": 60.0,
+            "minimum": 0.0,
+            "title": "Min Hold S",
+            "default": 1.5
+          },
+          "cooldown_s": {
+            "type": "number",
+            "maximum": 86400.0,
+            "minimum": 0.0,
+            "title": "Cooldown S",
+            "default": 120
+          },
+          "needs_visual_review": {
+            "type": "boolean",
+            "title": "Needs Visual Review",
+            "default": false
+          },
+          "action": {
+            "type": "string",
+            "const": "notify_user",
+            "title": "Action",
+            "default": "notify_user"
+          },
+          "support_level": {
+            "type": "string",
+            "enum": [
+              "SUPPORTED",
+              "EXPERIMENTAL",
+              "UNSUPPORTED"
+            ],
+            "title": "Support Level"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "active",
+              "disabled"
+            ],
+            "title": "Status",
+            "default": "draft"
+          },
+          "unsupported_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Unsupported Reason"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "rule_id",
+          "camera_id",
+          "version",
+          "name",
+          "entity",
+          "when",
+          "support_level"
+        ],
+        "title": "RuleSpec"
+      },
+      "RuleStatusRequest": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled"
+            ],
+            "title": "Status"
+          },
+          "expected_version": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Expected Version"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "required": [
+          "status",
+          "expected_version"
+        ],
+        "title": "RuleStatusRequest"
+      },
+      "RuleWhen": {
+        "properties": {
+          "all": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RuleWhen"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "All"
+          },
+          "any": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/RuleWhen"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Any"
+          },
+          "not": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RuleWhen"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "type": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "entity_present",
+                  "in_zone",
+                  "line_cross",
+                  "unique_count_at_least",
+                  "dwell_at_least",
+                  "moving_toward",
+                  "distance_below",
+                  "time_window"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Type"
+          },
+          "zone": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Zone"
+          },
+          "line": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line"
+          },
+          "seconds": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 3600.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seconds"
+          },
+          "count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Count"
+          },
+          "window_s": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 86400.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Window S"
+          },
+          "meters": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Meters"
+          },
+          "start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start"
+          },
+          "end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End"
+          },
+          "tz": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tz"
+          }
+        },
+        "additionalProperties": false,
+        "type": "object",
+        "title": "RuleWhen"
+      },
       "RuntimeSettings": {
         "properties": {
           "chat_provider": {
@@ -2279,6 +3616,11 @@
             "type": "string",
             "title": "Groq Model",
             "default": "qwen/qwen3.8-27b"
+          },
+          "ai_review": {
+            "type": "boolean",
+            "title": "Ai Review",
+            "default": false
           }
         },
         "additionalProperties": false,

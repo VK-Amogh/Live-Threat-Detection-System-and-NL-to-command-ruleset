@@ -10,6 +10,9 @@ from td_contracts.enums import (
     ErrorCode,
 )
 from td_contracts.detection import Detection, FrameResult, SourceRecord, PasswordChange, RuntimeSettings, SystemSnapshot
+from td_contracts.observations import Observation, ObservedTrack
+from td_contracts.rules import RuleSpec, RuleWhen, RuleCompileResult
+from td_contracts.rule_api import CameraGeometry, RuleCompileRequest, RuleActivationRequest, RuleStatusRequest, RuleEvent, CameraHealthEvent, ReviewResult, ReviewFailure, ReviewCompletion
 from td_contracts.common import (
     ErrorDetail,
     ErrorBody,
@@ -100,6 +103,20 @@ __all__ = [
     "VlmStatus",
     "JobStatus",
     "ErrorCode",
+    "Observation",
+    "ObservedTrack",
+    "RuleSpec",
+    "RuleWhen",
+    "RuleCompileResult",
+    "CameraGeometry",
+    "RuleCompileRequest",
+    "RuleActivationRequest",
+    "RuleStatusRequest",
+    "RuleEvent",
+    "CameraHealthEvent",
+    "ReviewResult",
+    "ReviewFailure",
+    "ReviewCompletion",
     "ErrorDetail",
     "ErrorBody",
     "ErrorEnvelope",

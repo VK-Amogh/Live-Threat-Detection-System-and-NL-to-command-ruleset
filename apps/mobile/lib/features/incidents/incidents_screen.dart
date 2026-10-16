@@ -60,6 +60,7 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
 
   List<EventOut> get _filteredEvents {
     if (_selectedFilter == 'ALL') return _events;
+    if (_selectedFilter == 'RULE') return _events.where((e) => e.category.key == 'RULE_ALERT').toList();
     return _events.where((e) {
       final cat = e.category.label.toUpperCase();
       return cat.contains(_selectedFilter);
@@ -94,7 +95,7 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Threat Alerts', style: AppTypography.screenTitle),
+                          Text('Alerts', style: AppTypography.screenTitle),
                           PressScale(
                             onTap: _loadEvents,
                             pressedScale: 0.94,
@@ -133,6 +134,8 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                             _filterChip('VIOLENCE', 'Violence'),
                             const SizedBox(width: AppSpacing.sm),
                             _filterChip('INTRUSION', 'Intrusion'),
+                            const SizedBox(width: AppSpacing.sm),
+                            _filterChip('RULE', 'Rules'),
                           ],
                         ),
                       ),
@@ -179,8 +182,8 @@ class _IncidentsScreenState extends State<IncidentsScreen> {
                 const SliverFillRemaining(
                   child: EmptyState(
                     icon: Icons.shield_outlined,
-                    title: 'No Threat Incidents',
-                    message: 'Active camera feeds are normal and undisturbed.',
+                    title: 'No alerts yet',
+                    message: 'Detections and rule matches will appear here.',
                   ),
                 )
               else

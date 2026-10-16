@@ -100,7 +100,7 @@ def rwf():
     rows = []
     for path in videos(base) if base.exists() else []:
         parts = [p.lower() for p in path.parts]
-        rows.append({'path': str(path), 'label': 1 if 'fight' in parts else 0, 'split': 'train' if 'train' in parts else 'test', 'dataset': 'RWF-2000 (surveillance)'})
+        rows.append({'path': str(path), 'label': 0 if 'nonfight' in path.parent.name.lower() else 1, 'split': 'train' if 'train' in parts else 'test', 'dataset': 'RWF-2000 (surveillance)'})
     train = [r for r in rows if r['split'] == 'train']
     block_split(train, 4, block=20, test=0.0, val=0.1)
     return rows
@@ -129,8 +129,38 @@ def stills():
     return rows
 
 
+def dcsass():
+    """DCSASS (UCF-Crime CCTV) dev parents only; blind parents are never listed here.
+
+    Violent positives: Fighting / Assault / Abuse sub-clips labelled anomalous. Negatives: ALL sub-clips (both labels) of the calm
+    categories RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary. DCSASS sub-clip labels are coarse - a "normal" sub-clip of a
+    fight video can show the fight - so normal sub-clips of violent categories are never used. Arrest / Robbery / Shooting /
+    Arson / Explosion are left out. Split by parent video (10% validation); blind parents are never listed.
+    """
+    path = ROOT / 'storage/datasets/dcsass/manifest.json'
+    if not path.exists():
+        return []
+    import hashlib
+    rng = random.Random(21)
+    rows = []
+    for r in json.loads(path.read_text()):
+        if r['split'] != 'dev':
+            continue
+        if r['label'] == 1 and r['category'] in ('Fighting', 'Assault', 'Abuse'):
+            label = 1
+        elif r['category'] in ('RoadAccidents', 'Shoplifting', 'Stealing', 'Vandalism', 'Burglary'):
+            label = 0
+            if rng.random() > 0.30:
+                continue          # bounded share of the many calm clips
+        else:
+            continue
+        split = 'val' if int(hashlib.sha1(r['parent'].encode()).hexdigest(), 16) % 10 == 0 else 'train'
+        rows.append({'path': r['path'], 'label': label, 'split': split, 'dataset': 'DCSASS dev (CCTV)'})
+    return rows
+
+
 def main():
-    rows = scvd() + hockey() + rlvs() + rwf() + stills()
+    rows = scvd() + hockey() + rlvs() + rwf() + dcsass() + stills()
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(rows, indent=1))
     from collections import Counter

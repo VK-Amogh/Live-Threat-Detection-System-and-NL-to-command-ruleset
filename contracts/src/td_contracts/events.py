@@ -101,6 +101,12 @@ class EventExtendRequest(BaseModel):
 
 class EventOut(BaseModel):
     id: str
+    rule_id: Optional[str] = None
+    rule_version: Optional[int] = None
+    uncertainty: Optional[str] = None
+    needs_visual_review: bool = False
+    evidence_bbox: Optional[tuple[int, int, int, int]] = None
+    review_possible_false_positive: Optional[bool] = None
     camera: CameraRef
     category: CategoryRef
     status: EventStatus

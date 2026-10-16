@@ -1,11 +1,22 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from 'react';
 import { api, post, date, type Incident, type Source, type Camera, type System } from './api/client';
+import { useChangeFeed } from './api/changeFeed';
 import { Badge, Empty, ErrorNotice, Icon, Media, Modal } from './components';
 import { Analyze } from './screens/Analyze';
 import { Investigation } from './screens/Investigation';
+import { Rules } from './screens/Rules';
 import { SystemScreen } from './screens/System';
 
-const tabs = [ ['Overview','grid-01'], ['Analyze','video-on'], ['Incidents','shield-01'], ['Investigation','search-01'], ['System','server-01'] ];
+const tabs = [ ['Overview','grid-01'], ['Analyze','video-on'], ['Rules','shield-check'], ['Incidents','shield-01'], ['Investigation','search-01'], ['System','server-01'] ];
+
+function mergeEvents(current: Incident[], incoming: Incident[]) {
+  const byId = new Map(current.map(event => [event.id, event]));
+  for (const event of incoming) {
+    const old = byId.get(event.id);
+    if (!old || event.change_seq >= old.change_seq) byId.set(event.id, event);
+  }
+  return [...byId.values()].sort((a, b) => b.created_at.localeCompare(a.created_at)).slice(0, 200);
+}
 
 function Login({ done }: { done: () => void }) {
   const [error,setError] = useState<string|null>(null);
@@ -28,12 +39,12 @@ export default function App() {
   const [cameras,setCameras] = useState<Camera[]>([]);
   const [system,setSystem] = useState<System|null>(null);
   const [error,setError] = useState<string|null>(null);
-  const [connected,setConnected] = useState(false);
   const [selected,setSelected] = useState<Incident|null>(null);
   const [scope,setScope] = useState<string|null>(null);
   const [search,setSearch] = useState('');
   const [filter,setFilter] = useState('');
   const [reviewBusy,setReviewBusy] = useState(false);
+  const [aiBusy,setAiBusy] = useState(false);
   const updating=useRef(false);
   const signIn = useCallback(async () => { try { setUser(await api('/auth/me')); } catch { setUser(null); } finally { setChecking(false); } }, []);
   useEffect(() => { void signIn(); const expired=()=>setUser(null); window.addEventListener('session-expired',expired); return ()=>window.removeEventListener('session-expired',expired); },[signIn]);
@@ -42,28 +53,22 @@ export default function App() {
     updating.current=true;
     try {
       const [es,ss,cs,sy] = await Promise.all([api<Incident[]>('/events?limit=200'),api<Source[]>('/sources'),api<Camera[]>('/cameras'),api<System>('/system')]);
-      setEvents(es); setSources(ss); setCameras(cs); setSystem(sy); setError(null);
-      setSelected(old=>old?es.find(e=>e.id===old.id)||old:null);
+      setEvents(old=>mergeEvents(old,es)); setSources(ss); setCameras(cs); setSystem(sy); setError(null);
+      setSelected(old=>{const next=old&&es.find(e=>e.id===old.id);return next&&old&&next.change_seq>=old.change_seq?next:old;});
     } catch(e) { setError((e as Error).message); } finally { updating.current=false; }
   },[]);
-  useEffect(()=>{
-    if(!user) return;
-    void refresh(); const poll=window.setInterval(refresh,5000); let stopped=false; let socket:WebSocket|undefined; let timer:number; let attempt=0;
-    async function connect() {
-      try {
-        const ticket=await post<{ticket:string}>('/ws-tickets'); if(stopped)return;
-        socket=new WebSocket(`${location.protocol==='https:'?'wss':'ws'}://${location.host}/api/v1/ws?ticket=${encodeURIComponent(ticket.ticket)}`);
-        socket.onopen=()=>{attempt=0;setConnected(true);void refresh();};
-        socket.onmessage=e=>{const message=JSON.parse(e.data); if(message.type==='ping')socket?.send(JSON.stringify({type:'pong'})); if(message.type.startsWith('event.')||message.type==='source.updated')void refresh();};
-        socket.onclose=()=>{setConnected(false);if(!stopped)timer=window.setTimeout(connect,Math.min(30000,1000*2**attempt++));};
-      }catch{if(!stopped)timer=window.setTimeout(connect,5000);}
-    }
-    void connect(); return ()=>{stopped=true;clearInterval(poll);clearTimeout(timer);socket?.close();setConnected(false);};
-  },[user,refresh]);
+  useEffect(()=>{if(!user)return;void refresh();const poll=window.setInterval(refresh,30000);return()=>clearInterval(poll);},[user,refresh]);
+  const onChange=useCallback((event:Incident)=>{setEvents(old=>mergeEvents(old,[event]));setSelected(old=>old?.id===event.id&&event.change_seq>old.change_seq?event:old);},[]);
+  const connected=useChangeFeed(Boolean(user),onChange,refresh);
   async function review(action:string) {
     if(!selected)return; setReviewBusy(true);
     try { const updated=await post<Incident>(`/events/${selected.id}/verification`,{client_action_id:crypto.randomUUID(),action}); setSelected(updated); await refresh(); }
     catch(e){setError((e as Error).message);}finally{setReviewBusy(false);}
+  }
+  async function askAi() {
+    if(!selected)return; setAiBusy(true);
+    try { const updated=await post<Incident>(`/events/${selected.id}/ai-review`); setSelected(updated); await refresh(); }
+    catch(e){setError((e as Error).message);}finally{setAiBusy(false);}
   }
   const investigate=(event:Incident)=>{setScope(event.id);setTab('Investigation');setSelected(null);};
   const filtered=events.filter(e=>(!filter||e.status===filter)&&(!search||`${e.category.label} ${e.camera.name} ${e.id} ${e.summary}`.toLowerCase().includes(search.toLowerCase())));
@@ -72,17 +77,18 @@ export default function App() {
     const url=URL.createObjectURL(new Blob([rows.map(r=>r.map(c=>'"'+c.replace(/"/g,'""')+'"').join(',')).join('\n')],{type:'text/csv'}));
     const a=document.createElement('a');a.href=url;a.download='safespace-incidents.csv';a.click();URL.revokeObjectURL(url);
   }
-  const incidentList=(items:Incident[])=>items.length?<div className="incident-list">{items.map(e=><button className="incident-row" key={e.id} onClick={()=>setSelected(e)}><div className="row-icon"><Icon name="shield-01"/></div><div className="row-main"><strong>{e.category.label}</strong><span>{e.camera.name} · {date(e.created_at)}</span></div><div className="row-meta"><Badge>{e.status.replaceAll('_',' ').toLowerCase()}</Badge><span>{Math.round(e.peak_confidence*100)}% confidence</span></div><Icon name="link-external"/></button>)}</div>:<Empty title={search||filter?'No matching incidents':'A clear incident log'}>{search||filter?'Try a different search or status filter.':'Analyze an image or connect a camera. Actual detections will appear here for review.'}</Empty>;
+  const incidentList=(items:Incident[])=>items.length?<div className="incident-list">{items.map(e=><button className="incident-row" key={e.id} onClick={()=>setSelected(e)}><div className="row-icon"><Icon name="shield-01"/></div><div className="row-main"><strong>{e.category.label}</strong><span>{e.camera.name} · {date(e.created_at)}</span></div><div className="row-meta"><Badge>{e.status.replaceAll('_',' ').toLowerCase()}</Badge>{e.ai_disagrees&&<Badge>AI disagrees</Badge>}<span>{Math.round(e.peak_confidence*100)}% confidence</span></div><Icon name="link-external"/></button>)}</div>:<Empty title={search||filter?'No matching incidents':'A clear incident log'}>{search||filter?'Try a different search or status filter.':'Analyze an image or connect a camera. Actual detections will appear here for review.'}</Empty>;
   if(checking)return <main className="loading"><div className="skeleton"/><p>Connecting to your workspace…</p></main>;
   if(!user)return <Login done={()=>void signIn()}/>;
   return <><a className="skip" href="#main">Skip to content</a><header className="shell-header"><div className="brand"><Icon name="shield-check" size={24}/><span>SafeSpace</span></div><nav aria-label="Sections" className="glass nav-pill">{tabs.map(([name,icon])=><button key={name} title={name} aria-label={name} aria-current={tab===name?'page':undefined} className={tab===name?'active':''} onClick={()=>setTab(name)}><Icon name={icon} size={22}/></button>)}</nav><div className="header-end"><span className="caption">{connected?'Updates connected':'Reconnecting…'}</span><button className="circle" title="Sign out" aria-label="Sign out" onClick={async()=>{try{await post('/auth/logout');setUser(null);}catch(e){setError((e as Error).message);}}}><Icon name="arrow-left"/></button></div></header>
-    <main id="main" className="workspace"><div className="page-heading"><div><p className="eyebrow">SAFESPACE / {tab.toUpperCase()}</p><h1>{tab==='Overview'?'Your space, at a glance.':tab==='Analyze'?'See what’s happening.':tab==='Incidents'?'Every detail matters.':tab==='Investigation'?'Ask the evidence.':'Your connected system.'}</h1><p>{tab==='Overview'?'A shared view of your sources, detections, and response.':tab==='Analyze'?'Upload an image or recording, or connect a live camera.':tab==='Incidents'?'Review detections, inspect recordings, and record your decision.':tab==='Investigation'?'Answers grounded in your incident records, with evidence attached.':'Real service status, model coverage, and device access.'}</p></div>{tab==='Overview'&&<button className="primary" onClick={()=>setTab('Analyze')}><Icon name="plus-01"/>Analyze a source</button>}</div><ErrorNotice message={error}/>
+    <main id="main" className="workspace"><div className="page-heading"><div><p className="eyebrow">SAFESPACE / {tab.toUpperCase()}</p><h1>{tab==='Overview'?'Your space, at a glance.':tab==='Analyze'?'See what’s happening.':tab==='Rules'?'Describe what to watch.':tab==='Incidents'?'Every detail matters.':tab==='Investigation'?'Ask the evidence.':'Your connected system.'}</h1><p>{tab==='Overview'?'A shared view of your sources, detections, and response.':tab==='Analyze'?'Upload an image or recording, or connect a live camera.':tab==='Rules'?'Draw camera zones, confirm a rule’s readback, and control alerts.':tab==='Incidents'?'Review detections, inspect recordings, and record your decision.':tab==='Investigation'?'Answers grounded in your incident records, with evidence attached.':'Real service status, model coverage, and device access.'}</p></div>{tab==='Overview'&&<button className="primary" onClick={()=>setTab('Analyze')}><Icon name="plus-01"/>Analyze a source</button>}</div><ErrorNotice message={error}/>
     {tab==='Overview'&&<><div className="stats">{[['Awaiting review',system?.counts.needs_review,'Unverified model candidates'],['Recorded incidents',system?.counts.incidents,'All retained detections'],['Frames analyzed',system?.counts.frames_analyzed,'Across uploads and cameras'],['Cameras online',system?.counts.cameras_online,'Receiving real frames']].map(([label,value,detail])=><article className="stat" key={label}><span>{label}</span><h2>{value??'—'}</h2><small>{detail}</small></article>)}</div><div className="overview-grid"><section className="panel"><div className="section-head"><h2>Recent incidents</h2><button className="quiet" onClick={()=>setTab('Incidents')}>View all <Icon name="link-external"/></button></div>{incidentList(events.slice(0,5))}</section><section className="panel"><div className="section-head"><h2>Detection coverage</h2><Icon name="shield-check"/></div><Badge>{system?.inference.ready?'Detector ready':'Detector unavailable'}</Badge><div className="coverage-list">{((system?.inference.models||[]) as {name:string;classes:string[]}[]).map(m=><div key={m.name}><strong>{m.name}</strong><p>{m.classes.join(' · ')}</p></div>)}</div><p className="caption">No threat detected means none of the supported classes crossed their thresholds. Other threats may remain undetected.</p><button onClick={()=>setTab('System')}>Inspect model coverage</button></section></div><section className="panel"><div className="section-head"><h2>Source activity</h2><Badge>{sources.length} retained sources</Badge></div>{sources.length?<div className="source-grid">{sources.slice(0,4).map(s=><button className="source-card" key={s.id} onClick={()=>setTab('Analyze')}><Icon name={s.kind==='image'?'upload-02':'video-on'}/><strong>{s.filename}</strong><small>{s.status.toLowerCase()} · {s.frames_analyzed} frames</small><span>{s.event_ids?.length||0} incident candidates</span></button>)}</div>:<p className="muted">No sources yet. Start with a photo, a recording, or your PC camera.</p>}</section></>}
     {tab==='Analyze'&&<Analyze sources={sources} cameras={cameras} refresh={refresh} onIncident={id=>{const found=events.find(e=>e.id===id);if(found)setSelected(found);}}/>}
+    {tab==='Rules'&&<Rules cameras={cameras}/>}
     {tab==='Incidents'&&<section className="panel"><div className="filter-toolbar"><label className="search-field"><Icon name="search-01"/><input aria-label="Search incidents" placeholder="Search category, source, or incident…" value={search} onChange={e=>setSearch(e.target.value)}/></label><select aria-label="Filter incident status" value={filter} onChange={e=>setFilter(e.target.value)}><option value="">All statuses</option><option value="NEEDS_REVIEW">Needs review</option><option value="CONFIRMED">Confirmed</option><option value="FALSE_POSITIVE">False positive</option></select><button onClick={exportEvents} disabled={!filtered.length}><Icon name="download"/>Export CSV</button></div><p className="caption">Showing {filtered.length} of the latest 200 incidents</p>{incidentList(filtered)}</section>}
     {tab==='Investigation'&&<Investigation events={events} scope={scope} setScope={setScope} onOpen={setSelected} system={system}/>}
     {tab==='System'&&<SystemScreen system={system} refresh={refresh} onPasswordChange={()=>setUser(null)}/>}
     <footer className="page-footer"><span>SafeSpace · Your PC is the server</span><span>{system?`Last synchronized ${new Date(system.timestamp).toLocaleTimeString()}`:'Waiting for server'}</span></footer></main>
-    {selected&&<Modal title={selected.category.label} close={()=>setSelected(null)}><div className="incident-detail"><Media incident={selected}/><div className="section-head"><Badge>{selected.status.replaceAll('_',' ').toLowerCase()}</Badge><Badge>{selected.severity.toLowerCase()}</Badge></div><p>{selected.summary}</p><dl><dt>Source</dt><dd>{selected.camera.name}</dd><dt>Detected</dt><dd>{date(selected.first_seen_at)}</dd><dt>Peak confidence</dt><dd>{(selected.peak_confidence*100).toFixed(1)}%</dd><dt>Model</dt><dd>{selected.models?.yolo.name||'Not recorded'}</dd><dt>Incident ID</dt><dd className="mono">{selected.id}</dd></dl><div className="actions"><button disabled={reviewBusy} onClick={()=>void review('MARK_FALSE_POSITIVE')}>False positive</button><button className="primary" disabled={reviewBusy} onClick={()=>void review('CONFIRM')}><Icon name="check-01"/>Confirm incident</button></div><button onClick={()=>investigate(selected)}><Icon name="search-01"/>Ask about this incident</button>{(selected.feedback?.length||0)>0&&<div><h3>Review history</h3>{selected.feedback?.map(f=><p className="caption" key={f.id}>{f.action.replaceAll('_',' ')} · {date(f.created_at)}</p>)}</div>}</div></Modal>}
+    {selected&&<Modal title={selected.category.label} close={()=>setSelected(null)}><div className="incident-detail"><Media incident={selected}/><div className="section-head"><Badge>{selected.status.replaceAll('_',' ').toLowerCase()}</Badge><Badge>{selected.severity.toLowerCase()}</Badge></div><p>{selected.summary}</p>{selected.rule_id&&<p className="caption">Rule {selected.rule_id} · version {selected.rule_version}{selected.uncertainty?` · ${selected.uncertainty}`:''}</p>}<dl><dt>Source</dt><dd>{selected.camera.name}</dd><dt>Detected</dt><dd>{date(selected.first_seen_at)}</dd><dt>Peak confidence</dt><dd>{(selected.peak_confidence*100).toFixed(1)}%</dd><dt>Model</dt><dd>{selected.models?.yolo.name||'Not recorded'}</dd><dt>Incident ID</dt><dd className="mono">{selected.id}</dd></dl><section className="ai-review" aria-label="AI second opinion"><div className="section-head"><h3>AI second opinion</h3>{selected.ai_disagrees?<Badge>Disagrees with detector</Badge>:selected.reasoning?<Badge>{selected.reasoning.evidence_insufficient?'Inconclusive':'Consistent'}</Badge>:null}</div>{selected.reasoning?<><p>{selected.reasoning.uncertainty}</p>{(selected.reasoning.visible_facts||[]).length>0&&<ul>{(selected.reasoning.visible_facts||[]).map(f=><li key={f}>{f}</li>)}</ul>}<p className="caption">Model: {selected.models?.vlm?.name||'unknown'} · confidence {Math.round(selected.reasoning.confidence*100)}%. The AI only advises; you decide.</p></>:<p className="caption">An open-weights vision model can double-check the evidence frames. It never confirms or dismisses an incident for you.</p>}<button disabled={aiBusy} onClick={()=>void askAi()}><Icon name="search-01"/>{aiBusy?'Looking at the footage…':selected.reasoning?'Ask again':'Ask the AI to double-check'}</button></section><div className="actions"><button disabled={reviewBusy} onClick={()=>void review('MARK_FALSE_POSITIVE')}>False positive</button><button className="primary" disabled={reviewBusy} onClick={()=>void review('CONFIRM')}><Icon name="check-01"/>Confirm incident</button></div><button onClick={()=>investigate(selected)}><Icon name="search-01"/>Ask about this incident</button>{(selected.feedback?.length||0)>0&&<div><h3>Review history</h3>{selected.feedback?.map(f=><p className="caption" key={f.id}>{f.action.replaceAll('_',' ')} · {date(f.created_at)}</p>)}</div>}</div></Modal>}
   </>;
 }

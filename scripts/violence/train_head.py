@@ -87,7 +87,11 @@ def main():
     ap.add_argument('--batch', type=int, default=128)
     ap.add_argument('--lr', type=float, default=3e-4)
     ap.add_argument('--min-precision', type=float, default=0.85)
+    ap.add_argument('--tag', default='', help='write candidate files (violence_head_<tag>.*) instead of replacing the deployed head')
+    ap.add_argument('--blind', default=None, help='blind feature dir to evaluate per category after training (never used for calibration)')
     ap.add_argument('--still-far', type=float, default=0.03, help='max false-alarm rate allowed for single uploaded stills')
+    ap.add_argument('--scvd-repeat', type=int, default=1, help='repeat CCTV training views to emphasize surveillance footage')
+    ap.add_argument('--output-name', default='violence_head', help='checkpoint basename under storage/models; benchmark uses the same suffix')
     a = ap.parse_args()
     d = ROOT / a.features
     X = np.load(d / 'features.npy', mmap_mode='r')
@@ -102,6 +106,10 @@ def main():
     view = np.array([m['view'] for m in meta])
     ds = np.array([m['dataset'] for m in meta])
     train_idx = np.where(split == 'train')[0]
+    unique_train_clips = len(train_idx)
+    if a.scvd_repeat > 1:
+        scvd_idx = train_idx[ds[train_idx] == 'SCVD (CCTV)']
+        train_idx = np.concatenate([train_idx, np.tile(scvd_idx, a.scvd_repeat - 1)])
     X_train = np.asarray(X[train_idx])
     y_train = y_all[train_idx].astype(np.float32)
     val_idx = np.where((split == 'val') & (view == 0))[0]
@@ -158,7 +166,8 @@ def main():
                pick_threshold_far(np.repeat(y_val[still_val], 16), frames_val[still_val].reshape(-1), a.still_far / 3) if still_val.any() else 0)
 
     X_test, y_test = np.asarray(X[test_idx]), y_all[test_idx]
-    report = {'generated_at': time.time(), 'train_clips': int(len(train_idx)), 'val_clips': int(len(val_idx)), 'test_clips': int(len(test_idx)),
+    report = {'generated_at': time.time(), 'train_clips': int(unique_train_clips), 'cctv_repeat': a.scvd_repeat,
+              'train_views_after_repeating': int(len(train_idx)), 'val_clips': int(len(val_idx)), 'test_clips': int(len(test_idx)),
               'train_seconds': round(time.time() - started), 'selection_rule': f'val thresholds, video clips and threat-free stills calibrated separately, stricter wins: 8-frame window = max F1 with precision >= {a.min_precision}; single frame = highest recall with false-alarm rate <= {a.still_far} on video frames and <= {a.still_far/3:.3f} on stills',
               'encoder': 'facebook/dinov2-base (frozen)', 'overall': {}, 'by_dataset': {}}
     s8 = evaluate_windows(model, X_test, 8, 2, device)
@@ -176,10 +185,11 @@ def main():
         report['by_dataset'][name] = {'clips': int(m.sum()), 'clip_8_frames': metrics(y_test[m], s8[m], thr8), 'single_frame': metrics(np.repeat(y_test[m], 16), sf[m].reshape(-1), thr1)}
     out = ROOT / 'storage/models'
     out.mkdir(parents=True, exist_ok=True)
-    torch.save(best_state, out / 'violence_head.pt')
-    (out / 'violence_head.json').write_text(json.dumps({'thresholds': {'1': thr1, '8': thr8}, 'encoder': 'facebook/dinov2-base', 'benchmark': 'storage/benchmarks/violence.json'}, indent=2))
+    torch.save(best_state, out / f'{a.output_name}.pt')
+    benchmark_name = 'violence' if a.output_name == 'violence_head' else a.output_name
+    (out / f'{a.output_name}.json').write_text(json.dumps({'thresholds': {'1': thr1, '8': thr8}, 'encoder': 'facebook/dinov2-base', 'benchmark': f'storage/benchmarks/{benchmark_name}.json'}, indent=2))
     (ROOT / 'storage/benchmarks').mkdir(parents=True, exist_ok=True)
-    (ROOT / 'storage/benchmarks/violence.json').write_text(json.dumps(report, indent=2))
+    (ROOT / 'storage/benchmarks' / f'{benchmark_name}.json').write_text(json.dumps(report, indent=2))
     print(json.dumps(report['overall'], indent=2))
 
 

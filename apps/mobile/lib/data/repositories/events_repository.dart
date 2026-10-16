@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../../core/api_client.dart';
@@ -6,8 +7,12 @@ import '../generated/models.dart';
 class EventsRepository {
   final ApiClient apiClient;
   final revision = ValueNotifier<int>(0);
+  Timer? _pendingRefresh;
   EventsRepository(this.apiClient);
-  void invalidate() => revision.value++;
+  void invalidate() {
+    if (_pendingRefresh?.isActive == true) return;
+    _pendingRefresh = Timer(const Duration(milliseconds: 150), () => revision.value++);
+  }
   Future<List<EventOut>> getEvents({int limit = 100}) async {
     final response = await apiClient.dio.get('/api/v1/events', queryParameters: {'limit': limit});
     return (response.data as List).map((e) => EventOut.fromJson(Map<String, dynamic>.from(e))).toList();

@@ -17,6 +17,7 @@ class NotificationService {
 
   Future<void> showThreatAlert(EventOut event) async {
     final isCritical = event.severity == Severity.CRITICAL;
+    final isRule = event.category.key == 'RULE_ALERT';
 
     final androidDetails = AndroidNotificationDetails(
       'safespace_threats',
@@ -32,7 +33,7 @@ class NotificationService {
 
     await _notifications.show(
       event.id.hashCode,
-      '⚠️ ${event.severity.name} THREAT: ${event.category.label}',
+      isRule ? 'SafeSpace rule: ${event.category.label}' : '⚠️ ${event.severity.name} THREAT: ${event.category.label}',
       event.summary ?? 'Detection on ${event.camera.name}',
       details,
     );

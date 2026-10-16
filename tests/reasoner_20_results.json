@@ -1,0 +1,312 @@
+[
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_0.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in all frames. People are positioned around tables. Some people are moving in the frames. Tables and chairs are visible.",
+      "uncertainty": "Specific actions or identities of individuals cannot be determined.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 46.17
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_1.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 0.77,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible across the frames. Some people are positioned near tables. People are standing and moving in the area. Tables and chairs are visible.",
+      "uncertainty": "The specific actions or relationships between the people cannot be determined. The exact duration of visibility for each person is not quantifiable from the image alone.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 50.33
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_2.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 1.53,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in the frames. Some people are moving. Tables and chairs are visible. People are positioned around the tables.",
+      "uncertainty": "The specific actions of the people are unclear. The nature of the objects on the tables is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 40.3
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_3.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 2.3,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in the frames. People are moving across the scene. Tables and chairs are visible. The ground surface is visible.",
+      "uncertainty": "The exact duration of visibility for each person cannot be determined from the static frames.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 37.92
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_4.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 3.07,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "People are visible in the frames. Tables and chairs are visible. People are moving in the frames.",
+      "uncertainty": "The specific duration of visibility for each person cannot be determined from the static frames.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 44.61
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_5.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 3.83,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "People and tables are visible across all frames. Several individuals are present in the left area of the frames. People are seated at tables in the middle and right areas of the frames. A person wearing a green shirt is visible in the foreground in the middle and right frames. Chairs and tables are visible throughout the sampled frames.",
+      "uncertainty": "The specific actions or duration of visibility for individual people cannot be determined from the static frames.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 48.45
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_0.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "People are visible in the background and foreground. Long metal tables or carts are visible. Items are placed on the tables. People are positioned near the tables.",
+      "uncertainty": "The specific nature of the items on the tables is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 46.34
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_1.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 0.65,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in the frames. Some people are wearing blue shirts. One person is wearing a pink top. Long tables with metal structures are visible. Boxes and patterned items are on the tables. Metal containers are visible.",
+      "uncertainty": "Specific identities of people and objects on the tables are unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 46.31
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_2.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 1.29,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "A long table with metal containers and food items is visible. Several people are standing near the table. Some people are moving in the background. Black metal barriers are visible in the foreground and middle ground. Food items, including bread and checkered items, are on the table.",
+      "uncertainty": "The specific actions or relationships between the people are unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 42.2
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_3.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 1.94,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible near a long table structure. Some people are standing near the table. Some people are bending over the table. Boxes and patterned objects are visible on the table.",
+      "uncertainty": "The specific actions of the people are unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 38.03
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_4.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 2.59,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "FAIL",
+    "error": "ValueError: Visual summary claims identity, intent, or an unverified action",
+    "elapsed_s": 40.98
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_5.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 3.23,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "A long table structure with metal racks and containers is visible. Items are placed on the table. Several people are visible in the background and foreground. Some people are standing near the table. Some people are moving in the background. Floor markings are visible on the floor.",
+      "uncertainty": "The specific nature of the items on the table is unclear. The exact number of people visible is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 50.27
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_0.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "People are visible in the background of all frames. Tables and chairs are visible throughout the frames. Shelving units are visible in the background. A decorative tree is visible in the middle frame. People are positioned around the tables and in the background areas.",
+      "uncertainty": "Specific actions or identities of the people cannot be determined. The exact nature of the objects on the tables is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 44.83
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_1.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 1.23,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in the frames. People are positioned around tables and chairs. Tables and chairs are visible throughout the sampled frames. Shelving or cabinets are visible in the background.",
+      "uncertainty": "The specific actions or identities of the people cannot be determined.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 35.06
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_0.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "People are visible in the frames. One person is standing near a row of chairs. Another person is visible further in the background. A person wearing red clothing is visible. A tripod is visible in the frames. A row of chairs is visible.",
+      "uncertainty": "The duration of visibility for the people is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 42.81
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_1.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 0.51,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "A person is visible in the center of the frame, bent over. Rows of chairs are visible along the left side of the frame.",
+      "uncertainty": "The specific action of the person is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 36.28
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_2.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 1.01,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible in the frames. Rows of chairs are visible. A tripod or camera equipment is visible. A weapon is visible on the floor in one frame. One person is standing in one frame. One person is interacting with a surface in another frame. One person is moving in the bottom frame.",
+      "uncertainty": "The specific nature of the objects is unclear. The exact identity or relationship of the people is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 41.67
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_3.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 1.52,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "People are visible. Chairs are lined up. A tripod and camera equipment are visible. One person is walking.",
+      "uncertainty": "The specific identity or purpose of the people is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 40.23
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_4.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 2.03,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "A person is standing and leaning over another person who is on the ground. Multiple stacked chairs are visible. A camera mounted on a tripod is visible. A firearm is being held by the standing person. Other figures are visible in the background.",
+      "uncertainty": "The specific identity or relationship of the people cannot be determined. The exact nature of the objects is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 48.31
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_5.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 2.53,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "A person standing is visible. Another person is positioned near tables. Stacked chairs are visible. Tables are visible. A tripod is visible. A weapon is partially visible in the lower right corner.",
+      "uncertainty": "The specific actions of the people are unclear. The nature of the objects is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 45.12
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_4.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 2.59,
+    "rule_fired": true,
+    "model": "gemma4:e2b",
+    "status": "PASS",
+    "result": {
+      "visible_evidence": "Multiple people are visible. Some people are standing near long, metal tables. Some people are moving.",
+      "uncertainty": "The duration of visibility for the people is unclear.",
+      "possible_false_positive": false
+    },
+    "images": 3,
+    "elapsed_s": 25.83
+  }
+]

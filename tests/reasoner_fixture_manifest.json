@@ -1,0 +1,182 @@
+[
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_0.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_1.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 0.77,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_2.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 1.53,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_3.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 2.3,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_4.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 3.07,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v001_converted_3_5.mp4",
+    "source": "v001_converted 3.avi",
+    "source_offset_s": 3.83,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_0.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_1.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 0.65,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_2.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 1.29,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_3.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 1.94,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_4.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 2.59,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v006_converted_3_5.mp4",
+    "source": "v006_converted 3.avi",
+    "source_offset_s": 3.23,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_0.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_1.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 1.23,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_2.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 2.45,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_3.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 3.68,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_4.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 4.91,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v011_converted_3_5.mp4",
+    "source": "v011_converted 3.avi",
+    "source_offset_s": 6.13,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v026_converted_3_0.mp4",
+    "source": "v026_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v026_converted_3_1.mp4",
+    "source": "v026_converted 3.avi",
+    "source_offset_s": 1.42,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v026_converted_3_2.mp4",
+    "source": "v026_converted 3.avi",
+    "source_offset_s": 2.84,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v026_converted_3_3.mp4",
+    "source": "v026_converted 3.avi",
+    "source_offset_s": 4.26,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v026_converted_3_4.mp4",
+    "source": "v026_converted 3.avi",
+    "source_offset_s": 5.68,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\v026_converted_3_5.mp4",
+    "source": "v026_converted 3.avi",
+    "source_offset_s": 7.1,
+    "rule_fired": false
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_0.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 0,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_1.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 0.51,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_2.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 1.01,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_3.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 1.52,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_4.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 2.03,
+    "rule_fired": true
+  },
+  {
+    "clip": "storage\\validation\\rules\\review_clips\\w001_converted_3_5.mp4",
+    "source": "w001_converted 3.avi",
+    "source_offset_s": 2.53,
+    "rule_fired": true
+  }
+]

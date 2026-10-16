@@ -225,6 +225,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/events/{ident}/ai-review": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ai Review */
+        post: operations["ai_review_api_v1_events__ident__ai_review_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/changes": {
         parameters: {
             query?: never;
@@ -414,6 +431,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/cameras/{ident}/live": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Camera Live
+         * @description Latest detector output for a running camera, for drawing boxes over the live preview.
+         */
+        get: operations["camera_live_api_v1_cameras__ident__live_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/cameras/{ident}/frame": {
         parameters: {
             query?: never;
@@ -534,10 +571,207 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/rules/compile": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Compile Rule */
+        post: operations["compile_rule_api_v1_rules_compile_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Rules */
+        get: operations["list_rules_api_v1_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rules/{ident}/activate": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Activate Rule */
+        post: operations["activate_rule_api_v1_rules__ident__activate_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/rules/{ident}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Change Rule Status */
+        patch: operations["change_rule_status_api_v1_rules__ident__patch"];
+        trace?: never;
+    };
+    "/api/v1/cameras/{camera_id}/geometry": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Geometry */
+        get: operations["get_geometry_api_v1_cameras__camera_id__geometry_get"];
+        /** Put Geometry */
+        put: operations["put_geometry_api_v1_cameras__camera_id__geometry_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/rules": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Worker Rules */
+        get: operations["worker_rules_api_v1_internal_rules_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/cameras": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Worker Cameras */
+        get: operations["worker_cameras_api_v1_internal_cameras_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/live-frame": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ingest Live Frame */
+        post: operations["ingest_live_frame_api_v1_internal_live_frame_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/rule-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ingest Rule Event */
+        post: operations["ingest_rule_event_api_v1_internal_rule_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/health-events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Ingest Health Event */
+        post: operations["ingest_health_event_api_v1_internal_health_events_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/internal/events/{ident}/clip": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Attach Clip */
+        post: operations["attach_clip_api_v1_internal_events__ident__clip_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Body_ingest_live_frame_api_v1_internal_live_frame_post */
+        Body_ingest_live_frame_api_v1_internal_live_frame_post: {
+            /** Camera Id */
+            camera_id: string;
+            /** Frame Ts */
+            frame_ts: number;
+            /** File */
+            file: string;
+        };
         /** Body_predict_frame_api_v1_inference_predict_frame_post */
         Body_predict_frame_api_v1_inference_predict_frame_post: {
             /** File */
@@ -561,6 +795,46 @@ export interface components {
              * @description Device index (e.g. '0'), file path, or RTSP URL
              */
             connection_uri?: string | null;
+        };
+        /** CameraGeometry */
+        CameraGeometry: {
+            /** Zones */
+            zones?: {
+                [key: string]: [
+                    number,
+                    number
+                ][];
+            };
+            /** Lines */
+            lines?: {
+                [key: string]: [
+                    [
+                        number,
+                        number
+                    ],
+                    [
+                        number,
+                        number
+                    ]
+                ];
+            };
+            /** Homography */
+            homography?: number[][] | null;
+            /** Snapshot Width */
+            snapshot_width: number;
+            /** Snapshot Height */
+            snapshot_height: number;
+        };
+        /** CameraHealthEvent */
+        CameraHealthEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Camera Id */
+            camera_id: string;
+            /** Ts */
+            ts: number;
+            /** Reason */
+            reason: string;
         };
         /** CameraOut */
         CameraOut: {
@@ -687,6 +961,8 @@ export interface components {
             class_name: string;
             /** Confidence */
             confidence: number;
+            /** Detector Confidence */
+            detector_confidence?: number | null;
             /** Box */
             box: number[];
             /** Model */
@@ -700,6 +976,17 @@ export interface components {
         EventOut: {
             /** Id */
             id: string;
+            /** Rule Id */
+            rule_id?: string | null;
+            /** Rule Version */
+            rule_version?: number | null;
+            /** Uncertainty */
+            uncertainty?: string | null;
+            /**
+             * Needs Visual Review
+             * @default false
+             */
+            needs_visual_review: boolean;
             camera: components["schemas"]["CameraRef"];
             category: components["schemas"]["CategoryRef"];
             status: components["schemas"]["EventStatus"];
@@ -912,6 +1199,164 @@ export interface components {
             /** Cannot Determine */
             cannot_determine?: string[];
         };
+        /** RuleActivationRequest */
+        RuleActivationRequest: {
+            /** Expected Version */
+            expected_version: number;
+            /** Confirmed Readback Hash */
+            confirmed_readback_hash: string;
+            /**
+             * Acknowledge Experimental
+             * @default false
+             */
+            acknowledge_experimental: boolean;
+        };
+        /** RuleCompileRequest */
+        RuleCompileRequest: {
+            /** Camera Id */
+            camera_id: string;
+            /** Text */
+            text: string;
+        };
+        /** RuleCompileResult */
+        RuleCompileResult: {
+            spec: components["schemas"]["RuleSpec"];
+            /** Readback */
+            readback: string | null;
+            /** Readback Hash */
+            readback_hash?: string | null;
+            /**
+             * Support Level
+             * @enum {string}
+             */
+            support_level: "SUPPORTED" | "EXPERIMENTAL" | "UNSUPPORTED";
+            /** Problems */
+            problems: string[];
+            /** Can Activate */
+            can_activate: boolean;
+        };
+        /** RuleEvent */
+        RuleEvent: {
+            /** Event Id */
+            event_id: string;
+            /** Camera Id */
+            camera_id: string;
+            /** Rule Id */
+            rule_id: string;
+            /** Rule Version */
+            rule_version: number;
+            /** Ts */
+            ts: number;
+            /** Episode Start */
+            episode_start: number;
+            /**
+             * Status
+             * @default DETECTED
+             * @constant
+             */
+            status: "DETECTED";
+            /** Tracks */
+            tracks: number[];
+            /** Model Versions */
+            model_versions: {
+                [key: string]: string;
+            };
+            /** Confidence */
+            confidence: number;
+            /** Uncertainty */
+            uncertainty: string;
+            /**
+             * Needs Visual Review
+             * @default false
+             */
+            needs_visual_review: boolean;
+        };
+        /** RuleSpec */
+        RuleSpec: {
+            /** Rule Id */
+            rule_id: string;
+            /** Camera Id */
+            camera_id: string;
+            /** Version */
+            version: number;
+            /** Name */
+            name: string;
+            /** Entity */
+            entity: string;
+            when: components["schemas"]["RuleWhen"] | null;
+            /**
+             * Min Hold S
+             * @default 1.5
+             */
+            min_hold_s: number;
+            /**
+             * Cooldown S
+             * @default 120
+             */
+            cooldown_s: number;
+            /**
+             * Needs Visual Review
+             * @default false
+             */
+            needs_visual_review: boolean;
+            /**
+             * Action
+             * @default notify_user
+             * @constant
+             */
+            action: "notify_user";
+            /**
+             * Support Level
+             * @enum {string}
+             */
+            support_level: "SUPPORTED" | "EXPERIMENTAL" | "UNSUPPORTED";
+            /**
+             * Status
+             * @default draft
+             * @enum {string}
+             */
+            status: "draft" | "active" | "disabled";
+            /** Unsupported Reason */
+            unsupported_reason?: string | null;
+        };
+        /** RuleStatusRequest */
+        RuleStatusRequest: {
+            /**
+             * Status
+             * @enum {string}
+             */
+            status: "active" | "disabled";
+            /** Expected Version */
+            expected_version: number;
+        };
+        /** RuleWhen */
+        RuleWhen: {
+            /** All */
+            all?: components["schemas"]["RuleWhen"][] | null;
+            /** Any */
+            any?: components["schemas"]["RuleWhen"][] | null;
+            not?: components["schemas"]["RuleWhen"] | null;
+            /** Type */
+            type?: ("entity_present" | "in_zone" | "line_cross" | "unique_count_at_least" | "dwell_at_least" | "moving_toward" | "distance_below" | "time_window") | null;
+            /** Zone */
+            zone?: string | null;
+            /** Line */
+            line?: string | null;
+            /** Seconds */
+            seconds?: number | null;
+            /** Count */
+            count?: number | null;
+            /** Window S */
+            window_s?: number | null;
+            /** Meters */
+            meters?: number | null;
+            /** Start */
+            start?: string | null;
+            /** End */
+            end?: string | null;
+            /** Tz */
+            tz?: string | null;
+        };
         /** RuntimeSettings */
         RuntimeSettings: {
             /**
@@ -930,6 +1375,11 @@ export interface components {
              * @default qwen/qwen3.8-27b
              */
             groq_model: string;
+            /**
+             * Ai Review
+             * @default false
+             */
+            ai_review: boolean;
         };
         /**
          * Severity
@@ -1434,6 +1884,37 @@ export interface operations {
             };
         };
     };
+    ai_review_api_v1_events__ident__ai_review_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EventOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     changes_api_v1_changes_get: {
         parameters: {
             query?: {
@@ -1816,6 +2297,37 @@ export interface operations {
             };
         };
     };
+    camera_live_api_v1_cameras__ident__live_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     camera_frame_api_v1_cameras__ident__frame_get: {
         parameters: {
             query?: never;
@@ -2022,6 +2534,410 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    compile_rule_api_v1_rules_compile_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleCompileRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RuleCompileResult"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_rules_api_v1_rules_get: {
+        parameters: {
+            query?: {
+                camera_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    activate_rule_api_v1_rules__ident__activate_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleActivationRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    change_rule_status_api_v1_rules__ident__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleStatusRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_geometry_api_v1_cameras__camera_id__geometry_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                camera_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CameraGeometry"] | null;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    put_geometry_api_v1_cameras__camera_id__geometry_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                camera_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CameraGeometry"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    worker_rules_api_v1_internal_rules_get: {
+        parameters: {
+            query: {
+                camera_id: string;
+            };
+            header?: {
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    worker_cameras_api_v1_internal_cameras_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ingest_live_frame_api_v1_internal_live_frame_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_ingest_live_frame_api_v1_internal_live_frame_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ingest_rule_event_api_v1_internal_rule_events_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RuleEvent"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    ingest_health_event_api_v1_internal_health_events_post: {
+        parameters: {
+            query?: never;
+            header: {
+                "Idempotency-Key": string;
+                authorization?: string;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CameraHealthEvent"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    attach_clip_api_v1_internal_events__ident__clip_post: {
+        parameters: {
+            query?: never;
+            header?: {
+                authorization?: string;
+            };
+            path: {
+                ident: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

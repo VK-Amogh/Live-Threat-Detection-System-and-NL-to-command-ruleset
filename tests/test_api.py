@@ -189,7 +189,7 @@ def make_video(path,seconds=6,fps=10):
     writer.release()
 
 
-def scripted_detector(confidences):
+def scripted_detector(confidences,raw=None):
     """Detector double that returns a fire detection with the given confidence (None = clear frame) per call."""
     calls=iter(confidences)
     async def predict(_, *args):
@@ -198,6 +198,7 @@ def scripted_detector(confidences):
             return result(False)
         out=result()
         out.detections[0].confidence=conf
+        out.detections[0].detector_confidence=conf if raw is None else raw
         return out
     return predict
 
@@ -217,12 +218,15 @@ def run_video(client,tmp_path):
 
 
 def test_video_candidate_needs_persistence(client,monkeypatch,tmp_path):
-    # One isolated low-confidence frame must not become an incident; two hits in the window do.
+    # Uploaded video needs three low-confidence hits in four sampled frames.
     monkeypatch.setattr(pipeline,'detector',scripted_detector([.5]+[None]*40))
     login(client)
     assert run_video(client,tmp_path)['event_ids']==[]
     monkeypatch.setattr(pipeline,'detector',scripted_detector([.5,.55]+[None]*40))
+    assert run_video(client,tmp_path)['event_ids']==[]
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.5,.55,.6]+[None]*40))
     source=run_video(client,tmp_path)
+    assert source['frames_analyzed'] >= 25  # six seconds at the configured 5 fps
     assert len(source['event_ids'])==1
     event=client.get('/api/v1/events/'+source['event_ids'][0]).json()
     assert event['media_offset_ms'] is not None
@@ -263,3 +267,34 @@ def test_system_reports_published_benchmarks(client,tmp_path,monkeypatch):
     (tmp_path/'benchmarks'/'fire_smoke.json').write_text(json.dumps({'overall':{'mAP50':.5}}))
     body=client.get('/api/v1/system').json()
     assert body['training']['benchmarks']['fire_smoke']['overall']['mAP50']==.5
+
+
+def test_verified_but_weak_detector_score_does_not_skip_persistence(client,monkeypatch,tmp_path):
+    # Verifier probabilities saturate near 1.0; a single frame whose raw detector score is weak must still need k-of-n.
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.999]+[None]*40,raw=.4))
+    login(client)
+    assert run_video(client,tmp_path)['event_ids']==[]
+    monkeypatch.setattr(pipeline,'detector',scripted_detector([.999,.999,.999]+[None]*40,raw=.4))
+    assert len(run_video(client,tmp_path)['event_ids'])==1
+
+
+def test_ai_second_opinion_is_advisory_and_stored(client,monkeypatch,tmp_path):
+    from app import chat, review
+    monkeypatch.setattr(chat,'STORAGE',tmp_path)
+    async def predict(_, *args):
+        return result()
+    monkeypatch.setattr(pipeline,'detector',predict)
+    login(client)
+    ident=client.post('/api/v1/inference/predict-frame',files={'file':('fire.jpg',image_bytes(),'image/jpeg')}).json()['created_event_ids'][0]
+    async def fake_model(prompt,images):
+        assert images and 'Decide whether the images visibly support' in prompt
+        return '{"supports_detection": false, "confidence": 0.9, "visible_facts": ["an orange lamp"], "cannot_determine": [], "explanation": "A lamp, not flames."}', 'test-vlm', 'ollama'
+    monkeypatch.setattr(review,'ask_model',fake_model)
+    response=client.post(f'/api/v1/events/{ident}/ai-review')
+    assert response.status_code==200,response.text
+    event=response.json()
+    assert event['ai_disagrees'] is True
+    assert event['reasoning']['visible_facts']==['an orange lamp'] and event['models']['vlm']['name']=='test-vlm'
+    # advisory only: the AI never confirms or dismisses; the incident still awaits a human
+    assert event['status']=='NEEDS_REVIEW' and event['verified_by']=='NONE'
+    assert client.post('/api/v1/events/evt_missing/ai-review').status_code==404

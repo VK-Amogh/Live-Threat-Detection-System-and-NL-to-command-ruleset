@@ -30,7 +30,7 @@ def segment_split(key: str) -> str:
     return 'test' if draw < 0.25 else 'val' if draw < 0.35 else 'train'
 
 
-def cctv_guns() -> list[Item]:
+def cctv_guns(include_empty: bool = True) -> list[Item]:
     folder = WORK / 'cctv_guns/Images'
     if not folder.exists():
         return []
@@ -55,8 +55,10 @@ def cctv_guns() -> list[Item]:
         # Fixed cameras make neighbouring frames perceptually identical; the split is by video segment instead.
         item = Item('cctv', image, segment_split(parts), boxes, dedupe=False)
         (items if boxes else negatives).append(item)
-    # Empty CCTV frames dominate Cam7; keep ~35% as background examples so positives are not drowned out.
-    keep = max(len(items) // 2, 1)
+    # Un-annotated CCTV frames are NOT reliable negatives: reviewing the verifier's top 'false alarms' showed real handguns in
+    # frames with no annotation. v1 trained on half of them as background; v2 (include_empty=False) drops them and uses
+    # video frames from other sources as negatives instead.
+    keep = max(len(items) // 2, 1) if include_empty else 0
     negatives.sort(key=lambda i: hashlib.sha1(str(i.image).encode()).hexdigest())
     return items + negatives[:keep]
 
