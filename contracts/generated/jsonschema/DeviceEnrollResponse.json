@@ -1,0 +1,73 @@
+{
+  "properties": {
+    "device_id": {
+      "title": "Device Id",
+      "type": "string"
+    },
+    "camera_id": {
+      "title": "Camera Id",
+      "type": "string"
+    },
+    "device_name": {
+      "title": "Device Name",
+      "type": "string"
+    },
+    "role": {
+      "title": "Role",
+      "type": "string"
+    },
+    "scope": {
+      "title": "Scope",
+      "type": "string"
+    },
+    "token": {
+      "title": "Token",
+      "type": "string"
+    },
+    "expires_at": {
+      "title": "Expires At",
+      "type": "number"
+    },
+    "server_id": {
+      "title": "Server Id",
+      "type": "string"
+    },
+    "server_name": {
+      "title": "Server Name",
+      "type": "string"
+    },
+    "urls": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Urls",
+      "type": "array"
+    },
+    "route": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "How this device reached the server: loopback | trusted_lan | ibus_lan | tailnet | relay",
+      "title": "Route"
+    }
+  },
+  "required": [
+    "device_id",
+    "camera_id",
+    "device_name",
+    "role",
+    "scope",
+    "token",
+    "expires_at",
+    "server_id",
+    "server_name"
+  ],
+  "title": "DeviceEnrollResponse",
+  "type": "object"
+}

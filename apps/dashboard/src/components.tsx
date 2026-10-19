@@ -12,14 +12,38 @@ export function ErrorNotice({ message }: { message: string | null }) { return me
 export function Media({ incident }: { incident: Incident }) {
   const clip = incident.media?.find(m => m.kind === 'CLIP');
   const frame = incident.media?.find(m => m.kind === 'KEYFRAME');
-  if (clip) return <video key={clip.url} controls preload="metadata" poster={frame?.url} src={clip.url}
-    onLoadedMetadata={e => { e.currentTarget.currentTime = (clip.offset_ms || 0) / 1000; }} />;
-  return frame ? <img className="evidence" src={frame.url} alt={`Evidence for ${incident.category.label}`} /> : <Empty title="No recording attached">This incident has metadata only.</Empty>;
+  if (clip) {
+    return (
+      <div className="media-stage" style={{ width: '100%', aspectRatio: '16 / 9' }}>
+        <video
+          key={clip.url}
+          controls
+          preload="metadata"
+          poster={frame?.url}
+          src={clip.url}
+          style={{ width: '100%', height: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block' }}
+          onLoadedMetadata={e => { e.currentTarget.currentTime = (clip.offset_ms || 0) / 1000; }}
+        />
+      </div>
+    );
+  }
+  return frame ? (
+    <div className="media-stage" style={{ width: '100%', aspectRatio: '16 / 9' }}>
+      <img
+        className="evidence"
+        src={frame.url}
+        alt={`Evidence for ${incident.category.label}`}
+        style={{ width: '100%', height: '100%', aspectRatio: '16 / 9', objectFit: 'cover', display: 'block' }}
+      />
+    </div>
+  ) : (
+    <Empty title="No recording attached">This incident has metadata only.</Empty>
+  );
 }
 export function Modal({ title, close, children }: { title: string; close: () => void; children: ReactNode }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => { ref.current?.showModal(); }, []);
   return <dialog ref={ref} className="modal" onCancel={close} onClick={e => { if (e.target === ref.current) close(); }}>
-    <div className="section-head"><h2>{title}</h2><button className="circle" aria-label="Close" onClick={close}><Icon name="close" /></button></div>{children}
+    <div className="section-head"><h2>{title}</h2><button className="circle" aria-label="Close" onClick={close}><Icon name="x-01" /></button></div>{children}
   </dialog>;
 }

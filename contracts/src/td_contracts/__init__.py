@@ -11,8 +11,8 @@ from td_contracts.enums import (
 )
 from td_contracts.detection import Detection, FrameResult, SourceRecord, PasswordChange, RuntimeSettings, SystemSnapshot
 from td_contracts.observations import Observation, ObservedTrack
-from td_contracts.rules import RuleSpec, RuleWhen, RuleCompileResult
-from td_contracts.rule_api import CameraGeometry, RuleCompileRequest, RuleActivationRequest, RuleStatusRequest, RuleEvent, CameraHealthEvent, ReviewResult, ReviewFailure, ReviewCompletion
+from td_contracts.rules import RuleSpec, RuleWhen, RuleCompileResult, ObjectRef, Verification, EpisodePolicy, AlertPolicy, CostEstimate
+from td_contracts.rule_api import Anchor, LineSides, RuleVerification, CameraGeometry, RuleCompileRequest, RuleActivationRequest, RuleStatusRequest, RuleEvent, CameraHealthEvent, ReviewResult, ReviewFailure, ReviewCompletion
 from td_contracts.common import (
     ErrorDetail,
     ErrorBody,
@@ -23,6 +23,7 @@ from td_contracts.common import (
 from td_contracts.auth import (
     LoginRequest,
     LoginResponse,
+    PairingCodeCreateRequest,
     PairingCodeCreateResponse,
     PairDeviceRequest,
     PairDeviceResponse,
@@ -31,11 +32,39 @@ from td_contracts.auth import (
     DeviceUpdateRequest,
     WsTicketResponse,
 )
+from td_contracts.devices import (
+    DeviceEnrollRequest,
+    DeviceEnrollResponse,
+    DeviceRecordOut,
+    DeviceCommandRequest,
+    ApkTokenResponse,
+    AuditEntryOut,
+)
 from td_contracts.cameras import (
     CameraCreate,
     CameraUpdate,
     CameraOut,
     CameraStatusOut,
+)
+from td_contracts.media import (
+    RecordingSegmentOut,
+    TimelineGapOut,
+    TimelineOut,
+    SnapshotCreateRequest,
+    SnapshotOut,
+    ClipExportRequest,
+    ClipExportOut,
+    StorageSummaryOut,
+)
+from td_contracts.rulesets import (
+    RuleSchedule,
+    RulesetCreateRequest,
+    RulesetUpdateRequest,
+    RulesetArmRequest,
+    RulesetModeActivateRequest,
+    RulesetDryRunRequest,
+    RulesetOut,
+    RuleTemplateOut,
 )
 from td_contracts.sources import (
     SourceUploadResponse,
@@ -84,12 +113,17 @@ from td_contracts.ws import (
     WsResyncRequiredData,
 )
 from td_contracts.chat import (
+    RetrievalPlan,
+    EvidenceItemOut,
+    ConversationSummaryOut,
     ChatRequest,
     ChatCoverage,
     ChatResponse,
 )
 from td_contracts.health import (
+    AdvertisedRoute,
     LiveHealthResponse,
+    IdentityHealthResponse,
     HealthResponse,
 )
 
@@ -103,9 +137,23 @@ __all__ = [
     "VlmStatus",
     "JobStatus",
     "ErrorCode",
+    "Detection",
+    "FrameResult",
+    "SourceRecord",
+    "PasswordChange",
+    "RuntimeSettings",
+    "SystemSnapshot",
     "Observation",
     "ObservedTrack",
     "RuleSpec",
+    "ObjectRef",
+    "Verification",
+    "EpisodePolicy",
+    "AlertPolicy",
+    "CostEstimate",
+    "Anchor",
+    "LineSides",
+    "RuleVerification",
     "RuleWhen",
     "RuleCompileResult",
     "CameraGeometry",
@@ -124,6 +172,7 @@ __all__ = [
     "PaginatedResponse",
     "LoginRequest",
     "LoginResponse",
+    "PairingCodeCreateRequest",
     "PairingCodeCreateResponse",
     "PairDeviceRequest",
     "PairDeviceResponse",
@@ -131,10 +180,32 @@ __all__ = [
     "DeviceOut",
     "DeviceUpdateRequest",
     "WsTicketResponse",
+    "DeviceEnrollRequest",
+    "DeviceEnrollResponse",
+    "DeviceRecordOut",
+    "DeviceCommandRequest",
+    "ApkTokenResponse",
+    "AuditEntryOut",
     "CameraCreate",
     "CameraUpdate",
     "CameraOut",
     "CameraStatusOut",
+    "RecordingSegmentOut",
+    "TimelineGapOut",
+    "TimelineOut",
+    "SnapshotCreateRequest",
+    "SnapshotOut",
+    "ClipExportRequest",
+    "ClipExportOut",
+    "StorageSummaryOut",
+    "RuleSchedule",
+    "RulesetCreateRequest",
+    "RulesetUpdateRequest",
+    "RulesetArmRequest",
+    "RulesetModeActivateRequest",
+    "RulesetDryRunRequest",
+    "RulesetOut",
+    "RuleTemplateOut",
     "SourceUploadResponse",
     "SourceOut",
     "SourceProgressOut",
@@ -171,9 +242,14 @@ __all__ = [
     "WsCameraStatusData",
     "WsSystemHealthData",
     "WsResyncRequiredData",
+    "RetrievalPlan",
+    "EvidenceItemOut",
+    "ConversationSummaryOut",
     "ChatRequest",
     "ChatCoverage",
     "ChatResponse",
     "LiveHealthResponse",
+    "IdentityHealthResponse",
+    "AdvertisedRoute",
     "HealthResponse",
 ]

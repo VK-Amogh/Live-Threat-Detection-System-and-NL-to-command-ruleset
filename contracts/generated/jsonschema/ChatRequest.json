@@ -92,6 +92,21 @@
       "default": false,
       "title": "Include Images",
       "type": "boolean"
+    },
+    "scope_sources": {
+      "anyOf": [
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Scope Sources"
     }
   },
   "required": [

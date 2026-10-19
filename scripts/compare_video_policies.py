@@ -5,8 +5,7 @@ from collections import defaultdict, deque
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-CLASS_TO_CATEGORY = {'fire': 'FIRE', 'smoke': 'SMOKE', 'gun': 'WEAPON_DETECTED',
-                     'knife': 'WEAPON_DETECTED', 'violence': 'FIGHT'}
+CLASS_TO_CATEGORY = {'gun': 'WEAPON_DETECTED', 'knife': 'WEAPON_DETECTED', 'violence': 'FIGHT'}
 
 
 def alerts(frames, k, n, immediate, thresholds=None, k_by_category=None):
@@ -52,7 +51,7 @@ def main():
             false = sum(bool(a) for c, a in rows if not c['label'])
             print(f'k={k}, n={n}, immediate={immediate:.2f}: detected={detected}/{len(positives)}, '
                   f'false_alerted={false}/{len(negatives)}')
-    for category in ('WEAPON_DETECTED', 'FIGHT', 'SMOKE'):
+    for category in ('WEAPON_DETECTED', 'FIGHT'):
         rows = [(c, alerts(c['frames'], 3, 4, 0.85, k_by_category={category: 2})) for c in report['clips']]
         detected = sum(bool(a) for c, a in rows if c['label'])
         false = sum(bool(a) for c, a in rows if not c['label'])

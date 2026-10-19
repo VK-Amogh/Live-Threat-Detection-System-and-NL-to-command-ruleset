@@ -6,6 +6,31 @@ from math import isfinite
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
+class LineSides(BaseModel):
+    """Human labels for the two sides of a line. Side A is where orientation(a, b, p) < 0; the arrow A->B points along (-dy, dx)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    a: str = Field(min_length=1, max_length=40)
+    b: str = Field(min_length=1, max_length=40)
+
+
+class Anchor(BaseModel):
+    """A specific object (this chair, that bag) the user confirmed on the camera snapshot."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    cls: str = Field(min_length=1)
+    bbox: tuple[float, float, float, float]
+    label: str | None = Field(default=None, max_length=60)
+
+    @model_validator(mode="after")
+    def positive_area(self):
+        if self.bbox[2] <= self.bbox[0] or self.bbox[3] <= self.bbox[1]:
+            raise ValueError("anchor bbox must have positive area")
+        return self
+
+
 class CameraGeometry(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -14,6 +39,9 @@ class CameraGeometry(BaseModel):
     homography: list[list[float]] | None = None
     snapshot_width: int = Field(gt=0)
     snapshot_height: int = Field(gt=0)
+    zone_roles: dict[str, Literal["area", "door", "restricted", "seat"]] = Field(default_factory=dict)
+    line_sides: dict[str, LineSides] = Field(default_factory=dict)
+    anchors: dict[str, Anchor] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def valid_geometry(self):
@@ -27,6 +55,12 @@ class CameraGeometry(BaseModel):
                 raise ValueError("lines need a name and two distinct points")
             if any(not isfinite(x) or not isfinite(y) or not 0 <= x <= self.snapshot_width or not 0 <= y <= self.snapshot_height for x, y in (a, b)):
                 raise ValueError("line point outside snapshot")
+        if set(self.zone_roles) - set(self.zones) or set(self.line_sides) - set(self.lines):
+            raise ValueError("zone_roles and line_sides must name existing zones and lines")
+        for name, anchor in self.anchors.items():
+            x1, y1, x2, y2 = anchor.bbox
+            if not name or not (0 <= x1 and 0 <= y1 and x2 <= self.snapshot_width and y2 <= self.snapshot_height):
+                raise ValueError("anchor needs a name and a box inside the snapshot")
         if self.homography is not None and (len(self.homography) != 3 or any(len(row) != 3 for row in self.homography)):
             raise ValueError("homography must be a 3x3 matrix")
         if self.homography is not None:
@@ -61,6 +95,20 @@ class RuleStatusRequest(BaseModel):
     expected_version: int = Field(ge=1)
 
 
+class RuleVerification(BaseModel):
+    """Evidence that an alert passed (or did not pass) its verification policy."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    status: Literal["candidate", "verified", "rejected", "unverifiable", "expired"]
+    method: Literal["geometry", "pose", "vlm"]
+    checks: list[str] = Field(default_factory=list)
+    reason: str | None = None
+    candidate_ts: float
+    verified_ts: float | None = None
+    vlm: dict[str, str | float | list[str]] | None = None
+
+
 class RuleEvent(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -77,6 +125,7 @@ class RuleEvent(BaseModel):
     uncertainty: str
     needs_visual_review: bool = False
     evidence_bbox: tuple[int, int, int, int] | None = None
+    verification: RuleVerification | None = None
 
 
 class ReviewResult(BaseModel):
@@ -108,3 +157,4 @@ class CameraHealthEvent(BaseModel):
     camera_id: str = Field(min_length=1)
     ts: float = Field(ge=0)
     reason: str = Field(min_length=1)
+    kind: Literal["frame_outage", "inference_failure", "camera_moved"] = "frame_outage"

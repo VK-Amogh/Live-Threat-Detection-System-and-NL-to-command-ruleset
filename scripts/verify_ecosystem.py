@@ -62,7 +62,7 @@ def main():
 
     created = []
     all_latency = []
-    for domain in ('fire_smoke_v2', 'weapons_v2'):
+    for domain in ('weapons_v2',):
         positives, clean = test_images(domain)
         for cls, files in positives.items():
             hits = 0
@@ -127,7 +127,7 @@ def main():
         ticket = client.post('/api/v1/ws-tickets').json()['ticket']
         async with websockets.connect(f'ws://127.0.0.1:8002/api/v1/ws?ticket={ticket}', additional_headers={'Cookie': '; '.join(f'{k}={v}' for k, v in client.cookies.items())}) as ws:
             await ws.recv()
-            candidates = [f for f in sorted((ROOT / 'storage/datasets/fire_smoke_v2/images/test').glob('dfire_*.jpg'))]
+            candidates = test_images('weapons_v2')[0]['gun']
             start = time.perf_counter()
             for f in candidates[:40]:
                 response = await asyncio.to_thread(upload_image, client, f)

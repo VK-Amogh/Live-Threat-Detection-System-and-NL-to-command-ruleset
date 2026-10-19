@@ -37,6 +37,13 @@ enum MediaKind {
   CLIP,
 }
 
+enum SystemMode {
+  HOME,
+  AWAY,
+  NIGHT,
+  DISARMED,
+}
+
 class CameraRef {
   final String id;
   final String name;
@@ -276,4 +283,70 @@ class ChangesResponse {
         'has_more': hasMore,
         'head_seq': headSeq,
       };
+}
+
+class DeviceOut {
+  final String deviceId;
+  final String cameraId;
+  final String deviceName;
+  final String? deviceModel;
+  final String? osVersion;
+  final String? appVersion;
+  final int? batteryPct;
+  final bool? isCharging;
+  final double? tempC;
+  final int? wifiRssiDbm;
+  final String? ipAddress;
+  final double? fpsOut;
+  final int? droppedFrames;
+  final String? currentProfile;
+  final String? lensFacing;
+  final bool? torchOn;
+  final bool? stealthMode;
+  final String status;
+  final String? lastHeartbeatAt;
+
+  DeviceOut({
+    required this.deviceId,
+    required this.cameraId,
+    required this.deviceName,
+    this.deviceModel,
+    this.osVersion,
+    this.appVersion,
+    this.batteryPct,
+    this.isCharging,
+    this.tempC,
+    this.wifiRssiDbm,
+    this.ipAddress,
+    this.fpsOut,
+    this.droppedFrames,
+    this.currentProfile,
+    this.lensFacing,
+    this.torchOn,
+    this.stealthMode,
+    required this.status,
+    this.lastHeartbeatAt,
+  });
+
+  factory DeviceOut.fromJson(Map<String, dynamic> json) => DeviceOut(
+        deviceId: json['device_id'] as String,
+        cameraId: json['camera_id'] as String,
+        deviceName: json['device_name'] as String,
+        deviceModel: json['device_model'] as String?,
+        osVersion: json['os_version'] as String?,
+        appVersion: json['app_version'] as String?,
+        batteryPct: json['battery_pct'] as int?,
+        isCharging: json['is_charging'] as bool?,
+        tempC: (json['temp_c'] as num?)?.toDouble(),
+        wifiRssiDbm: json['wifi_rssi_dbm'] as int?,
+        ipAddress: json['ip_address'] as String?,
+        fpsOut: (json['fps_out'] as num?)?.toDouble(),
+        droppedFrames: json['dropped_frames'] as int?,
+        currentProfile: json['current_profile'] as String?,
+        lensFacing: json['lens_facing'] as String?,
+        torchOn: json['torch_on'] as bool?,
+        stealthMode: json['stealth_mode'] as bool?,
+        status: json['status'] as String? ?? 'OFFLINE',
+        lastHeartbeatAt: json['last_heartbeat_at'] as String?,
+      );
 }

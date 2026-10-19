@@ -228,6 +228,9 @@ class CameraCapture:
         cap=cv2.VideoCapture(int(self.uri) if self.uri.isdigit() else self.uri)
         if not cap.isOpened():
             self.error='Camera could not be opened. Check address and camera permissions.'
+        else:
+            cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+            cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
         last=0
         while not self.stopped and cap.isOpened():
             ok,frame=cap.read()
@@ -239,8 +242,16 @@ class CameraCapture:
                 continue
             last=stamp
             h,w=frame.shape[:2]
+            if abs(w*9 - h*16) > 32:
+                if w*9 > h*16:
+                    cw, ch = ((h*16)//9) & ~1, h & ~1
+                else:
+                    cw, ch = w & ~1, ((w*9)//16) & ~1
+                x0, y0 = max(0,(w-cw)//2), max(0,(h-ch)//2)
+                frame = frame[y0:y0+ch, x0:x0+cw]
+                h, w = frame.shape[:2]
             if w>1280:
-                frame=cv2.resize(frame,(1280,int(h*1280/w)))
+                frame=cv2.resize(frame,(1280,720))
             with self.lock:
                 self.latest=frame
                 self.sequence+=1

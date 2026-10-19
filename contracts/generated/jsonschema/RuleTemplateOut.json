@@ -1,0 +1,92 @@
+{
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "description": {
+      "title": "Description",
+      "type": "string"
+    },
+    "rule_type": {
+      "title": "Rule Type",
+      "type": "string"
+    },
+    "target_classes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Target Classes",
+      "type": "array"
+    },
+    "zone_required": {
+      "default": false,
+      "title": "Zone Required",
+      "type": "boolean"
+    },
+    "dwell_seconds": {
+      "default": 0.0,
+      "title": "Dwell Seconds",
+      "type": "number"
+    },
+    "min_count": {
+      "default": 1,
+      "title": "Min Count",
+      "type": "integer"
+    },
+    "direction": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Direction"
+    },
+    "cooldown_seconds": {
+      "default": 60.0,
+      "title": "Cooldown Seconds",
+      "type": "number"
+    },
+    "severity": {
+      "default": "medium",
+      "title": "Severity",
+      "type": "string"
+    },
+    "schedule_default": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Schedule Default"
+    },
+    "modes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Modes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "description",
+    "rule_type"
+  ],
+  "title": "RuleTemplateOut",
+  "type": "object"
+}

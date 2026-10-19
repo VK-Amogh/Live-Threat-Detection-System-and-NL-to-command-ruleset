@@ -3,6 +3,7 @@
 .env.local
 .env.*.local
 .agents/
+.trace/
 
 # Virtual environments
 .venv/

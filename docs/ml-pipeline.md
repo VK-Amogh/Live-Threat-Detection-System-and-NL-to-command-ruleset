@@ -4,14 +4,21 @@ Everything here was trained and measured locally on one RTX 4050 (6 GB). Only op
 are used. Numbers live in [benchmarks.md](benchmarks.md) (generated from `storage/benchmarks/*.json`); this page explains
 *how* they were produced and what they do and do not mean.
 
+**Scope.** The system detects handguns/rifles, knives and physical fights. Fire and smoke detection was built, measured and then
+**removed**: on blind low-resolution CCTV only 1 of 47 Arson clips alerted although at least 15 showed visible flames, and the
+detector's false-alarm behaviour on ordinary footage needed a heavy second stage to stay usable. It is listed as unsupported in
+`config/models.yaml`; no fire/smoke weights are loaded, no category exists for it and nothing in the runtime, the dashboard, the phone app
+or the tests uses it. (Two vestigial pieces remain on purpose: the verifier weights keep two unused class slots because
+they were trained with a four-way class input, and the deployed violence head was trained with fire-scene stills among its non-violent
+negatives. Retraining would remove both.)
+
 ## Architecture: detect -> verify -> decide
 
 ```
-frame ──▶ YOLO26s fire/smoke (512 px) ┐
-      └─▶ YOLO26s gun/knife (640 px) ─┴─▶ proposals (high recall, conf >= 0.10)
+frame ──▶ YOLO26s gun/knife (640 px) ──▶ proposals (high recall, conf >= 0.10)
                                               │  crop + context, whole-frame feature
                                               ▼
-                       DINOv2-base (frozen) ──▶ verifier MLP: "is this proposal a real <class>?"
+                       DINOv2-base (frozen) ──▶ verifier MLP: "is this proposal a real gun / knife?"
                                               │  per-class thresholds calibrated on validation negatives
                                               ▼
  stream of frames ──▶ DINOv2 temporal head (scene / pose, also scores a single still)
@@ -22,15 +29,12 @@ frame ──▶ YOLO26s fire/smoke (512 px) ┐
 
 * **Why a verifier.** The first system (YOLO only, thresholds picked on its own validation split) looked fine on held-out
   images of the same datasets and failed on real video: it called violins, wine bottles, tennis players and archery sights
-  "gun" at 0.7-0.8, and grey walls, shadows, table felt and ice "smoke". The verifier is a second opinion trained on the detector's
-  *own* mistakes plus true positives. Measured effect (benchmarks.md section 1, same images, detector-only vs full stack): gun/knife false
-  alarms on threat-free still images fall from 7.5-19.5 % to 0-2.7 % while recall rises (HARIS 86.5 -> 92.7 %); on threat-free video frames
-  weapon false alarms fall from 2.9 % to 0.6 % (RLVS) and fire/smoke from 1.5 % to 0.5 % (DCSASS). For fire/smoke the verifier is also used to
-  *raise* sensitivity: the proposal floor is 0.10 instead of the raw 0.35-0.5, so recall on still images rises by 9-30 points
-  (e.g. v9 54.5 -> 83.6 %) and false alarms on the Roboflow still sets rise too (v9 1.4 -> 6.5 %, Ironwolf 0 -> 4.5 %). That is a deliberate
-  trade; the user-facing failure (false alarms on ordinary video) still falls.
-* **Why one detector per domain.** Fire/smoke datasets label only fire and smoke; weapon datasets only guns and knives.
-  Merging them teaches a detector that an unlabeled gun in a fire photo is background.
+  "gun" at 0.7-0.8. The verifier is a second opinion trained on the detector's *own* mistakes plus true positives. Measured effect
+  (benchmarks.md section 1, same images, detector-only vs full stack): on the HARIS threat-free images gun/knife false alarms fall from
+  15.2 % to 2.7 % while recall rises from 86.5 % to 92.7 %; on threat-free video frames weapon false alarms fall from 2.9 % to 0.6 % (RLVS)
+  and from 0.4 % to 0 % (hockey); on the small real-CCTV test set recall rises from 46.3 % to 55.6 % (54 frames).
+* **Why a separate weapon detector.** Weapon datasets label only guns and knives; merging them with other domains teaches a detector that an
+  unlabeled gun in an unrelated photo is background.
 * **Why two violence signals.** A frame-wise encoder sees poses and scenes and works on stills; a Kinetics-pretrained video
   model sees motion. Their errors differ (the scene head is better on low-resolution CCTV, the motion head on RWF-2000). A logistic stack
   fitted on validation clips has the best AUC on blind DCSASS clips (89.1 % vs 86.6 % scene head, 83.9 % motion head) and a low calm-clip
@@ -42,7 +46,6 @@ frame ──▶ YOLO26s fire/smoke (512 px) ┐
 
 | Domain | Sources | Role |
 |---|---|---|
-| Fire / smoke | D-Fire (official split), Roboflow Fire&Smoke v9, Roboflow fire-detection (its `light` / `nonfire` classes become background), Simuletic CCTV smoke/fire | train / val / test, one merged leakage-controlled set |
 | Gun / knife | Seville/Granada real CCTV (1920x1080, split by camera *segment*), HARIS curated web set, Granada pistol detection (3 000 frames), Granada knife detection (2 078 frames) | train / val / test |
 | Hard negatives | ~26 000 threat-free frames from RLVS, hockey, SCVD and DCSASS (calm categories only) | train / val / **test (blind false-alarm frames, never trained on)** |
 | Violence | RWF-2000 (official split), RLVS, SCVD, Hockey Fights, DCSASS dev parents, threat-free stills | train / val / test |
@@ -51,13 +54,10 @@ frame ──▶ YOLO26s fire/smoke (512 px) ┐
 ### Label-noise lessons (each one changed a number)
 
 * DCSASS sub-clip labels are coarse: a "normal" sub-clip of an Arson/Explosion/Shooting/fight video can show the event.
-  Using them as negatives pushed the verifier's fire threshold to its ceiling (the top-scoring "false alarms" were real
-  burning vehicles) and made an early FIGHT false-alarm figure meaningless. Negatives now come from calm *categories*
-  (RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary), never from labels alone.
+  Using them as negatives made early false-alarm figures meaningless (the top-scoring "false alarms" were real events).
+  Negatives now come from calm *categories* (RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary), never from labels alone.
 * Un-annotated CCTV frames are not clean negatives: the verifier's highest-scoring "gun false alarms" included real handguns
   in frames nobody annotated. v2 drops them.
-* D-Fire's official train/test split contains frames of the same fixed-camera fires on both sides; perceptual hashing removed
-  about half of its training images so the held-out number is honest.
 * Violence clips are split in blocks of consecutive clip numbers; a per-clip random split gave validation AUC 0.998 and held-out
   CCTV AUC 0.72.
 
@@ -68,13 +68,14 @@ copies in weaker splits are dropped. Fixed-camera CCTV frames and video-frame ne
 
 ## Training
 
-* Detectors: `scripts/train_detector.py` — YOLO26s, AMP, mosaic + HSV/scale/rotation, cosine LR, a wall-clock budget so a run
-  always ends on schedule; fire/smoke v2 and weapons v2 are fine-tuned from the v1 weights on the merged sets.
+* Detector: `scripts/train_detector.py` — YOLO26s, AMP, mosaic + HSV/scale/rotation, cosine LR, a wall-clock budget so a run
+  always ends on schedule; weapons v2 is fine-tuned from the v1 weights on the merged set.
   Progress streams to `storage/training.json` (System screen).
-* Verifier: `scripts/verify/build_crops.py` + `adapt_crops.py` + `train_verifier.py` — DINOv2 features of every YOLO
-  proposal (crop with 35 % context + whole frame), positives from annotations (jittered like detector noise) and real-CCTV
-  fire/explosion proposals from DCSASS dev parents, negatives from the detector's false alarms on train frames. Thresholds are
-  the lowest verifier probability whose frame-level false-alarm rate on *validation* video frames is <= 0.1 %, never below 0.6.
+* Verifier: `scripts/verify/build_crops.py` + `train_verifier.py` — DINOv2 features of every YOLO proposal (crop with 35 % context +
+  whole frame), positives from annotations (jittered like detector noise), negatives from the detector's false alarms on train frames.
+  Thresholds are the lowest verifier probability whose frame-level false-alarm rate on *validation* video frames is <= 0.1 %, never below
+  0.6. The deployed verifier was trained before fire/smoke was removed; the scripts now build weapons-only data but retraining was not
+  re-run after the removal.
 * Violence: frozen DINOv2 features (16 frames/clip, flipped + cropped training views) -> 2-layer temporal transformer
   (`train_head.py`); VideoMAE-K400 clip features -> MLP (`train_videomae_head.py`); logistic stack + threshold on validation
   clips (`ensemble_eval.py`). Training each head takes about a minute once features are cached.
@@ -83,16 +84,15 @@ copies in weaker splits are dropped. Fixed-camera CCTV frames and video-frame ne
 
 1. **Component benchmarks** (`benchmark_detector.py`, `train_verifier.py`, `ensemble_eval.py`): mAP / precision / recall at the
    deployed thresholds, per source, previous weights on the same images, latency and VRAM.
-2. **Still-image stack** (`scripts/eval/image_eval.py`): held-out annotated images + blind video frames through the whole
+2. **Still-image stack** (`scripts/eval/image_eval.py`): held-out annotated weapon images + blind video frames through the whole
    deployed stack, detector-only vs full stack, including violence on stills.
 3. **Blind video** (`scripts/eval/blind_cache.py` + `blind_score.py`): DCSASS clips replayed exactly like an upload (JPEG
    frames at the configured fps, per-clip stream), scored with the *production* `decide()` code and the API's k-of-n rule.
    Ground truth is by category (see the scorer's docstring). Weapon recall is not scored because a Shooting/Robbery clip may
    not show the weapon.
-4. **Fresh sample.** Earlier blind samples guided design decisions (cleaning negatives, adding CCTV fire positives, the
-   threshold floor, the ensemble). After freezing every configuration the final numbers come from a new sample that excludes
-   every clip inspected before. `TestVideos/*` are SCVD clips that were in the training/validation manifest: they are demo
-   clips, not blind data.
+4. **Fresh sample.** Earlier blind samples guided design decisions (cleaning negatives, the threshold floor, the ensemble). After
+   freezing every configuration the final numbers come from a new sample that excludes every clip inspected before. `TestVideos/*`
+   are SCVD clips that were in the training/validation manifest: they are demo clips, not blind data.
 
 ## How detections become incidents
 
@@ -115,23 +115,23 @@ ever deciding.
   ~130-140 tokens/s; on the CPU from ~25 to ~33-47 tokens/s (run-to-run spread; with only 12 layers offloaded the gain was inconsistent, so
   no claim is made there). The bigger lever was GPU offload: first token arrives in ~0.1 s (text) / ~0.46 s (with an evidence frame) versus
   ~1.6 s / ~10-11 s on the CPU, so `OLLAMA_NUM_GPU` defaults to 99; the detectors plus the assistant peaked at 4.8 GB of the 6 GB card in the
-  ecosystem check.
-* Ollama reloads the model whenever `num_ctx` or `num_gpu` differ between requests; warm-up, chat and AI review therefore share one
-  `ollama_runtime()` setting. (Before this, a different `num_ctx` per call made the first local answer take 10-16 s.)
-* Each YOLO26s detector takes ~11 ms per frame on the RTX 4050 (`fire_smoke.json`, `weapons.json`); the verifier and motion head add DINOv2/VideoMAE
+  ecosystem check. The first local answer right after a restart can still take ~14 s while the model finishes loading (observed once).
+* Ollama reloads the model whenever `num_ctx` or `num_gpu` differ between requests; warm-up, chat, AI review and the rules reasoner therefore
+  share one setting (`ollama_runtime()` in `services/api/app/chat.py`, `llm:` in `config/rules.yaml`). Before this, a different `num_ctx` per call
+  made the first local answer take 10-16 s.
+* The YOLO26s weapon detector takes ~11 ms per frame on the RTX 4050 (`weapons.json`); the verifier and motion head add DINOv2/VideoMAE
   forward passes on top. An image upload returns end to end in tens of milliseconds once the service is warm (benchmarks.md section 5), and sampling is
   2-5 fps, so detection is not the bottleneck; ONNX/TensorRT was not pursued.
 
 ## Known limits
 
-* **Fire and smoke in low-resolution CCTV is the weakest part.** On the fresh blind sample only 1 of 47 Arson clips alerts although at least 15
-  of them show visible flames or a burning vehicle (benchmarks.md section 2 audit): three parent videos never produce a proposal, and on a burning
-  car the verifier scores below its fire threshold. Closing this needs labelled low-resolution CCTV fire footage; none was available as boxes.
-  Fire/smoke on ordinary-resolution images is much better (95.8 % recall on D-Fire stills). The earlier smoke/fire clip results on Explosion clips came
-  from a sample that influenced design decisions and are not independent.
 * CCTV gun recall is modest (46.3 % of annotated frames with the detector alone, 55.6 % with the verifier, on only 54 frames) and the verifier may have learned
   camera-specific cues; objects it has never seen as negatives (it still confuses archery sights with guns at times) need more mining.
-* Violence recall on subtle assaults/abuse in DCSASS is moderate (stack recall 46 % at its threshold on blind clips) and still-image violence recall is low
-  (the single-frame threshold is 0.999). The scene head also fires on about 6 % of Ironwolf fire stills (2 % on v9).
+* Violence recall on subtle assaults/abuse in DCSASS is moderate (stack recall 46 % at its threshold on blind clips; 61.8 % of Fighting/Assault/Abuse
+  clips alert under the production persistence rule) and still-image violence recall is low (the single-frame threshold is 0.999).
 * Blind *weapon* recall is not scored: a DCSASS Shooting/Robbery clip may not show the weapon. Weapon numbers on video are false-alarm rates only.
-* Everything outside fire, smoke, guns, knives and physical fights is listed as unsupported in `config/models.yaml`.
+* Everything outside guns, knives and physical fights, including fire and smoke, is listed as unsupported in `config/models.yaml`.
+* Crime-type labels (the 12 DCSASS categories except Arson): a classifier on the same frozen DINOv2 + VideoMAE features was trained with parent-grouped splits and scored once on blind parents.
+  No type met the pre-registered bar (Abuse has good precision but is flagged on as many quiet sub-clips of the same videos as on crime sub-clips; Stealing, the closest, has only 8 blind videos),
+  so the head is evaluation-only and nothing is surfaced.
+  Method, per-type numbers, error analysis and the DCSASS / VideoMAE licence caveat are in [crime-type.md](crime-type.md).

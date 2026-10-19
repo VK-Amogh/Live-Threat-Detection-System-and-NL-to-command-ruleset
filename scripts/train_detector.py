@@ -1,7 +1,7 @@
-"""Train one YOLO detector domain (fire_smoke, weapons) and publish live progress.
+"""Train one YOLO detector domain (weapons) and publish live progress.
 
-python scripts/train_detector.py --name fire_smoke --data storage/datasets/fire_smoke/data.yaml --epochs 40
-python scripts/train_detector.py --name fire_smoke --data ... --fraction 0.05 --epochs 1   # timing pass
+python scripts/train_detector.py --name weapons --data storage/datasets/weapons/data.yaml --epochs 40
+python scripts/train_detector.py --name weapons --data ... --fraction 0.05 --epochs 1   # timing pass
 
 Status for every run lives in storage/training.json (read by the API/System screen). Weights are
 never deployed here; scripts/benchmark_detector.py decides promotion against the incumbent.

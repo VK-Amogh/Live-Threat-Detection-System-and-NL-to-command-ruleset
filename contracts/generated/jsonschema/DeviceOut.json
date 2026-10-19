@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "Severity": {
+      "enum": [
+        "LOW",
+        "MEDIUM",
+        "HIGH",
+        "CRITICAL"
+      ],
+      "title": "Severity",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "string"
+    },
+    "last_seen_at": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Seen At"
+    },
+    "notify_enabled": {
+      "default": true,
+      "title": "Notify Enabled",
+      "type": "boolean"
+    },
+    "min_severity": {
+      "$ref": "#/$defs/Severity",
+      "default": "MEDIUM"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "created_at"
+  ],
+  "title": "DeviceOut",
+  "type": "object"
+}

@@ -1,0 +1,51 @@
+# SafeSpace network policy. Addresses and per-route rules are data; secrets stay in .env.
+#
+# The Nothing Phone (4a) hotspot (10.11.229.0/24) remains available. iBus
+# (10.12.0.0/16) accepts paired devices over HTTPS, so phones on either network can receive alerts.
+#
+# NETWORK_MODE (env, overrides `mode` below) chooses which routes the server accepts:
+#   hotspot_only  loopback (this laptop, adb reverse) + trusted_lan (the Nothing Phone hotspot)
+#   ibus          + ibus_lan (HTTPS only, paired devices only) + tailnet        <- current
+#   anywhere      + relay (a reverse proxy you operate)
+#
+# Anything that does not match an enabled route is rejected with 403, whatever credentials it holds.
+mode: ibus
+
+modes:
+  hotspot_only: [loopback, trusted_lan]
+  ibus: [loopback, trusted_lan, ibus_lan, tailnet]
+  anywhere: [loopback, trusted_lan, ibus_lan, tailnet, relay]
+
+profiles:
+  loopback:
+    label: This laptop
+    cidrs: ["127.0.0.0/8", "::1/128"]
+  trusted_lan:
+    label: Nothing Phone hotspot
+    # Extend with TRUSTED_LAN_CIDRS=a.b.c.d/nn,... in .env (a home router, a second hotspot).
+    cidrs: ["10.11.229.0/24"]
+  ibus_lan:
+    label: iBus Wi-Fi
+    # iBus is an open network: anyone in range can read plain HTTP and can reach this port.
+    # So this route is HTTPS only and token-only (see `capabilities`). Extend with IBUS_CIDRS.
+    cidrs: ["10.12.0.0/16"]
+  tailnet:
+    label: Private mesh
+    cidrs: ["100.64.0.0/10", "fd7a:115c:a1e0::/48"]
+  relay:
+    label: Relay
+    # Peers allowed to send X-Forwarded-* headers. Empty = no relay. Set TRUSTED_PROXIES in .env.
+    proxies: []
+
+# What each route may do. password_login / enroll: the baked admin password and enrollment code.
+# discovery: none | open | authenticated (UDP query answered only with proof of the shared secret).
+capabilities:
+  loopback:    {password_login: true,  enroll: true,  discovery: none,          require_tls: false, ladder: full}
+  trusted_lan: {password_login: true,  enroll: true,  discovery: open,          require_tls: false, ladder: full}
+  ibus_lan:    {password_login: false, enroll: false, discovery: authenticated, require_tls: true,  ladder: full}
+  tailnet:     {password_login: true,  enroll: true,  discovery: none,          require_tls: false, ladder: full}
+  relay:       {password_login: false, enroll: false, discovery: none,          require_tls: true,  ladder: reduced}
+
+# A request that arrives from 127.0.0.1 but carries forwarding headers came through a local
+# proxy/tunnel that this config does not know about. Refuse it rather than trust "loopback".
+loopback_rejects_forwarded: true

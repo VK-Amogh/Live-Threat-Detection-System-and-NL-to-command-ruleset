@@ -1,6 +1,6 @@
 """Promote a benchmarked candidate to the deployed model name, keeping the previous weights as <name>_prev.
 
-python scripts/promote.py fire_smoke fire_smoke_v2
+python scripts/promote.py weapons weapons_v2
 Copies storage/models/<candidate>.{pt,json} -> <name>.{pt,json} and storage/benchmarks/<candidate>.json -> <name>.json.
 The detector service reads weights by the names in config/models.yaml, so a restart (or POST /reload) activates them.
 """

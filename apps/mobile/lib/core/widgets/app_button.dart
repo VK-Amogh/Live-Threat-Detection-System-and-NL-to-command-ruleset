@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../theme/tokens.dart';
+import 'app_icon.dart';
 import 'press_scale.dart';
 
 enum AppButtonVariant { primary, secondary }
@@ -12,6 +14,7 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final AppButtonVariant variant;
   final IconData? icon;
+  final String? svgAsset;
   final bool expand;
   final bool isLoading;
 
@@ -21,6 +24,7 @@ class AppButton extends StatelessWidget {
     this.onPressed,
     this.variant = AppButtonVariant.primary,
     this.icon,
+    this.svgAsset,
     this.expand = false,
     this.isLoading = false,
   });
@@ -30,6 +34,7 @@ class AppButton extends StatelessWidget {
     required this.label,
     this.onPressed,
     this.icon,
+    this.svgAsset,
     this.expand = false,
     this.isLoading = false,
   }) : variant = AppButtonVariant.secondary;
@@ -65,27 +70,42 @@ class AppButton extends StatelessWidget {
             ),
           )
         else ...[
-          if (icon != null) ...[
-            Icon(icon, size: 20, color: textColor),
+          if (svgAsset != null) ...[
+            AppIcon(svgAsset!, size: 18, color: textColor),
+            const SizedBox(width: AppSpacing.sm),
+          ] else if (icon != null) ...[
+            Icon(icon, size: 18, color: textColor),
             const SizedBox(width: AppSpacing.sm),
           ],
-          Text(
-            label,
-            style: AppTypography.button.copyWith(color: textColor),
+          Flexible(
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.button.copyWith(color: textColor),
+            ),
           ),
         ],
       ],
     );
 
     return PressScale(
-      onTap: isEnabled ? onPressed : null,
+      onTap: isEnabled
+          ? () {
+              HapticFeedback.selectionClick();
+              onPressed!();
+            }
+          : null,
       pressedScale: 0.97,
       child: AnimatedContainer(
         duration: AppMotion.shortDuration,
         curve: AppMotion.standardCurve,
         height: AppSpacing.touchMin,
-        constraints: BoxConstraints(minWidth: expand ? double.infinity : 120),
-        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl, vertical: AppSpacing.sm),
+        constraints: BoxConstraints(minWidth: expand ? double.infinity : 108),
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.sm,
+        ),
         decoration: BoxDecoration(
           color: bgColor,
           borderRadius: BorderRadius.circular(AppRadii.pill),

@@ -1,7 +1,7 @@
 """Held-out benchmark for a YOLO detector domain, with operating-point calibration and incumbent comparison.
 
-python scripts/benchmark_detector.py --name fire_smoke --weights storage/training/<run>/weights/best.pt \
-    --data storage/datasets/fire_smoke/data.yaml [--incumbent storage/models/fire.pt --map fire=fire]
+python scripts/benchmark_detector.py --name weapons --weights storage/training/<run>/weights/best.pt \
+    --data storage/datasets/weapons/data.yaml [--incumbent storage/models/weapons_prev.pt --map gun=gun]
 
 Method
   * Detections are collected once at a very low confidence for the val and test splits.

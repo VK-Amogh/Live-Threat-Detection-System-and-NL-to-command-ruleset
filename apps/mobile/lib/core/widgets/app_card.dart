@@ -3,11 +3,12 @@ import '../theme/tokens.dart';
 import 'press_scale.dart';
 
 /// AppCard conforming to DESIGN.md §3 & §5.2
-/// Surface container (#1A1A1A), 16 dp radius, 1 dp divider border.
+/// Surface container (#1A1A1A), 20 dp radius (AppRadii.card), 1 dp divider border.
 class AppCard extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final double radius;
+  final BorderRadiusGeometry? borderRadius;
   final VoidCallback? onTap;
   final Border? border;
 
@@ -15,7 +16,8 @@ class AppCard extends StatelessWidget {
     super.key,
     required this.child,
     this.padding = const EdgeInsets.all(AppSpacing.lg),
-    this.radius = AppRadii.lg,
+    this.radius = AppRadii.card,
+    this.borderRadius,
     this.onTap,
     this.border,
   });
@@ -26,7 +28,7 @@ class AppCard extends StatelessWidget {
       padding: padding,
       decoration: BoxDecoration(
         color: AppColors.surface,
-        borderRadius: BorderRadius.circular(radius),
+        borderRadius: borderRadius ?? BorderRadius.circular(radius),
         border: border ?? Border.all(color: AppColors.divider, width: 1.0),
       ),
       child: child,

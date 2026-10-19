@@ -1,0 +1,111 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "installation_id": {
+      "maxLength": 128,
+      "minLength": 4,
+      "title": "Installation Id",
+      "type": "string"
+    },
+    "enrollment_code": {
+      "maxLength": 128,
+      "minLength": 4,
+      "title": "Enrollment Code",
+      "type": "string"
+    },
+    "device_name": {
+      "maxLength": 100,
+      "minLength": 1,
+      "title": "Device Name",
+      "type": "string"
+    },
+    "role": {
+      "default": "camera",
+      "enum": [
+        "camera",
+        "control"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "model": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Model"
+    },
+    "os_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Os Version"
+    },
+    "app_version": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "App Version"
+    },
+    "wifi_ssid": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wifi Ssid"
+    },
+    "wifi_bssid": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Wifi Bssid"
+    },
+    "local_ip": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Local Ip"
+    }
+  },
+  "required": [
+    "installation_id",
+    "enrollment_code",
+    "device_name"
+  ],
+  "title": "DeviceEnrollRequest",
+  "type": "object"
+}

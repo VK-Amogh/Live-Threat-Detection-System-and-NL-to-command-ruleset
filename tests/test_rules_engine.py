@@ -74,6 +74,20 @@ def test_cooldown_and_outage_freeze():
     assert engine.evaluate(rule, obs(11, [(1, 10, 10, 0, 0, 0)]), state) == []
 
 
+def test_a_person_who_crosses_soon_after_being_detected_is_not_missed():
+    engine = RuleEngine({}, {"gate": ((10, 0), (10, 150))})
+    crossing = spec({"type": "line_cross", "line": "gate"})            # default hold is 1.5 s
+    state = RuleState()
+    assert engine.evaluate(crossing, obs(0, [(1, 5, 10, 0, 0, 0)]), state) == []
+    assert engine.evaluate(crossing, obs(.4, [(1, 7, 10, 0, 0, 0)]), state) == []
+    fires = engine.evaluate(crossing, obs(.8, [(1, 15, 10, 0, 10, 0)]), state)   # crosses 0.8 s after first being tracked
+    assert len(fires) == 1 and fires[0].tracks == (1,)
+    # but a one-frame ghost track still cannot alert
+    state = RuleState()
+    assert engine.evaluate(crossing, obs(0, [(2, 5, 10, 0, 0, 0)]), state) == []
+    assert engine.evaluate(crossing, obs(.2, [(2, 15, 10, 0, 10, 0)]), state) == []
+
+
 def test_line_cross_and_unique_count_are_impulses():
     engine = RuleEngine({}, {"gate": ((10, 0), (10, 150))})
     crossing = spec({"type": "line_cross", "line": "gate"})

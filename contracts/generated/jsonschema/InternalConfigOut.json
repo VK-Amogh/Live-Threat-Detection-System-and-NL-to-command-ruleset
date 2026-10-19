@@ -38,6 +38,134 @@
         "created_at": {
           "title": "Created At",
           "type": "string"
+        },
+        "status": {
+          "default": "offline",
+          "title": "Status",
+          "type": "string"
+        },
+        "fps": {
+          "default": 0.0,
+          "title": "Fps",
+          "type": "number"
+        },
+        "width": {
+          "default": 0,
+          "title": "Width",
+          "type": "integer"
+        },
+        "height": {
+          "default": 0,
+          "title": "Height",
+          "type": "integer"
+        },
+        "viewer_count": {
+          "default": 0,
+          "title": "Viewer Count",
+          "type": "integer"
+        },
+        "device_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Device Id"
+        },
+        "battery_pct": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Battery Pct"
+        },
+        "charging": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Charging"
+        },
+        "temp_c": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Temp C"
+        },
+        "wifi_rssi": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Wifi Rssi"
+        },
+        "recording_active": {
+          "default": false,
+          "title": "Recording Active",
+          "type": "boolean"
+        },
+        "stealth_mode": {
+          "default": false,
+          "title": "Stealth Mode",
+          "type": "boolean"
+        },
+        "torch_enabled": {
+          "default": false,
+          "title": "Torch Enabled",
+          "type": "boolean"
+        },
+        "lens_facing": {
+          "default": "back",
+          "title": "Lens Facing",
+          "type": "string"
+        },
+        "capture_profile": {
+          "default": "normal",
+          "title": "Capture Profile",
+          "type": "string"
+        },
+        "active_rules_count": {
+          "default": 0,
+          "title": "Active Rules Count",
+          "type": "integer"
+        },
+        "geometry": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geometry"
         }
       },
       "required": [
@@ -53,7 +181,8 @@
       "enum": [
         "WEBCAM",
         "FILE",
-        "RTSP"
+        "RTSP",
+        "PHONE"
       ],
       "title": "SourceType",
       "type": "string"

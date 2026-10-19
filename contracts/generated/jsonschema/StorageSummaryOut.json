@@ -1,0 +1,58 @@
+{
+  "properties": {
+    "total_bytes": {
+      "title": "Total Bytes",
+      "type": "integer"
+    },
+    "free_bytes": {
+      "title": "Free Bytes",
+      "type": "integer"
+    },
+    "used_bytes": {
+      "title": "Used Bytes",
+      "type": "integer"
+    },
+    "recordings_bytes": {
+      "title": "Recordings Bytes",
+      "type": "integer"
+    },
+    "snapshots_bytes": {
+      "title": "Snapshots Bytes",
+      "type": "integer"
+    },
+    "exports_bytes": {
+      "title": "Exports Bytes",
+      "type": "integer"
+    },
+    "recordings_count": {
+      "default": 0,
+      "title": "Recordings Count",
+      "type": "integer"
+    },
+    "snapshots_count": {
+      "default": 0,
+      "title": "Snapshots Count",
+      "type": "integer"
+    },
+    "exports_count": {
+      "default": 0,
+      "title": "Exports Count",
+      "type": "integer"
+    },
+    "retention_policy": {
+      "additionalProperties": true,
+      "title": "Retention Policy",
+      "type": "object"
+    }
+  },
+  "required": [
+    "total_bytes",
+    "free_bytes",
+    "used_bytes",
+    "recordings_bytes",
+    "snapshots_bytes",
+    "exports_bytes"
+  ],
+  "title": "StorageSummaryOut",
+  "type": "object"
+}

@@ -1,6 +1,7 @@
 """Bounded JPEG pre-roll and delayed local evidence clips."""
 
 from collections import deque
+import json
 from pathlib import Path
 import subprocess
 
@@ -15,11 +16,30 @@ class EvidenceBuffer:
         self.fps = fps
         self.pre_roll_s = pre_roll_s
         self.post_roll_s = post_roll_s
-        self.frames: deque[tuple[float, bytes]] = deque()
+        self.frames: deque[tuple[float, bytes, dict[int, tuple] | None]] = deque()
         self.pending: dict[str, tuple[float, list[bytes]]] = {}
 
+    def annotate(self, ts: float, boxes: dict[int, tuple]):
+        """Attach this frame's track boxes once detection has run, so verification crops follow the person frame by frame."""
+        if self.frames and self.frames[-1][0] == ts:
+            self.frames[-1] = (ts, self.frames[-1][1], boxes)
+
+    def recent(self, count: int) -> list[tuple[float, bytes, dict[int, tuple] | None]]:
+        """The last `count` frames, newest last (the trigger frame is the newest)."""
+        return list(self.frames)[-count:]
+
+    def write_pack(self, event_id: str, frames: list[tuple[float, bytes, tuple | None]]):
+        """Verification evidence written at fire time: a few spaced frames, each with its own subject box."""
+        folder = self.media_root / event_id
+        folder.mkdir(parents=True, exist_ok=True)
+        index = []
+        for number, (ts, jpeg, bbox) in enumerate(frames):
+            (folder / f"pack_{number}.jpg").write_bytes(jpeg)
+            index.append({"file": f"pack_{number}.jpg", "ts": ts, "bbox": list(bbox) if bbox else None})
+        (folder / "pack.json").write_text(json.dumps({"frames": index}), encoding="utf-8")
+
     def append(self, ts: float, jpeg: bytes) -> list[str]:
-        self.frames.append((ts, jpeg))
+        self.frames.append((ts, jpeg, None))
         while self.frames and ts - self.frames[0][0] > self.pre_roll_s:
             self.frames.popleft()
         completed = []
@@ -36,7 +56,7 @@ class EvidenceBuffer:
         folder.mkdir(parents=True, exist_ok=True)
         (folder / "frame.jpg").write_bytes(jpeg)
         if event_id not in self.pending:
-            self.pending[event_id] = (ts + self.post_roll_s, [piece for _, piece in self.frames])
+            self.pending[event_id] = (ts + self.post_roll_s, [piece for _, piece, _ in self.frames])
 
     def _write_clip(self, event_id: str, pieces: list[bytes]):
         folder = self.media_root / event_id

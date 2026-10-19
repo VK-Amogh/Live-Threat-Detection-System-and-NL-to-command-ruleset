@@ -12,6 +12,8 @@ from torch import nn
 
 from vision_features import FEATURE_DIM
 
+# Fire/smoke detection was removed from the product. Those two slots stay only because the shipped weights were trained with this
+# 4-way class input; no fire/smoke proposal is ever produced or scored. Retrain the verifier to drop them physically.
 CLASSES = ['fire', 'smoke', 'gun', 'knife']
 SIDE = 224
 EXPAND = 1.35       # context around the box

@@ -4,6 +4,17 @@ entities:
   somebody: person
   people: person
   persons: person
+  user: person
+  users: person
+  visitor: person
+  visitors: person
+  guest: person
+  guests: person
+  man: person
+  woman: person
+  human: person
+  humans: person
+  guy: person
   automobile: car
   automobiles: car
   cars: car

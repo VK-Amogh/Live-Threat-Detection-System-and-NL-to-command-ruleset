@@ -44,6 +44,11 @@ class WebSocketService {
       _initialSync = !(_prefs?.containsKey(_cursorKey) ?? false);
       _lastSeq = _prefs?.getInt(_cursorKey) ?? 0;
 
+      // Keep the authenticated change feed alive even when the WebSocket cannot connect.
+      _pollTimer ??=
+          Timer.periodic(const Duration(seconds: 5), (_) => _catchUp());
+      unawaited(_catchUp());
+
       // 1. Fetch short-lived ticket
       final response = await _apiClient.dio.post('/api/v1/ws-tickets');
       final ticket = response.data['ticket'] as String;
@@ -75,8 +80,6 @@ class WebSocketService {
           _scheduleReconnect();
         },
       );
-      _pollTimer?.cancel();
-      _pollTimer = Timer.periodic(const Duration(seconds: 5), (_) => _catchUp());
       await _catchUp();
     } catch (e) {
       debugPrint('[WS] Connection failed: $e');
@@ -94,7 +97,8 @@ class WebSocketService {
         return;
       }
 
-      if (type == 'hello' && (data['data']?['head_seq'] as int? ?? 0) < _lastSeq) {
+      if (type == 'hello' &&
+          (data['data']?['head_seq'] as int? ?? 0) < _lastSeq) {
         _lastSeq = 0;
         _catchUp();
       }
@@ -106,7 +110,10 @@ class WebSocketService {
 
   Future<void> _catchUp() async {
     if (_isDisposed) return;
-    if (_catchingUp) { _catchAgain = true; return; }
+    if (_catchingUp) {
+      _catchAgain = true;
+      return;
+    }
     _catchingUp = true;
     var failed = false;
     try {
@@ -114,12 +121,20 @@ class WebSocketService {
         _catchAgain = false;
         final response = await _apiClient.dio.get('/api/v1/changes',
             queryParameters: {'after': _lastSeq, 'limit': 200});
-        final page = ChangesResponse.fromJson(Map<String, dynamic>.from(response.data));
-        if (page.headSeq < _lastSeq) { _lastSeq = 0; _catchAgain = true; continue; }
+        final page =
+            ChangesResponse.fromJson(Map<String, dynamic>.from(response.data));
+        if (page.headSeq < _lastSeq) {
+          _lastSeq = 0;
+          _catchAgain = true;
+          continue;
+        }
         for (final event in page.items) {
           if (event.changeSeq <= _lastSeq) continue;
           _lastSeq = event.changeSeq;
-          onEventReceived(event, _initialSync || event.createdAt != event.updatedAt);
+          final isUpdate = _initialSync || event.createdAt != event.updatedAt;
+          debugPrint(
+              '[WS] Change ${event.changeSeq}: ${event.category.key}, update=$isUpdate, initial=$_initialSync');
+          onEventReceived(event, isUpdate);
           await _prefs?.setInt(_cursorKey, _lastSeq);
         }
         if (page.hasMore) _catchAgain = true;
@@ -140,7 +155,6 @@ class WebSocketService {
   void _scheduleReconnect() {
     if (_isDisposed) return;
     _subscription?.cancel();
-    _pollTimer?.cancel();
     _channel = null;
     _reconnectTimer?.cancel();
     _reconnectTimer = Timer(const Duration(seconds: 5), connect);

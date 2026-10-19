@@ -15,12 +15,12 @@ from dotenv import load_dotenv
 
 from td_contracts import CameraGeometry, CameraHealthEvent, RuleEvent, RuleSpec
 from .capture import frames
-from .detect import CameraDetector
-from .engine import RuleEngine
 from .evidence import EvidenceBuffer
+from .inference import ResilientInference
 from .outbox import RuleOutbox
+from .audit import dropped_clauses
 from .registry import CapabilityRegistry
-from .state import Fire, RuleState
+from .runtime import RuleRuntime, build_detector
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -38,20 +38,18 @@ class CameraWorker:
         self.headers = {"Authorization": f"Bearer {self.token}"}
         self.stop = threading.Event()
         self.rules: list[RuleSpec] = []
-        self.states: dict[tuple[str, int], RuleState] = {}
-        self.engine = RuleEngine({}, {})
         self.last_rules_fetch = 0.0
         self.last_frame_ts = time.time()
         self.outage_emitted = False
         self.disconnected = False
         self.source = self._source()
-        detector = self.config["detector"]
-        self.detector = CameraDetector(camera_id, ROOT / detector["weights"], detector["tracker"],
-                                       float(detector["confidence"]), int(detector["image_size"]))
+        self.detector = build_detector(camera_id, self.config)
         storage = self.config["storage"]
         self.evidence = EvidenceBuffer(ROOT / "storage/media", float(self.config["camera"]["process_fps"]),
                                        float(storage["pre_roll_s"]), float(storage["post_roll_s"]))
+        self.runtime = RuleRuntime(camera_id, self.config, self.evidence, "Single camera angle")
         self.outbox = RuleOutbox(ROOT / "storage/outbox" / f"rules_{camera_id}.db", self.api, self.token)
+        self.inference = ResilientInference(camera_id, self.detector, self.outbox.enqueue_health)
         self.sender = threading.Thread(target=self.outbox.run, daemon=True)
 
     def _source(self):
@@ -71,18 +69,17 @@ class CameraWorker:
         response.raise_for_status()
         payload = response.json()
         geometry = payload["geometry"]
-        if geometry:
-            configured = CameraGeometry.model_validate(geometry)
-            self.engine = RuleEngine(configured.zones, configured.lines, configured.homography)
-        else:
-            self.engine = RuleEngine({}, {})
+        configured = CameraGeometry.model_validate(geometry) if geometry else None
         registry = CapabilityRegistry(ROOT, self.detector.classes, set(geometry["zones"]) if geometry else set(),
                                       set(geometry["lines"]) if geometry else set(),
-                                      bool(geometry and geometry["homography"]))
-        candidates = [RuleSpec.model_validate(row["spec"]) for row in payload["rules"]]
-        self.rules = [rule for rule in candidates if registry.assess(rule.entity, rule.when)[2]]
-        keys = {(rule.rule_id, rule.version) for rule in self.rules}
-        self.states = {key: value for key, value in self.states.items() if key in keys}
+                                      bool(geometry and geometry["homography"]),
+                                      anchors=configured.anchors if configured else None)
+        candidates = [(RuleSpec.model_validate(row["spec"]), row.get("text")) for row in payload["rules"]]
+        roles = configured.zone_roles if configured else {}
+        # A stored natural-language rule whose text asks for more than its conditions check is never run.
+        self.rules = [rule for rule, text in candidates
+                      if registry.assess(rule.entity, rule.when)[2] and not dropped_clauses(text, rule, registry, roles)]
+        self.runtime.configure(self.rules, configured)
 
     def _legacy(self, client: httpx.Client, jpeg: bytes, ts: float):
         response = client.post(self.api + "/api/v1/internal/live-frame", headers=self.headers,
@@ -109,9 +106,8 @@ class CameraWorker:
                 if time.monotonic() - last_process < interval:
                     continue
                 if self.disconnected:
-                    detector = self.config["detector"]
-                    self.detector = CameraDetector(self.camera_id, ROOT / detector["weights"], detector["tracker"],
-                                                   float(detector["confidence"]), int(detector["image_size"]))
+                    self.detector = build_detector(self.camera_id, self.config)
+                    self.inference = ResilientInference(self.camera_id, self.detector, self.outbox.enqueue_health)
                     self.disconnected = False
                 last_process = time.monotonic()
                 self.last_frame_ts = ts
@@ -132,25 +128,13 @@ class CameraWorker:
                     self.refresh_rules(client)
                 except (httpx.HTTPError, ValueError):
                     pass
-                observation = self.detector.observe(frame, frame_id, ts)
-                for rule in self.rules:
-                    state = self.states.setdefault((rule.rule_id, rule.version), RuleState())
-                    for outcome in self.engine.evaluate(rule, observation, state):
-                        if not isinstance(outcome, Fire):
-                            continue
-                        event_id = str(uuid.uuid5(uuid.NAMESPACE_URL,
-                            f"{rule.rule_id}:{rule.version}:{self.camera_id}:{outcome.tracks}:{outcome.episode_start:.3f}"))
-                        self.evidence.start(event_id, ts, jpeg)
-                        relevant = [track.bbox for track in observation.tracks if track.track_id in outcome.tracks]
-                        bounds = (round(min(box[0] for box in relevant)), round(min(box[1] for box in relevant)),
-                                  round(max(box[2] for box in relevant)), round(max(box[3] for box in relevant))) if relevant else None
-                        event = RuleEvent(event_id=event_id, camera_id=self.camera_id,
-                                          rule_id=rule.rule_id, rule_version=rule.version,
-                                          ts=ts, episode_start=outcome.episode_start, tracks=list(outcome.tracks),
-                                          model_versions=observation.model_versions, confidence=outcome.confidence,
-                                          uncertainty="Single camera angle; detector confidence is not a probability of intent.",
-                                          needs_visual_review=rule.needs_visual_review, evidence_bbox=bounds)
-                        self.outbox.enqueue_event(event)
+                observation = self.inference.observe(frame, frame_id, ts)
+                if observation is None:
+                    continue
+                for event in self.runtime.process(frame, observation, ts, jpeg):
+                    self.outbox.enqueue_event(event)
+                for health in self.runtime.drain_health():
+                    self.outbox.enqueue_health(health)
         self.outbox.stopped.set()
         self.sender.join(timeout=5)
 

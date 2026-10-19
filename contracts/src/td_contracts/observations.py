@@ -14,6 +14,9 @@ class ObservedTrack(BaseModel):
     velocity: tuple[float, float]
     first_seen: float
     last_seen: float
+    score: float | None = Field(default=None, ge=0, le=1)      # mean detector confidence over the recent track window
+    flags: list[str] = Field(default_factory=list)              # plausibility flags, e.g. "oversized", "border"
+    keypoints: list[tuple[float, float, float]] | None = None   # 17 COCO keypoints (x, y, confidence), people only
 
     @model_validator(mode="after")
     def valid_geometry(self):
@@ -26,6 +29,8 @@ class ObservedTrack(BaseModel):
 
 class Observation(BaseModel):
     model_config = ConfigDict(extra="forbid")
+
+    zone_change: dict[str, float] = Field(default_factory=dict)   # share of each watched zone that differs from its baseline (0..1)
 
     camera_id: str = Field(min_length=1)
     ts: float = Field(ge=0)

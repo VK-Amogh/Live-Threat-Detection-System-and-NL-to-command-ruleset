@@ -1,0 +1,172 @@
+{
+  "properties": {
+    "ruleset_id": {
+      "title": "Ruleset Id",
+      "type": "string"
+    },
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Same as ruleset_id (the field the apps use)",
+      "title": "Id"
+    },
+    "description": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Description"
+    },
+    "template_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Template Id"
+    },
+    "mode": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Modes joined with '/', for display",
+      "title": "Mode"
+    },
+    "readback_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Same as readback (the field the apps use)",
+      "title": "Readback Text"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "source_type": {
+      "title": "Source Type",
+      "type": "string"
+    },
+    "spec": {
+      "additionalProperties": true,
+      "title": "Spec",
+      "type": "object"
+    },
+    "readback": {
+      "title": "Readback",
+      "type": "string"
+    },
+    "readback_hash": {
+      "title": "Readback Hash",
+      "type": "string"
+    },
+    "support_level": {
+      "title": "Support Level",
+      "type": "string"
+    },
+    "camera_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Camera Ids",
+      "type": "array"
+    },
+    "rule_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rule Ids",
+      "type": "array"
+    },
+    "schedule": {
+      "anyOf": [
+        {
+          "additionalProperties": true,
+          "type": "object"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Schedule"
+    },
+    "modes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Modes",
+      "type": "array"
+    },
+    "status": {
+      "default": "draft",
+      "title": "Status",
+      "type": "string"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    },
+    "problems": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Problems",
+      "type": "array"
+    },
+    "can_activate": {
+      "default": true,
+      "title": "Can Activate",
+      "type": "boolean"
+    },
+    "created_at": {
+      "title": "Created At",
+      "type": "number"
+    },
+    "updated_at": {
+      "title": "Updated At",
+      "type": "number"
+    }
+  },
+  "required": [
+    "ruleset_id",
+    "name",
+    "source_type",
+    "readback",
+    "readback_hash",
+    "support_level",
+    "created_at",
+    "updated_at"
+  ],
+  "title": "RulesetOut",
+  "type": "object"
+}

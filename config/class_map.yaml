@@ -3,16 +3,6 @@
 # and stored beside each weight file (storage/models/<weights>.json). min_confidence is only the fallback
 # used when a weight file ships without a calibration sidecar.
 mappings:
-  fire:
-    category: FIRE
-    min_confidence: 0.50
-    severity: CRITICAL
-    trigger_incident: true
-  smoke:
-    category: SMOKE
-    min_confidence: 0.50
-    severity: HIGH
-    trigger_incident: true
   gun:
     category: WEAPON_DETECTED
     min_confidence: 0.60

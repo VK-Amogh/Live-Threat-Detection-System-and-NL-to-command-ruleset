@@ -9,7 +9,6 @@ bypass mirrors app.pipeline.process_frame for uploaded video (config/worker.yaml
 
 Ground truth (clip level). DCSASS sub-clip labels are coarse: a "normal" sub-clip of a fight/arson video can show the event,
 so clean clips are chosen by CATEGORY (both labels), never by label alone.
-  FIRE/SMOKE : positive = Arson/Explosion label 1.        clean = every category except Arson/Explosion
   FIGHT      : positive = Fighting/Assault/Abuse label 1.  clean = RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary
   WEAPON     : positives are NOT scored as recall (a Shooting/Robbery clip may not show the weapon on screen);
                clean = RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary, Arson, Explosion
@@ -29,9 +28,8 @@ import server  # noqa: E402
 
 ALL = {'Abuse', 'Arrest', 'Arson', 'Assault', 'Burglary', 'Explosion', 'Fighting', 'RoadAccidents', 'Robbery', 'Shooting', 'Shoplifting', 'Stealing', 'Vandalism'}
 CALM = {'RoadAccidents', 'Shoplifting', 'Stealing', 'Vandalism', 'Burglary'}
-FAMILY = {'FIRE': 'FIRE/SMOKE', 'SMOKE': 'FIRE/SMOKE', 'WEAPON_DETECTED': 'WEAPON', 'FIGHT': 'FIGHT'}
+FAMILY = {'WEAPON_DETECTED': 'WEAPON', 'FIGHT': 'FIGHT'}
 GROUPS = {
-    'FIRE/SMOKE': {'pos': {'Arson', 'Explosion'}, 'clean_cats': ALL - {'Arson', 'Explosion'}},
     'FIGHT': {'pos': {'Fighting', 'Assault', 'Abuse'}, 'clean_cats': CALM},
     'WEAPON': {'pos': set(), 'clean_cats': CALM | {'Arson', 'Explosion'}},
 }

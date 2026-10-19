@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ENV = {**dotenv_values(ROOT / '.env'), **os.environ}
 OLLAMA = ENV.get('OLLAMA_URL', 'http://127.0.0.1:11434')
 QUESTIONS = ['Summarize what happened, how reliable the detection is, and what an operator should check first.',
-             'Is this a real fire or could it be a false alarm? Explain using the confidences.',
+             'Is this a real weapon or could it be a false alarm? Explain using the confidences.',
              'Which camera saw this, how severe is it, and has anyone reviewed it yet?',
              'List the detections in the keyframe and where in the frame each one is.']
 
@@ -27,9 +27,9 @@ QUESTIONS = ['Summarize what happened, how reliable the detection is, and what a
 def dossier(n):
     """A different incident id (and question) for every request, so Ollama cannot answer from its KV prefix cache."""
     return json.dumps({
-        'id': f'evt_bench{n:04d}', 'category': 'Fire', 'severity': 'CRITICAL', 'status': 'NEEDS_REVIEW', 'verified_by': 'NONE', 'camera_or_source': 'Warehouse north camera',
-        'peak_confidence': round(0.8 + (n % 19) / 100, 2), 'detections_in_keyframe': [{'class': 'fire', 'confidence': 0.91, 'location': 'middle-left', 'frame_area_pct': 6.4}, {'class': 'smoke', 'confidence': 0.72, 'location': 'top-left', 'frame_area_pct': 14.1}],
-        'other_incidents_same_source': [{'id': f'evt_b{n:04d}', 'category': 'Smoke', 'offset_ms': 2500}],
+        'id': f'evt_bench{n:04d}', 'category': 'WEAPON_DETECTED', 'severity': 'CRITICAL', 'status': 'NEEDS_REVIEW', 'verified_by': 'NONE', 'camera_or_source': 'Warehouse north camera',
+        'peak_confidence': round(0.8 + (n % 19) / 100, 2), 'detections_in_keyframe': [{'class': 'gun', 'confidence': 0.91, 'location': 'middle-left', 'frame_area_pct': 1.4}, {'class': 'knife', 'confidence': 0.72, 'location': 'top-left', 'frame_area_pct': 0.6}],
+        'other_incidents_same_source': [{'id': f'evt_b{n:04d}', 'category': 'WEAPON_DETECTED', 'offset_ms': 2500}],
     })
 
 

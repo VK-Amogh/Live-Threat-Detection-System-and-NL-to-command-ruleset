@@ -144,7 +144,7 @@ class Frames(Dataset):
 
 
 def main():
-    records = dataset_records('fire_smoke_v2', ['fire', 'smoke']) + dataset_records('weapons_v2', ['gun', 'knife']) + negative_records(('fire_smoke_v2', 'weapons_v2'))
+    records = dataset_records('weapons_v2', ['gun', 'knife']) + negative_records(('weapons_v2',))
     from collections import Counter
     print(len(records), Counter((r['kind'], r['split'], r['label']) for r in records))
     encoder = load_encoder('cuda')

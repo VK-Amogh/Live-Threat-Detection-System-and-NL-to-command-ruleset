@@ -1,0 +1,10 @@
+{
+  "SERVER_URLS": "https://10.12.253.133:8443,http://10.11.229.33:8000",
+  "SERVER_ID": "ss-7f3c2a",
+  "TLS_PINS": "iEUVpfoMy8GVVB3wDxTlaanbX00rCRkLTRLYnkgsXUk=",
+  "CAMERA_ENROLLMENT_CODE": "ss-enroll-np4a-7495-9f8e7d6c5b4a3210",
+  "DISCOVERY_PORT": "47800",
+  "ACCOUNTS": "admin1@safespace.com|Admin 1,admin2@safespace.com|Admin 2",
+  "DEMO_PASSWORD": "admin123",
+  "DEMO_AUTOFILL": "true"
+}

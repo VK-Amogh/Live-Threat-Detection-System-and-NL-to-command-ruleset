@@ -1,0 +1,73 @@
+{
+  "properties": {
+    "segment_id": {
+      "title": "Segment Id",
+      "type": "string"
+    },
+    "camera_id": {
+      "title": "Camera Id",
+      "type": "string"
+    },
+    "start_ts": {
+      "title": "Start Ts",
+      "type": "number"
+    },
+    "end_ts": {
+      "title": "End Ts",
+      "type": "number"
+    },
+    "duration_s": {
+      "title": "Duration S",
+      "type": "number"
+    },
+    "url": {
+      "title": "Url",
+      "type": "string"
+    },
+    "size_bytes": {
+      "title": "Size Bytes",
+      "type": "integer"
+    },
+    "width": {
+      "title": "Width",
+      "type": "integer"
+    },
+    "height": {
+      "title": "Height",
+      "type": "integer"
+    },
+    "fps": {
+      "title": "Fps",
+      "type": "number"
+    },
+    "codec": {
+      "default": "h264",
+      "title": "Codec",
+      "type": "string"
+    },
+    "has_events": {
+      "default": false,
+      "title": "Has Events",
+      "type": "boolean"
+    },
+    "event_count": {
+      "default": 0,
+      "title": "Event Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "segment_id",
+    "camera_id",
+    "start_ts",
+    "end_ts",
+    "duration_s",
+    "url",
+    "size_bytes",
+    "width",
+    "height",
+    "fps"
+  ],
+  "title": "RecordingSegmentOut",
+  "type": "object"
+}

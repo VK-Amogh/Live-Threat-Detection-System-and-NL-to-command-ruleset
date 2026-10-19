@@ -6,6 +6,7 @@ camera:
 detector:
   weights: weights/yolo26n.pt
   confidence: 0.35
+  tracker_conf: 0.1        # what the tracker sees; 0.35 hid occluded people from ByteTrack's low-score matching stage
   image_size: 640
   tracker: bytetrack.yaml
 
@@ -17,6 +18,8 @@ llm:
   # Ollama reloads the model whenever they differ between requests, which made the next chat answer wait 10-16 s.
   num_gpu: 99
   num_ctx: 6144
+  # think: false   # measured 2026-10-17: compiles ~25x faster (0.7 s vs 12-28 s) but the model then dropped the zone or the
+  #                 negation in 4 of 20 golden prompts. Rule compilation favours accuracy, so thinking stays on.
 
 openvocab:
   enabled: false
@@ -31,3 +34,28 @@ engine:
   track_gap_s: 1
   missing_frame_s: 5
   cooldown_s: 120
+
+# Plausibility gates (starting values; calibrate on the labelled baseline, see docs/rule-engine-implementation-plan.md).
+# A detection that fails a gate is not treated as a tracked object, so it can neither start nor extend an episode.
+quality:
+  person:
+    min_track_score: 0.5          # mean detector confidence over the last 2 s
+    max_frame_coverage: 0.7       # a "person" filling the frame was a backpack in every observed false alert
+    max_border_contacts: 3
+    require_pose_support: true    # a "person" must also show a coherent skeleton (needs weights/yolo26n-pose.pt; without the file this gate is skipped with a warning)
+  default:
+    min_track_score: 0.4
+    max_frame_coverage: 0.85
+    max_border_contacts: 4
+  blur_min_laplacian_var: 100     # frames below this (320 px grey) are skipped; measured: blurred 178, sharp >= 236 on 28 frames
+
+scene_guard:
+  enabled: true
+  max_shift_rel: 0.04             # picture-content rules (door opens) pause when the view moves more than 4% of the frame width
+  loose_shift_rel: 0.15           # detection-based zone/object rules (comes in, sits on) pause only beyond 15%: ordinary hand movement is allowed
+  min_matches: 12
+
+pose:
+  weights: weights/yolo26n-pose.pt   # download once with scripts/fetch_pose_weights.py; never fetched at runtime
+  imgsz: 640
+  conf: 0.3

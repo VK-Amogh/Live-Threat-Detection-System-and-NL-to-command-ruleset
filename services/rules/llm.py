@@ -7,19 +7,21 @@ import httpx
 
 
 class LocalLLM:
-    def __init__(self, base_url: str, model: str, timeout_s: float, num_gpu: int = 0, num_ctx: int | None = None):
+    def __init__(self, base_url: str, model: str, timeout_s: float, num_gpu: int = 0, num_ctx: int | None = None,
+                 think: bool | None = None):
         self.url = base_url.rstrip("/") + "/api/chat"
         self.model = model
         self.timeout = timeout_s
         self.num_gpu = num_gpu
         self.num_ctx = num_ctx
+        self.think = think        # None keeps the model's default; False is much faster but dropped clauses when compiling rules
 
     def _request(self, system: str, user: str, schema: dict, images: list[bytes] | None = None) -> dict:
         message = {"role": "user", "content": user}
         if images:
             message["images"] = [base64.b64encode(item).decode("ascii") for item in images]
         payload = {
-            "model": self.model, "stream": False, "format": schema,
+            "model": self.model, "stream": False, "format": schema, "keep_alive": "30m", **({"think": self.think} if self.think is not None else {}),
             "options": {"temperature": 0, "num_gpu": self.num_gpu, **({"num_ctx": self.num_ctx} if self.num_ctx else {})},
             "messages": [{"role": "system", "content": system}, message],
         }

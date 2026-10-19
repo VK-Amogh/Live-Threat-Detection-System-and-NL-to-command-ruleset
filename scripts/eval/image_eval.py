@@ -1,7 +1,7 @@
 """End-to-end still-image evaluation of the deployed stack (YOLO proposals -> verifier -> thresholds) on held-out images.
 
 python scripts/eval/image_eval.py --out storage/benchmarks/stack_images.json
-Positives: fire/smoke and weapon test images with annotations (image counts as detected when any alert of the right class
+Positives: weapon test images with annotations (image counts as detected when any alert of the right class
 appears — box position is not required for an alarm). Negatives: threat-free test frames from videos the system never saw
 (RLVS, hockey, SCVD, DCSASS calm categories) and the annotated datasets' own clean test images.
 Reports YOLO-only (raw detector thresholds) vs the full stack, per source.
@@ -20,8 +20,8 @@ sys.path[:0] = [str(ROOT / 'services/inference'), str(ROOT / 'contracts/src')]
 import server  # noqa: E402
 
 CALM = {'RoadAccidents', 'Shoplifting', 'Stealing', 'Vandalism', 'Burglary'}
-FAMILY = {'fire': 'FIRE/SMOKE', 'smoke': 'FIRE/SMOKE', 'gun': 'WEAPON', 'knife': 'WEAPON'}
-FAMILIES = ('FIRE/SMOKE', 'WEAPON', 'FIGHT')
+FAMILY = {'gun': 'WEAPON', 'knife': 'WEAPON'}
+FAMILIES = ('WEAPON', 'FIGHT')
 
 
 def gt_classes(label_file, names):
@@ -35,7 +35,7 @@ def alerts(raw, use_verifier):
             ok = p['verifier'] >= server.VERIFIER[1][p['cls']]
         else:
             ok = p['conf'] >= p['thresholds'].get(p['cls'], 1.0)
-        if ok:
+        if ok and p['cls'] in FAMILY:
             out.add(FAMILY[p['cls']])
     if raw.get('violence'):
         score, frames = raw['violence']
@@ -51,7 +51,7 @@ def main():
     a = ap.parse_args()
     server.load_models()
     cases = []   # (path, source, truth family set)
-    for domain, names in (('fire_smoke_v2', ['fire', 'smoke']), ('weapons_v2', ['gun', 'knife'])):
+    for domain, names in (('weapons_v2', ['gun', 'knife']),):
         root = ROOT / 'storage/datasets' / domain
         for img in sorted((root / 'images/test').glob('*.jpg')):
             truth = {FAMILY[c] for c in gt_classes(root / 'labels/test' / (img.stem + '.txt'), names)}
@@ -74,7 +74,7 @@ def main():
     from extract_frames import grab
     temp = ROOT / 'storage/eval/violent_frames'
     temp.mkdir(parents=True, exist_ok=True)
-    violent = [r for r in json.loads((ROOT / 'storage/datasets/violence/manifest.json').read_text()) if r['split'] == 'test' and r['label'] == 1 and r['dataset'] != 'Threat-free stills (fire scenes, CCTV, hard negatives)']
+    violent = [r for r in json.loads((ROOT / 'storage/datasets/violence/manifest.json').read_text()) if r['split'] == 'test' and r['label'] == 1 and not r['dataset'].startswith('Threat-free stills')]
     violent += [{'path': r['path'], 'dataset': 'DCSASS blind Fighting'} for r in json.loads((ROOT / 'storage/datasets/violence/blind_manifest.json').read_text()) if r['category'] == 'Fighting' and r['label'] == 1]
     for r in violent:
         for frame in grab((r['path'], str(temp), Path(r['path']).stem.replace(' ', '_') + '_v', 3)):

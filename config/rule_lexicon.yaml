@@ -1,0 +1,50 @@
+# Words the rule compiler knows. Anything in a rule that is not here, a detector class, or the name of a zone, line or object
+# on the camera is "uncovered": the rule is refused with that word named, instead of being compiled without it.
+
+# Filler that carries no condition by itself.
+ignorable: [alert, notify, tell, let, know, warn, me, my, us, our, when, whenever, if, while, as, someone, anyone, somebody,
+            everyone, the, a, an, any, is, are, was, were, be, been, being, that, this, there, to, of, at, for, by, with, and,
+            or, then, also, please, again, only, more, than, least, most, within, during, between, from, until, till, after,
+            before, in, inside, into, "on", onto, through, via, across, out, up, "off", line, zone, area,
+            toward, towards, it, its, their, they, them, who, which, i, you, we, can, will, should, would, ever, once, just,
+            same, one, ones, fully, first, hours, hour]
+
+# Negations change what a rule means, so a rule that contains one must contain a `not` condition.
+negations: ["no", "not", nobody, none, never, without, nothing]
+
+# Unit and number words.
+units: [second, seconds, sec, secs, minute, minutes, min, mins, metre, metres, meter, meters, am, pm, midnight, noon,
+        distinct, tracks, different]
+numbers: [one, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, fifteen, twenty, thirty, sixty]
+
+# Action and relation words, each with the condition types that can honour it (`any` = a presence statement, always honoured).
+# A matched word whose types are absent from the compiled rule makes the rule UNSUPPORTED with that word named.
+verbs:
+  - {id: sit, pattern: '\b(sit|sits|sitting|sat|seated)\b', types: [sits_on]}
+  - {id: touch, pattern: '\b(touch|touches|touching|touched)\b', types: [touches_object]}
+  - {id: pickup, pattern: '\b(pick|picks|picking|picked)\s+up\b|\b(take|takes|taking|grab|grabs|grabbing)\b', types: [picks_up]}
+  - {id: enter, pattern: '\b(enter|enters|entering|entered)\b|\b(walk|walks|walking|come|comes|coming|go|goes|going)\s+in(?:to)?\b', types: [enters_zone, line_cross, in_zone]}
+  - {id: leave, pattern: '\b(leave|leaves|leaving|left|exit|exits|exiting)\b|\b(walk|walks|walking|come|comes|go|goes|going)\s+out(?:\s+of)?\b', types: [exits_zone, line_cross]}
+  - {id: cross, pattern: '\b(cross|crosses|crossing|crossed)\b', types: [line_cross, unique_count_at_least]}
+  - {id: stay, pattern: '\b(stay|stays|staying|remain|remains|remaining|linger|lingers|lingering|loiter|loiters|loitering|wait|waits|waiting|stand|stands|standing)\b', types: [dwell_at_least]}
+  - {id: approach, pattern: '\b(approach|approaches|approaching)\b|\b(move|moves|moving|head|heads|heading|walk|walks|walking|come|comes|coming)\s+toward(?:s)?\b', types: [moving_toward]}
+  - {id: near, pattern: '\b(near|nearby|next\s+to|beside|close\s+to)\b', types: [near_object, distance_below]}
+  - {id: missing, pattern: '\b(go|goes|going|went)\s+missing\b|\b(disappear|disappears|disappeared|vanish|vanishes|missing|gone|removed)\b', types: [object_absent]}
+  - {id: open, pattern: '\b(open|opens|opening|opened)\b', types: [zone_changes]}
+  - {id: visible, pattern: '\b(visible|seen|present|appears?|detected)\b', types: [any]}
+
+# Words that are only covered when the rule is about crossing into or out of somewhere ("enters the room from the door").
+crossing_context: [room, inside, outside]
+
+# Door-like nouns. A door is not a detector class: it must be a drawn line or zone (name or role), never guessed.
+door_words: [door, doors, doorway, gate, entrance, entry, exit]
+
+# Intent words with no observable signal; the reason says what can be asked for instead.
+intent:
+  steal: "Theft is intent and cannot be seen. Describe the visible pattern instead, for example 'someone picks up the bag and leaves'."
+  steals: "Theft is intent and cannot be seen. Describe the visible pattern instead, for example 'someone picks up the bag and leaves'."
+  stealing: "Theft is intent and cannot be seen. Describe the visible pattern instead, for example 'someone picks up the bag and leaves'."
+  stole: "Theft is intent and cannot be seen. Describe the visible pattern instead, for example 'someone picks up the bag and leaves'."
+  unauthorized: "Authorization is not visible. Bind the rule to a schedule or zone instead, for example 'a person is in the office zone after 22:00'."
+  unauthorised: "Authorization is not visible. Bind the rule to a schedule or zone instead, for example 'a person is in the office zone after 22:00'."
+  suspicious: "Suspicious behaviour is not something a camera detector can measure. Describe a visible pattern instead."

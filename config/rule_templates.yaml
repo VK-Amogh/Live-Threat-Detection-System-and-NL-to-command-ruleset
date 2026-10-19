@@ -1,0 +1,109 @@
+templates:
+  - id: T1
+    name: Person after hours
+    description: Alert when a person is seen in a watched zone during night hours.
+    rule_type: presence_in_zone
+    target_classes: ["person"]
+    zone_required: true
+    dwell_seconds: 2.0
+    min_count: 1
+    cooldown_seconds: 60
+    severity: high
+    schedule_default:
+      timezone: local
+      days: ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+      start_time: "22:00"
+      end_time: "06:00"
+    modes: ["NIGHT", "AWAY"]
+
+  - id: T2
+    name: Loitering in zone
+    description: Alert when a person stays inside a restricted zone for at least 20 seconds.
+    rule_type: dwell_in_zone
+    target_classes: ["person"]
+    zone_required: true
+    dwell_seconds: 20.0
+    min_count: 1
+    cooldown_seconds: 90
+    severity: medium
+    schedule_default: null
+    modes: ["HOME", "AWAY", "NIGHT"]
+
+  - id: T3
+    name: Boundary / doorway crossing
+    description: Alert when a person crosses a designated entry or boundary line.
+    rule_type: line_cross
+    target_classes: ["person"]
+    zone_required: true
+    dwell_seconds: 0.0
+    min_count: 1
+    direction: A_TO_B
+    cooldown_seconds: 30
+    severity: high
+    schedule_default: null
+    modes: ["AWAY", "NIGHT"]
+
+  - id: T4
+    name: Crowd / multiple people
+    description: Alert when 3 or more people gather in the monitored area for 5 seconds.
+    rule_type: count_threshold
+    target_classes: ["person"]
+    zone_required: false
+    dwell_seconds: 5.0
+    min_count: 3
+    cooldown_seconds: 120
+    severity: medium
+    schedule_default: null
+    modes: ["HOME", "AWAY", "NIGHT"]
+
+  - id: T5
+    name: Unattended bag
+    description: Alert when a backpack, handbag, or suitcase remains stationary for 30 seconds.
+    rule_type: stationary_object
+    target_classes: ["backpack", "handbag", "suitcase"]
+    zone_required: false
+    dwell_seconds: 30.0
+    min_count: 1
+    cooldown_seconds: 120
+    severity: high
+    schedule_default: null
+    modes: ["HOME", "AWAY", "NIGHT"]
+
+  - id: T6
+    name: Vehicle in driveway / gate
+    description: Alert when a car, motorcycle, bus, or truck stays in the gate or driveway zone.
+    rule_type: dwell_in_zone
+    target_classes: ["car", "motorcycle", "bus", "truck"]
+    zone_required: true
+    dwell_seconds: 5.0
+    min_count: 1
+    cooldown_seconds: 60
+    severity: medium
+    schedule_default: null
+    modes: ["HOME", "AWAY", "NIGHT"]
+
+  - id: T7
+    name: Package / object left at door
+    description: Alert when a suitcase, backpack, or box is left near the doorway for 15 seconds.
+    rule_type: stationary_object
+    target_classes: ["suitcase", "backpack", "handbag"]
+    zone_required: true
+    dwell_seconds: 15.0
+    min_count: 1
+    cooldown_seconds: 90
+    severity: low
+    schedule_default: null
+    modes: ["HOME", "AWAY"]
+
+  - id: T8
+    name: Pet on furniture / restricted area
+    description: Alert when a dog or cat enters a restricted zone or furniture area.
+    rule_type: presence_in_zone
+    target_classes: ["dog", "cat"]
+    zone_required: true
+    dwell_seconds: 3.0
+    min_count: 1
+    cooldown_seconds: 60
+    severity: low
+    schedule_default: null
+    modes: ["HOME", "AWAY"]

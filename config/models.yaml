@@ -2,9 +2,6 @@
 # alert thresholds from the calibration sidecar next to each file (storage/models/<weights>.json),
 # written by scripts/benchmark_detector.py when a candidate is promoted.
 models:
-  - name: fire_smoke
-    path: storage/models/fire_smoke.pt
-    imgsz: 512
   - name: weapons
     path: storage/models/weapons.pt
     imgsz: 640   # the verifier was trained on proposals made at this size (the benchmark used 704; keep config and verifier consistent)
@@ -24,6 +21,8 @@ inference:
 
 # Categories this system cannot reliably detect from object boxes or short clips.
 unsupported:
+  - "Fire and smoke, including Arson (removed: detection on low-resolution CCTV was not reliable enough)"
+  - "Crime-type labels (Abuse, Arrest, Assault, Burglary, Explosion, Fighting, RoadAccidents, Robbery, Shooting, Shoplifting, Stealing, Vandalism): a classifier was trained and scored on blind DCSASS videos and no type met the surfacing bar (docs/crime-type.md); storage/models/crime_type.* is evaluation-only and is not loaded by this service"
   - Falls and medical emergencies
   - Robbery, theft or criminal intent
   - Intrusion without a configured restricted zone

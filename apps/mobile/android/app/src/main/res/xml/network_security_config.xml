@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The laptop's HTTPS certificate comes from its own private CA. Dart verifies the server's key by pin;
+     this makes Android's own TLS stack (the video player) trust the same CA. Plain http stays allowed
+     for the hotspot, where the laptop is reached directly. -->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/safespace_ca" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

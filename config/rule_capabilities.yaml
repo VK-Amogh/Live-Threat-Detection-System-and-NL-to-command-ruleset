@@ -1,11 +1,28 @@
+# status: SUPPORTED | EXPERIMENTAL (needs explicit acknowledgement to activate) | UNSUPPORTED
+# reliability: how much to trust the primitive when its inputs are visible; it is a ceiling, not a measurement.
+# Pose-based and multi-step primitives are EXPERIMENTAL until the labelled baseline (scripts/eval/rules_score.py) has numbers for them.
 capabilities:
-  entity_present: {requires: detect_objects, status: SUPPORTED}
-  in_zone: {requires: [detect_objects, track_objects, zone], status: SUPPORTED}
-  line_cross: {requires: [detect_objects, track_objects, line], status: SUPPORTED}
-  unique_count_at_least: {requires: [detect_objects, track_objects, line], status: SUPPORTED}
-  dwell_at_least: {requires: [detect_objects, track_objects], status: SUPPORTED}
-  moving_toward: {requires: [detect_objects, track_objects, zone], status: SUPPORTED}
-  distance_below: {requires: [detect_objects, track_objects, homography], status: EXPERIMENTAL}
-  time_window: {requires: clock, status: SUPPORTED}
+  entity_present: {requires: detect_objects, status: SUPPORTED, reliability: HIGH}
+  in_zone: {requires: [detect_objects, track_objects, zone], status: SUPPORTED, reliability: HIGH}
+  line_cross: {requires: [detect_objects, track_objects, line], status: SUPPORTED, reliability: HIGH}
+  unique_count_at_least: {requires: [detect_objects, track_objects, line], status: SUPPORTED, reliability: HIGH}
+  dwell_at_least: {requires: [detect_objects, track_objects], status: SUPPORTED, reliability: HIGH}
+  moving_toward: {requires: [detect_objects, track_objects, zone], status: SUPPORTED, reliability: MEDIUM}
+  distance_below: {requires: [detect_objects, track_objects, homography], status: EXPERIMENTAL, reliability: MEDIUM}
+  time_window: {requires: clock, status: SUPPORTED, reliability: HIGH}
+  enters_zone: {requires: [detect_objects, track_objects, zone], status: SUPPORTED, reliability: HIGH}
+  exits_zone: {requires: [detect_objects, track_objects, zone], status: SUPPORTED, reliability: HIGH}
+  near_object: {requires: [detect_objects, track_objects, object], status: SUPPORTED, reliability: MEDIUM}
+  count_in_zone_at_least: {requires: [detect_objects, track_objects], status: SUPPORTED, reliability: HIGH}
+  zone_changes: {requires: [zone], status: EXPERIMENTAL, reliability: MEDIUM}
+  object_absent: {requires: [detect_objects, anchor], status: SUPPORTED, reliability: HIGH}
+  touches_object: {requires: [detect_objects, track_objects, pose, object], status: EXPERIMENTAL, reliability: MEDIUM}
+  sits_on: {requires: [detect_objects, track_objects, pose, object], status: EXPERIMENTAL, reliability: MEDIUM}
+  picks_up: {requires: [detect_objects, track_objects, anchor], status: EXPERIMENTAL, reliability: LOW}
   action_recognition: {requires: unavailable, status: UNSUPPORTED}
   open_vocab_detect: {requires: unavailable, status: UNSUPPORTED}
+
+# Optional visual check (Gemma forced choice) per primitive. Empty on purpose: the check has never been calibrated on real
+# positives, and a 2B model that vetoes a true "person sits on the chair" is worse than an alert backed by pose geometry.
+# Enable by listing primitive: question here (questions live in services/rules/verify_questions.py), e.g. {sits_on: sits_on}.
+verification_defaults: {}

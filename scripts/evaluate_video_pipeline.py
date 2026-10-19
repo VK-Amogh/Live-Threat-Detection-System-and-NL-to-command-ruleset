@@ -103,20 +103,11 @@ def main():
     p.add_argument('--set', choices=('testvideos', 'scvd-val', 'scvd-test'), default='testvideos')
     p.add_argument('--output', type=Path, required=True)
     p.add_argument('--sample-fps', type=float, default=2.0)
-    p.add_argument('--fire-weights', type=Path, help='candidate checkpoint; keeps deployed fire/smoke thresholds for comparison')
     p.add_argument('--violence-head', type=Path, help='candidate violence-head checkpoint and adjacent JSON thresholds')
     args = p.parse_args()
     server.load_models()
     if server.ERRORS:
         raise RuntimeError(f'Model loading errors: {server.ERRORS}')
-    if args.fire_weights:
-        from ultralytics import YOLO
-        if not args.fire_weights.exists():
-            raise FileNotFoundError(args.fire_weights)
-        candidate = YOLO(str(args.fire_weights))
-        candidate.fuse(verbose=False)
-        server.MODELS[:] = [(name, candidate if name == 'fire_smoke' else model, mtime, thresholds, imgsz)
-                            for name, model, mtime, thresholds, imgsz in server.MODELS]
     if args.violence_head:
         import torch
         if server.VIOLENCE is None:
@@ -139,7 +130,7 @@ def main():
     summary = {'positive_clips': len(positive), 'positive_detected': sum(bool(r['incidents']) for r in positive),
                'negative_clips': len(negative), 'negative_alerted': sum(bool(r['incidents']) for r in negative),
                'violence_detected': sum('FIGHT' in r['incidents'] for r in positive)}
-    report = {'set': args.set, 'sample_fps': args.sample_fps, 'fire_weights': str(args.fire_weights) if args.fire_weights else None,
+    report = {'set': args.set, 'sample_fps': args.sample_fps, 
               'violence_head': str(args.violence_head) if args.violence_head else None,
               'models': server.coverage(), 'policy': {'k_hits': policy[0], 'n_window': policy[1],
               'immediate_confidence': policy[2]}, 'summary': summary, 'clips': clips}

@@ -22,6 +22,7 @@ class SourceType(str, Enum):
     WEBCAM = "WEBCAM"
     FILE = "FILE"
     RTSP = "RTSP"
+    PHONE = "PHONE"
 
 class MediaKind(str, Enum):
     KEYFRAME = "KEYFRAME"

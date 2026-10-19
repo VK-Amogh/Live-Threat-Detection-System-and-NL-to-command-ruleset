@@ -109,15 +109,15 @@ def rwf():
 def stills():
     """Threat-free still images as 1-frame 'clips'.
 
-    Without these the recogniser only ever saw people-in-video and fired (confidence 1.0) on fire scenes.
-    Fire/smoke pictures, CCTV background frames and hard-negative web images are all non-violent;
+    Without these the recogniser only ever saw people-in-video and fired (confidence 1.0) on scenes without people fighting.
+    CCTV background frames and hard-negative web images are all non-violent;
     images containing a gun or knife are excluded (a posed weapon is not a fight, and the weapon detector owns it).
     Splits inherit the detection datasets' leakage-controlled splits.
     """
     rng = random.Random(11)
     quota = {'train': 1800, 'val': 150, 'test': 300}
     rows = []
-    for domain, need_empty in (('fire_smoke', False), ('weapons', True)):
+    for domain, need_empty in (('weapons', True),):
         root = ROOT / 'storage/datasets' / domain
         for split, count in quota.items():
             files = sorted((root / 'images' / split).glob('*.jpg'))
@@ -125,7 +125,7 @@ def stills():
                 files = [f for f in files if not (root / 'labels' / split / (f.stem + '.txt')).read_text().strip()]
             rng.shuffle(files)
             for f in files[: count if not need_empty else count // 2]:
-                rows.append({'path': str(f), 'label': 0, 'split': split, 'dataset': 'Threat-free stills (fire scenes, CCTV, hard negatives)'})
+                rows.append({'path': str(f), 'label': 0, 'split': split, 'dataset': 'Threat-free stills (CCTV, hard negatives)'})
     return rows
 
 

@@ -57,6 +57,7 @@ abstract final class AppSpacing {
 }
 
 abstract final class AppRadii {
+  static const double xs = 4.0;
   static const double sm = 8.0;
   static const double md = 12.0;
   static const double lg = 16.0;
@@ -139,6 +140,7 @@ abstract final class AppTypography {
         fontWeight: FontWeight.w400,
         letterSpacing: 0.2,
         color: AppColors.foregroundSecondary,
+        fontFeatures: [FontFeature.tabularFigures()],
       );
 
   /// Dates, sizes, capsule text
@@ -148,6 +150,7 @@ abstract final class AppTypography {
         fontWeight: FontWeight.w500,
         letterSpacing: 0.3,
         color: AppColors.foregroundSecondary,
+        fontFeatures: [FontFeature.tabularFigures()],
       );
 
   /// Chip labels

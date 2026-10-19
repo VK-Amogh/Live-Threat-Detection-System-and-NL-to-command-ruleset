@@ -17,9 +17,10 @@ from ultralytics import YOLO
 
 from td_contracts import (CameraGeometry, CameraHealthEvent, EventOut, RuleActivationRequest, RuleCompileRequest,
                           RuleCompileResult, RuleEvent, RuleSpec, RuleStatusRequest, ReviewFailure, ReviewCompletion)
+from services.rules.audit import dropped_clauses
 from services.rules.compiler import RuleCompiler
 from services.rules.registry import CapabilityRegistry
-from . import database as db, pipeline
+from . import database as db, pipeline, rule_verify
 from .security import authenticated, now
 from .settings import ROOT, STORAGE, INTERNAL_TOKEN
 
@@ -60,7 +61,7 @@ async def compile_rule(req: RuleCompileRequest):
     geometry = geometry or {"zones": {}, "lines": {}, "homography": None}
     try:
         classes = await asyncio.to_thread(detector_classes)
-        compiler = RuleCompiler.from_config(classes, set(geometry["zones"]), set(geometry["lines"]), geometry["homography"] is not None)
+        compiler = RuleCompiler.from_config(classes, set(geometry["zones"]), set(geometry["lines"]), geometry["homography"] is not None, geometry)
         result = await asyncio.to_thread(compiler.compile, req.text, req.camera_id)
     except (OSError, RuntimeError, ValueError) as exc:
         raise HTTPException(503, f"Rule compiler unavailable: {str(exc)[:180]}") from exc
@@ -92,15 +93,21 @@ async def activate_rule(ident: str, req: RuleActivationRequest):
     spec = RuleSpec.model_validate_json(row["spec_json"])
     geometry, _ = db.get_geometry(spec.camera_id)
     geometry = geometry or {"zones": {}, "lines": {}, "homography": None}
-    registry = CapabilityRegistry(ROOT, detector_classes(), set(geometry["zones"]), set(geometry["lines"]), geometry["homography"] is not None)
+    registry = CapabilityRegistry(ROOT, detector_classes(), set(geometry["zones"]), set(geometry["lines"]), geometry["homography"] is not None,
+                                  anchors=geometry.get("anchors"))
     level, problems, executable = registry.assess(spec.entity, spec.when)
     if not executable or level == "UNSUPPORTED" or not row["can_activate"]:
         raise HTTPException(409, "Rule cannot activate: " + "; ".join(problems))
+    dropped = dropped_clauses(row["text"], spec, registry, geometry.get("zone_roles"))
+    if dropped:
+        raise HTTPException(409, "Rule cannot activate: its text asks for things no condition checks: " + ", ".join(dropped))
     if level == "EXPERIMENTAL" and not req.acknowledge_experimental:
         raise HTTPException(409, "Experimental capability requires acknowledgement")
     spec.status = "active"
     spec.support_level = level
     spec.version += 1
+    if spec.verification is not None and spec.verification.method == "vlm":
+        asyncio.create_task(rule_verify.VERIFIER.warm())        # load the model now, not on the first alert
     row.update(spec_json=spec.model_dump_json(by_alias=True), status="active", version=spec.version, updated_at=now())
     db.put_rule(row)
     return rule_record(row)
@@ -150,6 +157,8 @@ async def worker_rules(camera_id: str):
 async def worker_cameras():
     active = []
     for camera in db.all_objects("camera"):
+        if camera.get("source_type") == "PHONE":
+            continue
         if not camera.get("desired_active") or not camera.get("enabled", True):
             continue
         source = db.get("source", camera.get("_active_source_id"))
@@ -202,6 +211,16 @@ async def ingest_rule_event(event: RuleEvent, idempotency_key: str = Header(alia
     spec = RuleSpec.model_validate_json(rule["spec_json"])
     if event.needs_visual_review != spec.needs_visual_review:
         raise HTTPException(422, "Visual-review setting does not match the confirmed rule")
+    if event.verification is not None and event.verification.status == "candidate":
+        # A fast preliminary candidate is never an alert: it waits for the visual check this rule asked for.
+        if spec.verification is None or spec.verification.method != "vlm":
+            raise HTTPException(422, "This rule has no visual verification policy")
+        return {"event": None, "created": False, "queued": rule_verify.VERIFIER.submit(event, spec)}
+    return await publish_rule_event(event, spec)
+
+
+async def publish_rule_event(event: RuleEvent, spec: RuleSpec):
+    """Turn a verified (or unverifiable) rule event into an incident, following the rule's own policy."""
     frame = STORAGE / "media" / event.event_id / "frame.jpg"
     if not frame.is_file():
         raise HTTPException(422, "Rule keyframe is missing")
@@ -210,6 +229,26 @@ async def ingest_rule_event(event: RuleEvent, idempotency_key: str = Header(alia
             width, height = image.size
     except (OSError, ValueError) as exc:
         raise HTTPException(422, "Rule keyframe cannot be decoded") from exc
+    status, verified_by, severity = "DETECTED", "NONE", spec.severity.upper()
+    reason, category_key = "Programmable rule matched; inspect evidence", "RULE_ALERT"
+    verification = event.verification
+    if verification is not None and verification.status == "verified":
+        if verification.method == "vlm":
+            verified_by, reason = "AI", "Rule matched and the visual check agreed; inspect evidence"
+        else:
+            reason = "Rule matched and deterministic evidence checks passed; inspect evidence"
+    elif verification is not None and verification.status == "unverifiable":
+        policy = spec.verification.on_unverifiable if spec.verification else "hold_for_review"
+        if policy == "drop":
+            rule_verify.Verifier.audit(event, "unverifiable", verification.reason)
+            return {"event": None, "created": False}
+        status, reason = "NEEDS_REVIEW", f"Not verified ({verification.reason or 'visual check inconclusive'}); inspect evidence"
+        if policy == "hold_for_review":
+            category_key, severity = "RULE_UNVERIFIED", "LOW"      # the phone only pushes RULE_ALERT, so a held alert stays quiet
+        else:
+            reason = "Unverified: " + reason
+    elif verification is not None:
+        return {"event": None, "created": False}                   # rejected / expired / still a candidate: never an incident
     stamp = datetime.fromtimestamp(event.ts, timezone.utc).isoformat()
     first = datetime.fromtimestamp(event.episode_start, timezone.utc).isoformat()
     camera = db.get("camera", event.camera_id)
@@ -219,10 +258,11 @@ async def ingest_rule_event(event: RuleEvent, idempotency_key: str = Header(alia
     output = EventOut(id=event.event_id, rule_id=event.rule_id, rule_version=event.rule_version,
                       uncertainty=event.uncertainty, needs_visual_review=event.needs_visual_review,
                       evidence_bbox=event.evidence_bbox,
+                      verification=verification.model_dump(mode="json") if verification else None,
                       camera={"id": event.camera_id, "name": camera["name"] if camera else event.camera_id},
-                      category={"key": "RULE_ALERT", "label": spec.name}, status="DETECTED",
-                      status_reason="Programmable rule matched; inspect evidence",
-                      verified_by="NONE", severity="MEDIUM", yolo_confidence=event.confidence,
+                      category={"key": category_key, "label": spec.name}, status=status,
+                      status_reason=reason,
+                      verified_by=verified_by, severity=severity, yolo_confidence=event.confidence,
                       peak_confidence=event.confidence, summary=None, first_seen_at=first,
                       last_seen_at=stamp, track_refs=[{"track_id": ident, "class": spec.entity} for ident in event.tracks],
                       media=media, models={"yolo": {"name": event.model_versions.get("detector", "unknown"),
@@ -235,6 +275,9 @@ async def ingest_rule_event(event: RuleEvent, idempotency_key: str = Header(alia
     return {"event": saved, "created": created}
 
 
+rule_verify.VERIFIER.on_done = publish_rule_event
+
+
 @worker_router.post("/health-events", dependencies=[Depends(worker_auth)])
 async def ingest_health_event(event: CameraHealthEvent, idempotency_key: str = Header(alias="Idempotency-Key")):
     if idempotency_key != event.event_id:
@@ -243,11 +286,17 @@ async def ingest_health_event(event: CameraHealthEvent, idempotency_key: str = H
     if camera is None:
         raise HTTPException(404, "Camera not found")
     stamp = datetime.fromtimestamp(event.ts, timezone.utc).isoformat()
+    detector_failure = event.kind == "inference_failure"
+    moved = event.kind == "camera_moved"
+    if moved:
+        rule_verify.VERIFIER.cancel_camera(event.camera_id)     # evidence from before the view changed can no longer be confirmed
     output = EventOut(id=event.event_id, camera={"id": event.camera_id, "name": camera["name"]},
-                      category={"key": "CAMERA_OFFLINE", "label": "Camera signal lost"},
+                      category={"key": "DETECTOR_UNAVAILABLE" if detector_failure else "CAMERA_MOVED" if moved else "CAMERA_OFFLINE",
+                                "label": "Rule detector unavailable" if detector_failure else "Camera view changed" if moved else "Camera signal lost"},
                       status="DETECTED", status_reason=event.reason, verified_by="NONE", severity="MEDIUM",
                       yolo_confidence=0, peak_confidence=0, summary=event.reason,
-                      uncertainty="Camera feed unavailable", first_seen_at=stamp, last_seen_at=stamp,
+                      uncertainty="Rule detections unavailable" if detector_failure else "Zone and object rules paused until the view is steady" if moved else "Camera feed unavailable",
+                      first_seen_at=stamp, last_seen_at=stamp,
                       media=[], models={"yolo": {"name": "camera health"}},
                       change_seq=0, created_at=stamp, updated_at=stamp).model_dump(mode="json", by_alias=True)
     saved, created = db.insert_event_once(output)

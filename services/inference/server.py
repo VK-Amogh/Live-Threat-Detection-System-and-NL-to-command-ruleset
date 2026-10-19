@@ -170,7 +170,7 @@ app = FastAPI(title='SafeSpace detector', lifespan=lifespan, dependencies=[Depen
 def coverage():
     models = [{'name': name, 'classes': list(model.names.values()), 'thresholds': thresholds, 'imgsz': imgsz} for name, model, _, thresholds, imgsz in MODELS]
     if VERIFIER:
-        models.append({'name': 'verifier', 'classes': ['fire', 'smoke', 'gun', 'knife'], 'thresholds': VERIFIER[1]})
+        models.append({'name': 'verifier', 'classes': ['gun', 'knife'], 'thresholds': {k: v for k, v in VERIFIER[1].items() if k in ('gun', 'knife')}})
     if VIOLENCE:
         models.append({'name': 'violence', 'classes': ['violence'], 'thresholds': {str(k): v for k, v in VIOLENCE.thresholds.items()}, 'motion': bool(MOTION), 'ensemble_threshold': ENSEMBLE['threshold'] if ENSEMBLE else None})
     return models

@@ -1,7 +1,7 @@
 """Render docs/benchmarks.md from storage/benchmarks/*.json — the only source of numbers in the docs.
 
 Inputs (each optional): stack_images.json (scripts/eval/image_eval.py), blind_fresh.json (blind_score.py --json),
-fire_smoke.json / weapons.json (benchmark_detector.py), verifier.json, violence_ensemble.json, chat.json, ecosystem.json.
+weapons.json (benchmark_detector.py), verifier.json, violence_ensemble.json, chat.json, ecosystem.json.
 """
 import json
 import time
@@ -32,13 +32,13 @@ def stack_section(stack):
            'Held-out annotated images (never trained on, near-duplicates of training images removed) and **blind video frames** the system never saw. '
            '"Detector only" = raw YOLO thresholds; "full stack" = YOLO proposals re-scored by the DINOv2 verifier. Recall is per positive image (any alert of the right family); '
            'false alarm = share of threat-free images with an alert of that family.', '',
-           '| Source | Images | Mode | Fire/smoke recall | Fire/smoke false alarm | Weapon recall | Weapon false alarm | Fight recall | Fight false alarm |', '|---|---|---|---|---|---|---|---|---|']
+           '| Source | Images | Mode | Weapon recall | Weapon false alarm | Fight recall | Fight false alarm |', '|---|---|---|---|---|---|---|']
     for src in sources:
         for mode in ('detector_only', 'full_stack'):
             c = stack.get(f'{src}|{mode}')
             if not c:
                 continue
-            cells = [pct(rate(c, fam, kind)) if (rate(c, fam, kind) is not None) else '—' for fam in ('FIRE/SMOKE', 'WEAPON', 'FIGHT') for kind in ('recall', 'false_alarm')]
+            cells = [pct(rate(c, fam, kind)) if (rate(c, fam, kind) is not None) else '—' for fam in ('WEAPON', 'FIGHT') for kind in ('recall', 'false_alarm')]
             out.append(f'| {src} | {c["images"]} | {mode.replace("_", " ")} | ' + ' | '.join(cells) + ' |')
     return out + ['']
 
@@ -49,26 +49,14 @@ def blind_section(blind):
            f'Clips from *parent videos never used in training, mining or calibration*, replayed like an upload with the production decision code '
            f'(verifier {"on" if p["verifier"] else "off"}, {p["k_hits"]}-of-{p["n_window"]} persistence). Ground truth is by DCSASS category because sub-clip labels are coarse.', '',
            '| Threat | Positive clips detected | Clean clips with a false alarm |', '|---|---|---|']
-    for name in ('FIRE/SMOKE', 'FIGHT', 'WEAPON'):
+    for name in ('FIGHT', 'WEAPON'):
         r = blind[name]
         rec = f'{pct(r["recall"])} ({r["detected"]}/{r["positive_clips"]})' if r['recall'] is not None else 'not scored (a Shooting/Robbery clip may not show the weapon)'
         out.append(f'| {name} | {rec} | {pct(r["clip_false_alarm_rate"])} ({r["false_alarm_clips"]}/{r["clean_clips"]}) |')
-    out += ['', '| Category / label | Clips | Fire/smoke alerts | Weapon alerts | Fight alerts |', '|---|---|---|---|---|']
+    out += ['', '| Category / label | Clips | Weapon alerts | Fight alerts |', '|---|---|---|---|']
     for key, v in blind['by_category'].items():
-        out.append(f'| {key} | {v["clips"]} | {v.get("FIRE/SMOKE", 0)} | {v.get("WEAPON", 0)} | {v.get("FIGHT", 0)} |')
-    out += ['', 'Label 1 = anomalous sub-clip, 0 = "normal" sub-clip of an anomaly video (these can still show the event). The fresh sample contains no Explosion label-1 clips '
-            '(all were used in earlier samples), so fire/smoke recall here rests on Arson clips.', '']
-    audit = load('blind_fresh_fire_audit')
-    if audit:
-        out += ['**Fire/smoke audit (`scripts/eval/audit_fire_blind.py`).** Looking at one frame of every Arson/1 clip by eye shows that many of them *do* contain visible flames or a burning vehicle '
-                '(at least 15 of the 47 sampled frames, e.g. a burning car and a table fire), so the low recall is a genuine miss, not label noise. '
-                f'All {audit["explosion0_alerted"]} fire/smoke alerts on Explosion/0 clips show a real smoke or dust cloud (the dataset calls these sub-clips "normal"); they are not counted as false alarms. '
-                'Where the Arson clips are lost, per parent video:', '',
-                '| Parent video | Clips | Sampled frames | Frames with any fire/smoke proposal | Best raw detector score | Best verifier score |', '|---|---|---|---|---|---|']
-        for parent, r in audit['per_parent'].items():
-            out.append(f'| {parent} | {r["clips"]} | {r["frames"]} | {r["frames_with_proposal"]} | {r["best_detector_conf"]} | {r["best_verifier_prob"]} |')
-        out += ['', 'Three parents (15 clips) never produce a proposal (the first-stage detector sees nothing at 320x240); on the burning-car parent the best verifier score (0.75) stays below the fire threshold (0.938), '
-                'and on Arson005/040 some proposals score 0.99-1.0 with the verifier yet only one clip alerted, so they were not persistent enough for the 3-of-4 rule. Fire and smoke in low-resolution CCTV is the weakest part of the system.', '']
+        out.append(f'| {key} | {v["clips"]} | {v.get("WEAPON", 0)} | {v.get("FIGHT", 0)} |')
+    out += ['', 'Label 1 = anomalous sub-clip, 0 = "normal" sub-clip of an anomaly video (these can still show the event). The weapon false-alarm count uses the calm categories plus Arson and Explosion; the fight count uses only the calm categories (RoadAccidents, Shoplifting, Stealing, Vandalism, Burglary).', '']
     return out
 
 
@@ -95,16 +83,18 @@ def main():
         if d:
             out += section(d)
     out += ['## 3. Components', '', "Component benchmarks use each detector's benchmark resolution. In production the gun/knife detector runs at 640 px (the verifier was trained on proposals made at that size); the stack numbers in sections 1 and 2 use the deployed configuration.", '']
-    for name, title in (('fire_smoke', 'Fire / smoke detector (stage 1)'), ('weapons', 'Gun / knife detector (stage 1)')):
+    for name, title in (('weapons', 'Gun / knife detector (stage 1)'),):
         d = load(name)
         if d:
             out += detector_section(title, d)
     v = load('verifier')
     if v:
-        out += ['### Verifier (stage 2)', '', f'Trained on {v["train_records"]} crops. ROC AUC on held-out *actual detector proposals*: ' + ', '.join(f'{k.replace("yolo_confidence_only", "YOLO confidence alone (baseline)")} {pct(x)}' for k, x in v['auc']['test'].items()) +
-                '. Frame-level false-alarm rate on blind video frames at the validation-chosen thresholds:', '',
-                '| Class | Threshold | Recall of correct detections | ' + ' | '.join(sorted(next(iter(v['test'].values()))['blind_negative_frame_far'])) + ' |', '|---|---|---|' + '---|' * len(next(iter(v['test'].values()))['blind_negative_frame_far'])]
-        for c, r in v['test'].items():
+        shown = {c: r for c, r in v['test'].items() if c in ('gun', 'knife')}
+        out += ['### Verifier (stage 2)', '', 'ROC AUC on held-out *actual detector proposals*: ' + ', '.join(f'{c} {pct(v["auc"]["test"][c])}' for c in shown) +
+                '. The weights were trained jointly on four classes; two slots are unused and never scored. '
+                'Frame-level false-alarm rate on blind video frames at the validation-chosen thresholds:', '',
+                '| Class | Threshold | Recall of correct detections | ' + ' | '.join(sorted(next(iter(shown.values()))['blind_negative_frame_far'])) + ' |', '|---|---|---|' + '---|' * len(next(iter(shown.values()))['blind_negative_frame_far'])]
+        for c, r in shown.items():
             out.append(f'| {c} | {r["threshold"]:.3f} | {pct(r["recall_of_correct_detections"])} | ' + ' | '.join(pct(x, 2) for _, x in sorted(r['blind_negative_frame_far'].items())) + ' |')
         out.append('')
     e = load('violence_ensemble')

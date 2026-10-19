@@ -46,6 +46,29 @@ def test_outbox_keeps_event_until_api_acknowledges(tmp_path):
     assert all(call.headers["Idempotency-Key"] == "event-1" for call in calls)
 
 
+def test_outbox_recovers_after_network_drop_and_process_restart(tmp_path):
+    path = tmp_path / "outbox.db"
+    outbox = RuleOutbox(path, "http://test", "secret")
+    event = RuleEvent(event_id="event-restart", camera_id="cam", rule_id="r1", rule_version=2,
+                      ts=100, episode_start=97, tracks=[12], model_versions={"detector": "test"},
+                      confidence=.8, uncertainty="fixture")
+    outbox.enqueue_event(event)
+
+    def disconnected(request):
+        raise httpx.ConnectError("network down", request=request)
+
+    with httpx.Client(transport=httpx.MockTransport(disconnected)) as client:
+        assert outbox.flush_once(client) is False
+    assert outbox.pending_count() == 1
+
+    restarted = RuleOutbox(path, "http://test", "secret")
+    with restarted._db() as db:
+        db.execute("UPDATE pending SET next_at=0")
+    with httpx.Client(transport=httpx.MockTransport(lambda request: httpx.Response(200, json={"ok": True}))) as client:
+        assert restarted.flush_once(client) is True
+    assert restarted.pending_count() == 0
+
+
 def test_evidence_has_pre_and_post_roll(tmp_path):
     evidence = EvidenceBuffer(tmp_path, fps=5, pre_roll_s=1, post_roll_s=.4)
     evidence.append(0, jpeg("red"))

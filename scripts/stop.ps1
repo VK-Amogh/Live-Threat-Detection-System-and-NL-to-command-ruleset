@@ -18,7 +18,7 @@ foreach ($item in $items) {
     $process = Get-CimInstance Win32_Process -Filter "ProcessId = $($item.pid)" -ErrorAction SilentlyContinue
     if (!$process) { continue }
     $matchesService = ($item.name -eq 'rule-manager' -and $process.CommandLine.Contains('services.rules.manager')) -or ($item.name -eq 'reasoner' -and $process.CommandLine.Contains('services.reasoner.loop'))
-    $matchesUvicorn = $item.name -in @('api','inference') -and $process.CommandLine.Contains('uvicorn') -and $process.CommandLine.Contains("$($item.port)")
+    $matchesUvicorn = ($item.name -eq 'inference' -and $process.CommandLine.Contains('uvicorn') -and $process.CommandLine.Contains("$($item.port)")) -or ($item.name -eq 'api' -and $process.CommandLine.Contains('serve.py'))
     if (($matchesService -or $matchesUvicorn) -and $process.ExecutablePath.StartsWith($projectRoot, [StringComparison]::OrdinalIgnoreCase)) {
         Stop-Process -Id $item.pid
         Write-Output "Stopped $($item.name)."

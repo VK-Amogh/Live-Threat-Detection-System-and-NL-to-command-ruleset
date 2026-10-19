@@ -24,7 +24,7 @@ PROMPT = '''You are a careful CCTV incident reviewer. An automated detector repo
 The first image is the evidence frame; red boxes mark what the detector flagged. {extra}
 Decide whether the images visibly support the detector's claim. Reply with JSON only:
 {{"supports_detection": true | false | null, "confidence": <0..1>, "visible_facts": ["<short fact>", ...], "cannot_determine": ["<short item>", ...], "explanation": "<at most 25 words>"}}
-Use null when the evidence is too small, blurry or ambiguous. Describe only what is visible; never infer identity, intent or protected attributes. Common false alarms: fog/haze/steam/shadows for smoke, musical instruments/bottles/tools/phones for weapons, sport or dancing for violence.'''
+Use null when the evidence is too small, blurry or ambiguous. Describe only what is visible; never infer identity, intent or protected attributes. Common false alarms: musical instruments/bottles/tools/phones for weapons, sport or dancing for violence.'''
 
 
 def detector_classes(event):
@@ -66,16 +66,36 @@ async def review(event_id, publish=None):
     event = db.get('event', event_id)
     if not event:
         return None
-    images = await asyncio.to_thread(lambda: [x for x in [annotated_keyframe(event)] if x] + sample_clip_frames(event, 2))
-    if not images:
-        return event
+    try:
+        images = await asyncio.wait_for(
+            asyncio.to_thread(lambda: [x for x in [annotated_keyframe(event)] if x] + sample_clip_frames(event, 2)),
+            timeout=5,
+        )
+    except (asyncio.TimeoutError, OSError, ValueError):
+        images = []
     sources = {s['id']: s for s in db.all_objects('source')}
     source = sources.get(event.get('_source_id') or '')
     prompt = PROMPT.format(category=event['category']['label'], classes=', '.join(detector_classes(event)) or 'n/a', confidence=event['peak_confidence'], source=(source or {}).get('kind', 'unknown'),
                            extra='Further frames from the same clip follow.' if len(images) > 1 else '')
-    async with SLOT:
-        text, model, provider = await ask_model(prompt, images)
-    result = parse(text)
+    if images:
+        try:
+            async with asyncio.timeout(20):
+                async with SLOT:
+                    text, model, provider = await ask_model(prompt, images)
+            result = parse(text)
+        except (asyncio.TimeoutError, httpx.HTTPError, ValueError, KeyError, json.JSONDecodeError):
+            images = []
+    if not images:
+        # Detector metadata can be summarized, but it cannot verify what the pixels show.
+        model, provider = 'detector metadata', 'records'
+        classes = ', '.join(detector_classes(event)) or event['category']['label']
+        result = {
+            'supports': None,
+            'confidence': 0.0,
+            'facts': [],
+            'unknown': ['Visual confirmation is unavailable.'],
+            'explanation': f"Detector reported {classes} at {event['peak_confidence']:.0%} confidence. Footage needs human review.",
+        }
     event = db.get('event', event_id) or event
     event['reasoning'] = {'confidence': result['confidence'], 'uncertainty': result['explanation'] or 'No explanation returned.', 'evidence_insufficient': result['supports'] is None,
                           'visible_facts': result['facts'], 'cannot_determine': result['unknown']}

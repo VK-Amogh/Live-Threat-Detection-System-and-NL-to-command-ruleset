@@ -106,6 +106,7 @@ class EventOut(BaseModel):
     uncertainty: Optional[str] = None
     needs_visual_review: bool = False
     evidence_bbox: Optional[tuple[int, int, int, int]] = None
+    verification: Optional[dict] = None
     review_possible_false_positive: Optional[bool] = None
     camera: CameraRef
     category: CategoryRef

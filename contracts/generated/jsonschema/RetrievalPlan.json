@@ -1,0 +1,98 @@
+{
+  "properties": {
+    "intent": {
+      "default": "mixed",
+      "enum": [
+        "live_now",
+        "historical_incidents",
+        "timeline_recordings",
+        "rules_status",
+        "system_status",
+        "mixed"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "camera_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Camera Ids",
+      "type": "array"
+    },
+    "categories": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Categories",
+      "type": "array"
+    },
+    "severities": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Severities",
+      "type": "array"
+    },
+    "statuses": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Statuses",
+      "type": "array"
+    },
+    "time_from": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Time From"
+    },
+    "time_to": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Time To"
+    },
+    "sources": {
+      "items": {
+        "enum": [
+          "incidents",
+          "recordings",
+          "screenshots",
+          "live_frames",
+          "rulesets",
+          "system"
+        ],
+        "type": "string"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "needs_visual_describe": {
+      "default": false,
+      "title": "Needs Visual Describe",
+      "type": "boolean"
+    },
+    "limit": {
+      "default": 12,
+      "maximum": 50,
+      "minimum": 1,
+      "title": "Limit",
+      "type": "integer"
+    }
+  },
+  "title": "RetrievalPlan",
+  "type": "object"
+}

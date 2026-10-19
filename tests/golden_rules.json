@@ -1,22 +1,167 @@
 [
-  {"text": "Alert when a person is in driveway.", "entity": "person", "types": ["in_zone"], "level": "SUPPORTED"},
-  {"text": "Alert when a car is in driveway.", "entity": "car", "types": ["in_zone"], "level": "SUPPORTED"},
-  {"text": "Alert me when a person stays in the driveway for 3 seconds between midnight and 5 a.m.", "entity": "person", "types": ["in_zone", "dwell_at_least", "time_window"], "level": "SUPPORTED"},
-  {"text": "Notify when a person is visible.", "entity": "person", "types": ["entity_present"], "level": "SUPPORTED"},
-  {"text": "Notify when a truck is visible.", "entity": "truck", "types": ["entity_present"], "level": "SUPPORTED"},
-  {"text": "Alert when a person crosses the gate line.", "entity": "person", "types": ["line_cross"], "level": "SUPPORTED"},
-  {"text": "Alert if at least four people cross gate within 60 seconds.", "entity": "person", "types": ["unique_count_at_least"], "level": "SUPPORTED"},
-  {"text": "Alert when a person moves toward the driveway.", "entity": "person", "types": ["moving_toward"], "level": "SUPPORTED"},
-  {"text": "Alert when a person is within 2 metres of driveway.", "entity": "person", "types": ["distance_below"], "level": "EXPERIMENTAL", "can_activate": false},
-  {"text": "Alert when a person is in porch between 20:00 and 22:00.", "entity": "person", "types": ["in_zone", "time_window"], "level": "SUPPORTED"},
-  {"text": "Alert when a person enters driveway or porch.", "entity": "person", "types": ["in_zone", "in_zone"], "level": "SUPPORTED", "root": "any"},
-  {"text": "Alert when no person is visible.", "entity": "person", "types": ["entity_present"], "level": "SUPPORTED", "root": "not"},
-  {"text": "Alert if a person stays in porch for 5 seconds.", "entity": "person", "types": ["in_zone", "dwell_at_least"], "level": "SUPPORTED"},
-  {"text": "Alert if a car crosses the gate line between 01:00 and 02:00.", "entity": "car", "types": ["line_cross", "time_window"], "level": "SUPPORTED"},
-  {"text": "Alert when a bicycle is in driveway.", "entity": "bicycle", "types": ["in_zone"], "level": "SUPPORTED"},
-  {"text": "Tell me when someone scratches my car.", "level": "UNSUPPORTED"},
-  {"text": "Alert when people fight near my car.", "level": "UNSUPPORTED"},
-  {"text": "Alert when someone carries a red backpack.", "level": "UNSUPPORTED"},
-  {"text": "Alert when a person is in driveway at night.", "level": "UNSUPPORTED"},
-  {"text": "Alert when a drone is visible.", "level": "UNSUPPORTED"}
+  {
+"text": "Alert when a person is in driveway.",
+"entity": "person",
+"types": [
+"in_zone"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert when a car is in driveway.",
+"entity": "car",
+"types": [
+"in_zone"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert me when a person stays in the driveway for 3 seconds between midnight and 5 a.m.",
+"entity": "person",
+"types": [
+"in_zone",
+"dwell_at_least",
+"time_window"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Notify when a person is visible.",
+"entity": "person",
+"types": [
+"entity_present"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Notify when a truck is visible.",
+"entity": "truck",
+"types": [
+"entity_present"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert when a person crosses the gate line.",
+"entity": "person",
+"types": [
+"line_cross"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert if at least four people cross gate within 60 seconds.",
+"entity": "person",
+"types": [
+"unique_count_at_least"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert when a person moves toward the driveway.",
+"entity": "person",
+"types": [
+"moving_toward"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert when a person is within 2 metres of driveway.",
+"entity": "person",
+"types": [
+"distance_below"
+],
+"level": "EXPERIMENTAL",
+"can_activate": false
+},
+  {
+"text": "Alert when a person is in porch between 20:00 and 22:00.",
+"entity": "person",
+"types": [
+"in_zone",
+"time_window"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert when a person enters driveway or porch.",
+"entity": "person",
+"types": [
+"in_zone",
+"in_zone"
+],
+"level": "SUPPORTED",
+"root": "any"
+},
+  {
+"text": "Alert when no person is visible.",
+"entity": "person",
+"types": [
+"entity_present"
+],
+"level": "SUPPORTED",
+"root": "not"
+},
+  {
+"text": "Alert if a person stays in porch for 5 seconds.",
+"entity": "person",
+"types": [
+"in_zone",
+"dwell_at_least"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert if a car crosses the gate line between 01:00 and 02:00.",
+"entity": "car",
+"types": [
+"line_cross",
+"time_window"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Alert when a bicycle is in driveway.",
+"entity": "bicycle",
+"types": [
+"in_zone"
+],
+"level": "SUPPORTED"
+},
+  {
+"text": "Tell me when someone scratches my car.",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "Alert when people fight near my car.",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "Alert when someone carries a red backpack.",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "Alert when a person is in driveway at night.",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "Alert when a drone is visible.",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "if someone sits on the chair",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "alert when someone steals the bag",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "if someone enters the door",
+"level": "UNSUPPORTED"
+},
+  {
+"text": "alert when a person dances in the porch",
+"level": "UNSUPPORTED"
+}
 ]
